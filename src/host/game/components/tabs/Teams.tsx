@@ -10,7 +10,7 @@ interface HostTeamsProps {
 }
 
 export const Teams = ({ participants }: HostTeamsProps) => {
-
+    const connectedCount = participants.filter(p => p.isConnected).length;
     const sortedParticipants = useMemo(() => {
         return [...participants].sort((a, b) => {
             if (a.isConnected !== b.isConnected) {
@@ -25,13 +25,19 @@ export const Teams = ({ participants }: HostTeamsProps) => {
     return (
         <Box style={styles.container}>
             <ScrollView contentContainerStyle={{ padding: 32 }} showsVerticalScrollIndicator={false}>
-                <Box mb={8}>
-                    <Text variant="h2" style={{ color: colors.neutralDark.darkest }}>
-                        Команды в игре
-                    </Text>
-                    <Text variant="bodyM" style={{ color: colors.neutralDark.light, marginTop: 4 }}>
-                        Следите за подключением участников в реальном времени
-                    </Text>
+                <Box mb={16} row align="center" justify="space-between">
+                    <Box>
+                        <Text variant="h2">Команды в игре</Text>
+                        <Text variant="bodyM" style={{ color: colors.neutralDark.light }}>
+                            Следите за подключением участников
+                        </Text>
+                    </Box>
+                    <Box align="flex-end">
+                        <Text variant="h1" style={{ color: colors.highlight.darkest }}>
+                            {connectedCount}
+                        </Text>
+                        <Text variant="captionM" style={{ color: colors.neutralDark.light }}>подключено</Text>
+                    </Box>
                 </Box>
 
                 {sortedParticipants.length === 0 ? (
@@ -42,7 +48,7 @@ export const Teams = ({ participants }: HostTeamsProps) => {
                     </Box>
                 ) : (
                     <Box style={{ gap: 12 }}>
-                        {sortedParticipants.map((participant) => {
+                        {sortedParticipants.map((participant, index) => {
                             const teamName = (participant as any).teamName || `Команда #${participant.teamId}`;
                             const categoryName = (participant as any).categoryName;
 
@@ -55,7 +61,10 @@ export const Teams = ({ participants }: HostTeamsProps) => {
                                     style={styles.teamRow}
                                 >
                                     <Box row align="center" gap={8}>
-                                        {/* Индикатор статуса */}
+                                        <Text variant="bodyM" style={{ color: colors.neutralDark.light, width: 24, fontWeight: '600' }}>
+                                            {index + 1}.
+                                        </Text>
+
                                         <Box style={[
                                             styles.statusDot,
                                             {

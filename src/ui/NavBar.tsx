@@ -33,7 +33,7 @@ export function NavBar({
     <View style={styles.side}>
     {(leftText || leftIcon) ? (
         <Pressable onPress={onLeftPress} hitSlop={10}>
-        {leftIcon ? leftIcon : <Text variant="bodyS" style={styles.link}>{leftText}</Text>}
+        {leftIcon ? leftIcon : <Text style={styles.link}>{leftText}</Text>}
                 </Pressable>
 ) : (
         <View style={styles.spacer} />
@@ -41,7 +41,7 @@ export function NavBar({
     </View>
 
     <View style={styles.center}>
-    <Text variant="h2">{title}</Text>
+    <Text variant="h1">{title}</Text>
         </View>
 
         <View style={[styles.side, { alignItems: "flex-end" }]}>
@@ -63,10 +63,11 @@ export function NavBar({
             flexDirection: "row",
             alignItems: "center",
             paddingHorizontal: metrics.space[4],
+            margin: 10,
             backgroundColor: colors.neutralLight.lightest,
         },
         side: { width: 120, justifyContent: "center" },
         center: { flex: 1, alignItems: "center" },
         spacer: { height: 1, width: 1 },
-        link: { color: colors.highlight.darkest },
+        link: { color: colors.highlight.darkest, fontWeight: 'bold', fontSize: 14 },
     });

@@ -25,7 +25,7 @@ export function useHostGame(gameId: number) {
     const [participants, setParticipants] = useState<ParticipantDomain[]>([]);
 
     useEffect(() => {
-        if (!socket) return;
+        if (!socket || !gameId || isNaN(gameId)) return;
 
         socket.emit(AdminRequestEvent.Sync, { gameId });
 
