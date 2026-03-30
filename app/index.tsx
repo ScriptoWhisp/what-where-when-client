@@ -36,27 +36,18 @@ export default function Index() {
                     </Text>
                 </Box>
 
-                <Box gap={6}>
-                    <Box gap={3}>
-                        <Button
-                            title="Войти в игру"
-                            variant="primary"
-                            onPress={() => router.push('/(player)/join')}
-                        />
-                    </Box>
-                </Box>
-
-                <Box
-                    pt={6}
-                    mt={3}
-                    style={{
-                        borderTopWidth: 1,
-                        borderTopColor: colors.neutralLight.medium
-                    }}
-                >
+                <Box gap={3}>
+                    <Button
+                        title="Войти в игру"
+                        variant="primary"
+                        onPress={() => router.push('/(player)/join')}
+                    />
+                    <Text variant="bodyM" style={{ textAlign: 'center', color: colors.neutralDark.light }}>
+                        или
+                    </Text>
                     <Button
                         title="Дать обратную связь"
-                        variant="tertiary"
+                        variant="secondary"
                         onPress={() => router.push('https://docs.google.com/forms/d/e/1FAIpQLSei713QAvW06XJrjDr89hVMFkevLimHf8r_X18EW4VUmYuLiw/viewform')}
                     />
                 </Box>

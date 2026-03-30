@@ -67,10 +67,12 @@ export default function SelectTeamScreen() {
             <Box flex={1} bg="neutralLight.lightest" align="center">
                 <Stack.Screen options={{ headerShown: false }} />
 
-                <Box maxWidth={450} width="100%" flex={1} p={6} pt={4}>
+                <Box maxWidth={450} width="100%" flex={1} p={6}>
 
-                    <Box align="center" mb={6} gap={2}>
-                        <Text variant="h1">Вход в игру</Text>
+                    <Box mb={6} gap={2}>
+                        <Box align="flex-start">
+                            <Text variant="h1">Вход в игру</Text>
+                        </Box>
 
                         <Box align="center" mt={2} mb={2}>
                             <Text variant="h3" style={{ color: colors.neutralDark.darkest, textAlign: 'center', marginTop: 4 }}>
@@ -92,7 +94,7 @@ export default function SelectTeamScreen() {
 
                     <ScrollView
                         style={{ flex: 1 }}
-                        contentContainerStyle={{ paddingBottom: 24, gap: 12, flexGrow: 1 }}
+                        contentContainerStyle={{ gap: 12, flexGrow: 1 }}
                         showsVerticalScrollIndicator={false}
                         refreshControl={
                             <RefreshControl
@@ -159,17 +161,17 @@ export default function SelectTeamScreen() {
                         )}
                     </ScrollView>
 
-                    <Box pt={4} pb={Platform.OS === 'ios' ? 4 : 0} gap={3}>
+                    <Box pt={6} pb={Platform.OS === 'ios' ? 4 : 0} gap={3}>
+                        <Button
+                            title="Назад"
+                            variant="tertiary"
+                            onPress={() => router.back()}
+                        />
                         <Button
                             title="Продолжить"
                             variant="primary"
                             onPress={handleContinue}
                             disabled={!selectedTeam}
-                        />
-                        <Button
-                            title="Назад"
-                            variant="tertiary"
-                            onPress={() => router.back()}
                         />
                     </Box>
 
