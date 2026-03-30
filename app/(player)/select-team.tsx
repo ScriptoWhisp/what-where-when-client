@@ -13,8 +13,11 @@ import { Feather } from '@expo/vector-icons';
 import { Box } from '@/src/ui/Box';
 import { Text } from '@/src/ui/Text';
 import { Button } from '@/src/ui/Button';
+import { ListItem } from '@/src/ui/ListItem';
+import { RadioButton } from '@/src/ui/RadioButton';
 import { colors } from '@/src/theme/colors';
-import {SafeAreaView} from "react-native-safe-area-context";
+import { SafeAreaView } from 'react-native-safe-area-context';
+import {Tag} from "@/src/ui/Tag";
 
 export default function SelectTeamScreen() {
     const { gameData, code } = useLocalSearchParams();
@@ -39,7 +42,7 @@ export default function SelectTeamScreen() {
                 }
             }
         } catch (e: any) {
-            Alert.alert("Ошибка", "Не удалось обновить список команд");
+            Alert.alert('Ошибка', 'Не удалось обновить список команд');
         } finally {
             setRefreshing(false);
         }
@@ -57,8 +60,8 @@ export default function SelectTeamScreen() {
             params: {
                 gameId: game.gameId,
                 teamId: selectedTeam.teamId,
-                teamName: selectedTeam.name
-            }
+                teamName: selectedTeam.name,
+            },
         });
     };
 
@@ -68,27 +71,9 @@ export default function SelectTeamScreen() {
                 <Stack.Screen options={{ headerShown: false }} />
 
                 <Box maxWidth={450} width="100%" flex={1} p={6}>
-
                     <Box mb={6} gap={2}>
                         <Box align="flex-start">
                             <Text variant="h1">Вход в игру</Text>
-                        </Box>
-
-                        <Box align="center" mt={2} mb={2}>
-                            <Text variant="h3" style={{ color: colors.neutralDark.darkest, textAlign: 'center', marginTop: 4 }}>
-                                {game?.gameName || 'Загрузка...'}
-                            </Text>
-                        </Box>
-
-                        <Box row align="center" justify="center" gap={2}>
-                            <Text variant="bodyM" style={{ color: colors.neutralDark.light }}>
-                                Выберите вашу команду из списка:
-                            </Text>
-                            {Platform.OS === 'web' && (
-                                <TouchableOpacity onPress={onRefresh} style={{ padding: 4 }}>
-                                    <Feather name="refresh-cw" size={16} color={colors.neutralDark.light} />
-                                </TouchableOpacity>
-                            )}
                         </Box>
                     </Box>
 
@@ -110,45 +95,28 @@ export default function SelectTeamScreen() {
                             const isSelected = selectedTeam?.teamId === team.teamId;
 
                             return (
-                                <TouchableOpacity
+                                <ListItem
                                     key={team.teamId}
-                                    onPress={() => handleSelect(team)}
-                                    activeOpacity={isTaken ? 1 : 0.7}
-                                    disabled={isTaken}
-                                >
-                                    <Box
-                                        row
-                                        justify="space-between"
-                                        align="center"
-                                        p={4}
-                                        radius="md"
-                                        style={[
-                                            styles.card,
-                                            isTaken && styles.cardTaken,
-                                            isSelected && styles.cardSelected
-                                        ]}
-                                    >
-                                        <Text
-                                            variant="bodyL"
-                                            style={{
-                                                fontWeight: '600',
-                                                color: isTaken ? colors.neutralDark.light : colors.neutralDark.darkest
-                                            }}
-                                        >
-                                            {team.name}
-                                        </Text>
-
-                                        {isTaken ? (
-                                            <Feather name="lock" size={20} color={colors.neutralDark.light} />
-                                        ) : isSelected ? (
-                                            <Box style={[styles.radioCircle, styles.radioCircleSelected]}>
-                                                <Box style={styles.radioInner} />
-                                            </Box>
+                                    title={team.name}
+                                    titleVariant="bodyM"
+                                    titleStyle={{
+                                        color: colors.neutralDark.darkest,
+                                    }}
+                                    variant={isSelected && !isTaken ? 'highlight' : 'default'}
+                                    style={[
+                                        isTaken && styles.listRowTaken,
+                                    ]}
+                                    onPress={isTaken ? undefined : () => handleSelect(team)}
+                                    accessibilityRole="radio"
+                                    accessibilityState={{ disabled: isTaken, selected: isSelected }}
+                                    right={
+                                        isTaken ? (
+                                            <Tag text={'Taken'} variant="solid" />
                                         ) : (
-                                            <Box style={styles.radioCircle} />
-                                        )}
-                                    </Box>
-                                </TouchableOpacity>
+                                            <RadioButton selected={isSelected} />
+                                        )
+                                    }
+                                />
                             );
                         })}
 
@@ -162,19 +130,9 @@ export default function SelectTeamScreen() {
                     </ScrollView>
 
                     <Box pt={6} pb={Platform.OS === 'ios' ? 4 : 0} gap={3}>
-                        <Button
-                            title="Назад"
-                            variant="tertiary"
-                            onPress={() => router.back()}
-                        />
-                        <Button
-                            title="Продолжить"
-                            variant="primary"
-                            onPress={handleContinue}
-                            disabled={!selectedTeam}
-                        />
+                        <Button title="Назад" variant="tertiary" onPress={() => router.back()} />
+                        <Button title="Продолжить" variant="primary" onPress={handleContinue} disabled={!selectedTeam} />
                     </Box>
-
                 </Box>
             </Box>
         </SafeAreaView>
@@ -182,35 +140,7 @@ export default function SelectTeamScreen() {
 }
 
 const styles = StyleSheet.create({
-    card: {
-        backgroundColor: colors.neutralLight.lightest,
-        borderWidth: 2,
-        borderColor: colors.neutralLight.medium,
-    },
-    cardTaken: {
+    listRowTaken: {
         backgroundColor: colors.neutralLight.light,
-        borderColor: colors.neutralLight.medium,
     },
-    cardSelected: {
-        borderColor: colors.highlight.darkest,
-        backgroundColor: colors.highlight.lightest,
-    },
-    radioCircle: {
-        width: 24,
-        height: 24,
-        borderRadius: 12,
-        borderWidth: 2,
-        borderColor: colors.neutralLight.dark,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    radioCircleSelected: {
-        borderColor: colors.highlight.darkest,
-    },
-    radioInner: {
-        width: 12,
-        height: 12,
-        borderRadius: 6,
-        backgroundColor: colors.highlight.darkest,
-    }
 });
