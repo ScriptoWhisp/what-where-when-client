@@ -1,15 +1,12 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
     ScrollView,
-    TouchableOpacity,
     StyleSheet,
     Platform,
     Alert,
-    RefreshControl,
 } from 'react-native';
 import { checkGameByCode } from '@/src/api/player';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
-import { Feather } from '@expo/vector-icons';
 import { Box } from '@/src/ui/Box';
 import { Text } from '@/src/ui/Text';
 import { Button } from '@/src/ui/Button';
@@ -25,28 +22,11 @@ export default function SelectTeamScreen() {
 
     const [game, setGame] = useState<any>(gameData ? JSON.parse(gameData as string) : null);
     const [selectedTeam, setSelectedTeam] = useState<any>(null);
-    const [refreshing, setRefreshing] = useState(false);
+    const scrollYRef = useRef(0);
+    const scrollViewRef = useRef<ScrollView | null>(null);
+    const inFlightRef = useRef(false);
 
     const allTeams = game?.teams || [];
-
-    const onRefresh = async () => {
-        if (!code) return;
-        setRefreshing(true);
-        try {
-            const freshGameData = await checkGameByCode(code as string);
-            setGame(freshGameData);
-            if (selectedTeam) {
-                const updatedTeam = freshGameData.teams.find((t: any) => t.teamId === selectedTeam.teamId);
-                if (!updatedTeam || !updatedTeam.isAvailable) {
-                    setSelectedTeam(null);
-                }
-            }
-        } catch (e: any) {
-            Alert.alert('Ошибка', 'Не удалось обновить список команд');
-        } finally {
-            setRefreshing(false);
-        }
-    };
 
     const handleSelect = (team: any) => {
         if (!team.isAvailable) return;
@@ -65,6 +45,58 @@ export default function SelectTeamScreen() {
         });
     };
 
+    useEffect(() => {
+        if (!code) return;
+
+        const POLL_INTERVAL_MS = 3000;
+        let cancelled = false;
+
+        const restoreScroll = () => {
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    scrollViewRef.current?.scrollTo({ y: scrollYRef.current, animated: false });
+                });
+            });
+        };
+
+        const poll = async () => {
+            if (cancelled) return;
+            if (inFlightRef.current) return;
+            inFlightRef.current = true;
+
+            try {
+                const freshGameData = await checkGameByCode(code as string);
+                if (cancelled) return;
+
+                setGame(freshGameData);
+                setSelectedTeam((prev: any) => {
+                    if (!prev) return prev;
+                    const updatedTeam = freshGameData?.teams?.find((t: any) => t.teamId === prev.teamId);
+                    if (!updatedTeam || !updatedTeam.isAvailable) return null;
+                    return updatedTeam;
+                });
+
+                restoreScroll();
+            } catch (e: any) {
+                if (!cancelled) {
+                    Alert.alert('Ошибка', 'Не удалось обновить список команд');
+                }
+            } finally {
+                inFlightRef.current = false;
+            }
+        };
+
+        void poll();
+        const intervalId = setInterval(() => {
+            void poll();
+        }, POLL_INTERVAL_MS);
+
+        return () => {
+            cancelled = true;
+            clearInterval(intervalId);
+        };
+    }, [code]);
+
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: colors.neutralLight.lightest }}>
             <Box flex={1} bg="neutralLight.lightest" align="center">
@@ -78,17 +110,14 @@ export default function SelectTeamScreen() {
                     </Box>
 
                     <ScrollView
+                        ref={scrollViewRef}
                         style={{ flex: 1 }}
                         contentContainerStyle={{ gap: 12, flexGrow: 1 }}
                         showsVerticalScrollIndicator={false}
-                        refreshControl={
-                            <RefreshControl
-                                refreshing={refreshing}
-                                onRefresh={onRefresh}
-                                tintColor={colors.highlight.darkest}
-                                colors={[colors.highlight.darkest]}
-                            />
-                        }
+                        onScroll={(e) => {
+                            scrollYRef.current = e.nativeEvent.contentOffset.y;
+                        }}
+                        scrollEventThrottle={16}
                     >
                         {allTeams.map((team: any) => {
                             const isTaken = !team.isAvailable;

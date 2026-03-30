@@ -17,27 +17,25 @@ export const GameBottomTabs = ({ activeTab, onTabChange }: GameBottomTabsProps) 
         <Box
             row
             style={{
-                borderTopWidth: 1,
-                borderColor: colors.neutralLight.medium,
                 backgroundColor: colors.neutralLight.lightest,
                 paddingBottom: Platform.OS === 'ios' ? 20 : 0
             }}
         >
             <TabButton
                 title="Игра"
-                icon="play-circle"
+                icon="play"
                 isActive={activeTab === 'play'}
                 onPress={() => onTabChange('play')}
             />
             <TabButton
                 title="История"
-                icon="clock"
+                icon="compass"
                 isActive={activeTab === 'history'}
                 onPress={() => onTabChange('history')}
             />
             <TabButton
                 title="Результаты"
-                icon="bar-chart-2"
+                icon="star"
                 isActive={activeTab === 'results'}
                 onPress={() => onTabChange('results')}
             />
@@ -55,10 +53,6 @@ const TabButton = ({ title, icon, isActive, onPress }: any) => (
             align="center"
             p={3}
             gap={1}
-            style={{
-                borderTopWidth: 2,
-                borderColor: isActive ? colors.highlight.darkest : 'transparent'
-            }}
         >
             <Feather
                 name={icon}
@@ -66,10 +60,9 @@ const TabButton = ({ title, icon, isActive, onPress }: any) => (
                 color={isActive ? colors.highlight.darkest : colors.neutralDark.light}
             />
             <Text
-                variant="bodyS"
+                variant={isActive ? "actionS" : "bodyXS"}
                 style={{
-                    color: isActive ? colors.highlight.darkest : colors.neutralDark.medium,
-                    fontWeight: isActive ? '600' : 'normal'
+                    color: isActive ? colors.neutralDark.darkest : colors.neutralDark.light,
                 }}
             >
                 {title}
