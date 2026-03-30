@@ -137,3 +137,15 @@ export interface SubmitAnswerDto {
   questionId: number;
   submittedAt: string;
 }
+
+export interface ParticipantDomain {
+  id: number;
+  gameId: number;
+  teamId: number;
+  isConnected: boolean;
+  socketId?: string | null;
+
+  teamName?: string;
+  categoryId?: number | null;
+  categoryName?: string | null;
+}

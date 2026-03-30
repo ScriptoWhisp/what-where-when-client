@@ -12,42 +12,33 @@ interface HostLeaderboardProps {
 export const HostLeaderboard = ({ leaderboard }: HostLeaderboardProps) => {
 
     const groupedData = useMemo(() => {
-        const groups: Record<string, LeaderboardEntry[]> = {};
+        const groups: { categoryName: string; teams: (LeaderboardEntry & { displayRank: number })[] }[] = [];
+        const groupIndexMap = new Map<string, number>();
 
         leaderboard.forEach(team => {
-            const key = team.categoryName || 'Без категории';
-            if (!groups[key]) groups[key] = [];
-            groups[key].push(team);
-        });
+            const categoryName = team.categoryName || 'Без категории';
 
-        const processedGroups = Object.keys(groups).map(categoryName => {
-            const teams = groups[categoryName];
+            if (!groupIndexMap.has(categoryName)) {
+                groupIndexMap.set(categoryName, groups.length);
+                groups.push({ categoryName, teams: [] });
+            }
 
-            teams.sort((a, b) => {
-                if (b.score !== a.score) return b.score - a.score;
-                return a.teamName.localeCompare(b.teamName);
-            });
+            const currentGroup = groups[groupIndexMap.get(categoryName)!];
+            const currentGroupTeams = currentGroup.teams;
 
-            let currentRank = 1;
-            let previousScore: number | null = null;
-            const rankedTeams = teams.map((team, index) => {
-                if (team.score !== previousScore) {
-                    currentRank = index + 1;
-                    previousScore = team.score;
+            let displayRank = currentGroupTeams.length + 1;
+
+            if (currentGroupTeams.length > 0) {
+                const previousTeam = currentGroupTeams[currentGroupTeams.length - 1];
+                if (previousTeam.score === team.score && previousTeam.rating === team.rating) {
+                    displayRank = previousTeam.displayRank;
                 }
-                return { ...team, displayRank: currentRank };
-            });
+            }
 
-            return { categoryName, teams: rankedTeams };
+            currentGroupTeams.push({ ...team, displayRank });
         });
 
-        processedGroups.sort((a, b) => {
-            if (a.categoryName === 'Без категории') return 1;
-            if (b.categoryName === 'Без категории') return -1;
-            return a.categoryName.localeCompare(b.categoryName);
-        });
-
-        return processedGroups;
+        return groups;
     }, [leaderboard]);
 
     return (
@@ -76,8 +67,9 @@ export const HostLeaderboard = ({ leaderboard }: HostLeaderboardProps) => {
 
                                 <Box row justify="space-between" align="center" style={styles.tableHeader}>
                                     <Text variant="captionM" style={{ width: 40, color: colors.neutralDark.medium }}>#</Text>
-                                    <Text variant="captionM" style={{ flex: 1, color: colors.neutralDark.medium }}>Team name</Text>
-                                    <Text variant="captionM" style={{ width: 60, textAlign: 'right', color: colors.neutralDark.medium }}>Score</Text>
+                                    <Text variant="captionM" style={{ flex: 1, color: colors.neutralDark.medium }}>Команда</Text>
+                                    <Text variant="captionM" style={{ width: 60, textAlign: 'center', color: colors.neutralDark.medium }}>Очки</Text>
+                                    <Text variant="captionM" style={{ width: 70, textAlign: 'right', color: colors.neutralDark.medium }}>Рейтинг</Text>
                                 </Box>
 
                                 <Box style={{ gap: 12 }}>
@@ -99,11 +91,14 @@ export const HostLeaderboard = ({ leaderboard }: HostLeaderboardProps) => {
                                                 </Text>
                                             </Box>
 
-                                            <Box style={{ width: 60, alignItems: 'flex-end' }}>
+                                            <Box style={{ width: 60, alignItems: 'center' }}>
                                                 <Text variant="bodyL" style={{ fontWeight: 'bold', color: colors.highlight.darkest, fontSize: 18 }}>
                                                     {team.score}
                                                 </Text>
-                                                <Text variant="bodyL" style={{ fontWeight: 'bold', color: colors.highlight.darkest, fontSize: 18 }}>
+                                            </Box>
+
+                                            <Box style={{ width: 70, alignItems: 'flex-end' }}>
+                                                <Text variant="bodyM" style={{ fontWeight: '600', color: colors.neutralDark.medium, fontSize: 16 }}>
                                                     {team.rating}
                                                 </Text>
                                             </Box>

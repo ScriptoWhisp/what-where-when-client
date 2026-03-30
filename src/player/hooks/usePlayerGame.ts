@@ -26,12 +26,14 @@ export function usePlayerGame(gameId: string, teamId: string, teamName: string) 
         activeQuestionId: number | null;
         activeQuestionNumber: number | null;
         gameStarted: boolean;
+        gameStatus: GameStatus | null;
     }>({
         phase: GamePhase.IDLE,
         timer: 0,
         activeQuestionId: null,
         activeQuestionNumber: null,
         gameStarted: false,
+        gameStatus: null,
     });
 
     const [history, setHistory] = useState<AnswerDomain[]>([]);
@@ -44,7 +46,8 @@ export function usePlayerGame(gameId: string, teamId: string, teamName: string) 
             timer: data.seconds,
             activeQuestionId: data.activeQuestionId ?? prev.activeQuestionId,
             activeQuestionNumber: data.activeQuestionNumber ?? prev.activeQuestionNumber,
-            gameStarted: data.status === GameStatuses.LIVE || data.phase !== GamePhase.IDLE
+            gameStarted: data.status === GameStatuses.LIVE || data.phase !== GamePhase.IDLE,
+            gameStatus: data.status ?? prev.gameStatus
         }));
     }, []);
 
@@ -83,9 +86,11 @@ export function usePlayerGame(gameId: string, teamId: string, teamName: string) 
         socket.on(GameBroadcastEvent.TimerUpdate, (state: GameState) => updateGameState(state));
 
         socket.on(GameBroadcastEvent.StatusChanged, (data: { status: GameStatus }) => {
-            if (data.status === GameStatuses.LIVE) {
-                setGameState(prev => ({ ...prev, gameStarted: true }));
-            }
+            setGameState(prev => ({
+                ...prev,
+                gameStarted: data.status === GameStatuses.LIVE || prev.gameStarted,
+                gameStatus: data.status
+            }));
         });
 
         socket.on(PlayerResponseEvent.HistoryUpdate, setHistory);

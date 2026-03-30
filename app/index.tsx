@@ -38,24 +38,10 @@ export default function Index() {
 
                 <Box gap={6}>
                     <Box gap={3}>
-                        <Text variant="h3" style={{ color: colors.neutralDark.medium }}>
-                            Для команд
-                        </Text>
                         <Button
-                            title="Я игрок"
+                            title="Войти в игру"
                             variant="primary"
                             onPress={() => router.push('/(player)/join')}
-                        />
-                    </Box>
-
-                    <Box gap={3}>
-                        <Text variant="h3" style={{ color: colors.neutralDark.medium }}>
-                            Для организаторов
-                        </Text>
-                        <Button
-                            title="Я хост"
-                            variant="secondary"
-                            onPress={() => router.push('/(host)/login')}
                         />
                     </Box>
                 </Box>
@@ -71,7 +57,7 @@ export default function Index() {
                     <Button
                         title="Дать обратную связь"
                         variant="tertiary"
-                        onPress={() => router.push('/modal')}
+                        onPress={() => router.push('https://docs.google.com/forms/d/e/1FAIpQLSei713QAvW06XJrjDr89hVMFkevLimHf8r_X18EW4VUmYuLiw/viewform')}
                     />
                 </Box>
 

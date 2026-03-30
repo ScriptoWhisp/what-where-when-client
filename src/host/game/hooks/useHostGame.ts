@@ -8,7 +8,7 @@ import {
     GameStatus,
     GameStatuses
 } from "@/src/dto/common.dto";
-import { AnswerDomain, GameState, LeaderboardEntry } from "@/src/dto/game.dto";
+import { AnswerDomain, GameState, LeaderboardEntry, ParticipantDomain } from "@/src/dto/game.dto";
 
 export function useHostGame(gameId: number) {
     const socket = useSocket('game');
@@ -22,6 +22,7 @@ export function useHostGame(gameId: number) {
 
     const [answers, setAnswers] = useState<AnswerDomain[]>([]);
     const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+    const [participants, setParticipants] = useState<ParticipantDomain[]>([]);
 
     useEffect(() => {
         if (!socket) return;
@@ -32,6 +33,7 @@ export function useHostGame(gameId: number) {
             state: GameState,
             answers: AnswerDomain[],
             leaderboard?: LeaderboardEntry[]
+            participants?: ParticipantDomain[]
         }) => {
             if (data.state) {
                 setGameState(prev => ({ ...prev, ...data.state }));
@@ -41,6 +43,9 @@ export function useHostGame(gameId: number) {
             }
             if (data.leaderboard) {
                 setLeaderboard(data.leaderboard);
+            }
+            if (data.participants) {
+                setParticipants(data.participants);
             }
         });
 
@@ -110,6 +115,7 @@ export function useHostGame(gameId: number) {
         gameState,
         answers,
         leaderboard,
+        participants,
         startGame,
         prepareQuestion,
         startQuestion,

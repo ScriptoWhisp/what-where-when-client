@@ -14,6 +14,7 @@ import { useHostGame } from "@/src/host/game/hooks/useHostGame";
 import { AnswersDashboard } from "@/src/host/game/components/tabs/AnswersDashboard";
 import { GameStatuses } from "@/src/dto/common.dto";
 import { HostLeaderboard } from "@/src/host/game/components/tabs/HostLeaderboard";
+import {Teams} from "@/src/host/game/components/tabs/Teams";
 
 export default function GameAdminScreen() {
     const router = useRouter();
@@ -25,6 +26,7 @@ export default function GameAdminScreen() {
         gameState,
         answers,
         leaderboard,
+        participants,
         startGame,
         prepareQuestion,
         startQuestion,
@@ -107,7 +109,6 @@ export default function GameAdminScreen() {
                 )}
 
                 <Box style={styles.mainContent}>
-                    {/* ХЭДЕР */}
                     <Box row align="center" justify="space-between" style={styles.header}>
                         <Box row align="center" style={{ gap: 24 }}>
                             <TouchableOpacity onPress={handleBack} style={styles.backButton}>
@@ -194,10 +195,8 @@ export default function GameAdminScreen() {
                                 )}
 
                                 {activeTab === 'Teams' && (
-                                    <Box flex={1} justify="center" align="center">
-                                        <Text style={{ color: colors.neutralDark.light }}>
-                                            Управление командами (в разработке)
-                                        </Text>
+                                    <Box flex={1}>
+                                        <Teams participants={participants} />
                                     </Box>
                                 )}
                             </>

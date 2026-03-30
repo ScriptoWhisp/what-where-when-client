@@ -15,20 +15,15 @@ export const LeaderboardTab = ({ leaderboard, currentParticipantId }: Leaderboar
 
     const displayData = leaderboard.filter(team => team.categoryId === myTeam?.categoryId);
 
-    const sortedData = [...displayData].sort((a, b) => {
-        if (b.score !== a.score) {
-            return b.score - a.score;
-        }
-        return a.teamName.localeCompare(b.teamName);
-    });
-
     let currentRank = 1;
     let previousScore: number | null = null;
+    let previousRating: number | null = null;
 
-    const rankedData = sortedData.map((item, index) => {
-        if (item.score !== previousScore) {
+    const rankedData = displayData.map((item, index) => {
+        if (item.score !== previousScore || item.rating !== previousRating) {
             currentRank = index + 1;
             previousScore = item.score;
+            previousRating = item.rating;
         }
         return { ...item, displayRank: currentRank };
     });
@@ -84,10 +79,6 @@ export const LeaderboardTab = ({ leaderboard, currentParticipantId }: Leaderboar
 
                                 <Text variant="bodyL" style={[styles.cellText, { width: 48, textAlign: 'right', fontWeight: 'bold', color: colors.highlight.darkest }]}>
                                     {item.score}
-                                </Text>
-
-                                <Text variant="bodyL" style={{ fontWeight: 'bold', color: colors.highlight.darkest, fontSize: 18 }}>
-                                    {item.rating}
                                 </Text>
                             </Box>
                         );
