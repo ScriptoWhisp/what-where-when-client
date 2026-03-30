@@ -1,6 +1,6 @@
 import React from 'react';
 import { TouchableOpacity, Platform } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import {Feather, Ionicons} from '@expo/vector-icons';
 import { Box } from '@/src/ui/Box';
 import { Text } from '@/src/ui/Text';
 import { colors } from '@/src/theme/colors';
@@ -20,6 +20,9 @@ export const GameBottomTabs = ({ activeTab, onTabChange }: GameBottomTabsProps) 
                 backgroundColor: colors.neutralLight.lightest,
                 paddingBottom: Platform.OS === 'ios' ? 20 : 0
             }}
+            px={4}
+            mb={8}
+            gap={2}
         >
             <TabButton
                 title="Игра"
@@ -51,14 +54,16 @@ const TabButton = ({ title, icon, isActive, onPress }: any) => (
     >
         <Box
             align="center"
-            p={3}
-            gap={1}
+            style={{
+                gap: isActive ? 9 : 8, minHeight: 42
+            }}
         >
-            <Feather
-                name={icon}
-                size={20}
-                color={isActive ? colors.highlight.darkest : colors.neutralDark.light}
-            />
+            <Box width={20} height={20} align="center" justify="center">
+                <Ionicons name={icon} size={20} color={isActive ? colors.highlight.darkest : colors.neutralLight.dark} style={{
+                    lineHeight: 20,
+                    textAlign: 'center'
+                }}/>
+            </Box>
             <Text
                 variant={isActive ? "actionS" : "bodyXS"}
                 style={{
