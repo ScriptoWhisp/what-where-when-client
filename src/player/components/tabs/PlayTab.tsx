@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
     Platform,
     TouchableWithoutFeedback,
@@ -15,7 +16,6 @@ import { colors } from '@/src/theme/colors';
 import { TimerBar } from '@/src/ui/TimerBar';
 import {GamePhase, GameStatus, GameStatuses} from '@/src/dto/common.dto';
 import {AnswerDomain} from "@/src/dto/game.dto";
-import {useRouter} from "expo-router";
 
 interface PlayTabProps {
     phase: GamePhase;
@@ -40,6 +40,8 @@ export const PlayTab = ({
                             lastAnswerStatus,
                             gameStatus
                         }: PlayTabProps) => {
+    const { t } = useTranslation();
+
     const savedAnswer = React.useMemo(() => {
         return history.find(a => a.questionNumber === questionNumber) || null;
     }, [history, questionNumber]);
@@ -82,7 +84,7 @@ export const PlayTab = ({
     const renderFinished = () => (
         <Box align="center" gap={4}>
             <Text variant="h2" style={{ color: colors.neutralDark.darkest, textAlign: 'center' }}>
-                Игра завершена! 🎉
+                {t('playTab.finishedTitle')}
             </Text>
             <Text
                 variant="bodyM"
@@ -93,10 +95,10 @@ export const PlayTab = ({
                     lineHeight: 22,
                 }}
             >
-                Вы можете посмотреть таблицу результатов и свои ответы в соседних вкладках.
+                {t('playTab.finishedBody')}
             </Text>
             <Button
-                title="Дать обратную связь"
+                title={t('playTab.feedback')}
                 variant="primary"
                 onPress={() => {
                     Linking.openURL(
@@ -109,9 +111,9 @@ export const PlayTab = ({
 
     const renderWaiting = () => (
         <Box align="center" gap={2}>
-            <Text variant="h2" style={{ color: colors.neutralDark.darkest, maxWidth: 240, textAlign: "center" }}>Организатор скоро запустит игру</Text>
+            <Text variant="h2" style={{ color: colors.neutralDark.darkest, maxWidth: 240, textAlign: "center" }}>{t('playTab.waitingTitle')}</Text>
             <Text variant="bodyM" style={{ color: colors.neutralDark.light, maxWidth: 240, textAlign: 'center' }}>
-                Будте готовы!
+                {t('playTab.waitingSubtitle')}
             </Text>
         </Box>
     );
@@ -119,7 +121,7 @@ export const PlayTab = ({
     const renderIdle = () => (
         <Box align="center" gap={2}>
             <Text variant="h2" style={{ color: colors.neutralDark.darkest, textAlign: 'center' }}>
-                Ожидаем организатора
+                {t('playTab.idleTitle')}
             </Text>
         </Box>
     );
@@ -127,10 +129,10 @@ export const PlayTab = ({
     const renderPreparation = () => (
         <Box align="center" gap={2}>
             <Text variant="h2" style={{ color: colors.neutralDark.darkest, textAlign: 'center' }}>
-                Вопрос {questionNumber || ''}
+                {t('playTab.questionTitle', { n: questionNumber ?? '' })}
             </Text>
             <Text variant="bodyM" style={{ color: colors.neutralDark.light, textAlign: 'center' }}>
-                Внимание, читается вопрос...
+                {t('playTab.preparationSubtitle')}
             </Text>
         </Box>
     );
@@ -139,7 +141,7 @@ export const PlayTab = ({
         <Box flex={1} justify="space-between">
             <Box gap={6}>
                 <Text variant="h2" style={{ color: colors.neutralDark.darkest }}>
-                    Вопрос {questionNumber || ''}
+                    {t('playTab.questionTitle', { n: questionNumber ?? '' })}
                 </Text>
 
                 <Box style={{ gap: 6 }}>
@@ -150,12 +152,14 @@ export const PlayTab = ({
                         }}
                     >
                         {timer > 0
-                            ? `${timer} сек · ${
-                                phase === GamePhase.THINKING
-                                    ? 'обсуждение с командой'
-                                    : 'напишите ваш ответ!'
-                            }`
-                            : 'Время вышло! Завершайте ответ'}
+                            ? t('playTab.timerRunning', {
+                                seconds: timer,
+                                hint:
+                                    phase === GamePhase.THINKING
+                                        ? t('playTab.hintThinking')
+                                        : t('playTab.hintAnswering'),
+                            })
+                            : t('playTab.timeUp')}
                     </Text>
                     <TimerBar timeLeft={timer} totalTime={totalTime} />
                 </Box>
@@ -163,7 +167,7 @@ export const PlayTab = ({
                 <Box gap={2} mt={2}>
                     <TextInput
                         style={[styles.input, timer === 0 && styles.inputLate]}
-                        placeholder="Впишите ответ"
+                        placeholder={t('playTab.answerPlaceholder')}
                         placeholderTextColor={colors.neutralDark.light}
                         value={answer}
                         onChangeText={setAnswer}
@@ -175,13 +179,13 @@ export const PlayTab = ({
                     {(lastAnswerStatus === 'success' || savedAnswer) && (
                         <>
                             <Text variant="bodyM" style={{ color: colors.success.dark, textAlign: 'center' }}>
-                                Ответ принят!
+                                {t('playTab.answerAccepted')}
                             </Text>
                             <Text
                                 variant="bodyM"
                                 style={{ color: colors.neutralDark.lightest, textAlign: 'center' }}
                             >
-                                Вы можете поменять ответ
+                                {t('playTab.answerChangeHint')}
                             </Text>
                         </>
                     )}
@@ -190,7 +194,7 @@ export const PlayTab = ({
 
             <Box pt={6}>
                 <Button
-                    title={savedAnswer ? 'Отправить повторно' : 'Отправить'}
+                    title={savedAnswer ? t('playTab.resubmit') : t('playTab.submit')}
                     variant="primary"
                     onPress={handleSend}
                     disabled={!answer.trim() || isSubmitting}

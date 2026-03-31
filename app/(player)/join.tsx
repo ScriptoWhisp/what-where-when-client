@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
     TextInput,
     KeyboardAvoidingView,
@@ -19,6 +20,7 @@ import { colors } from '@/src/theme/colors';
 type InputRef = TextInput | null;
 
 export default function JoinScreen() {
+    const { t } = useTranslation();
     const [digits, setDigits] = useState<string[]>(['', '', '', '']);
     const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
     const [loading, setLoading] = useState(false);
@@ -43,7 +45,7 @@ export default function JoinScreen() {
                 params: { gameData: JSON.stringify(gameData), code }
             });
         } catch (e: any) {
-            setErrorMessage(e.message || 'Игра не найдена. Проверьте код.');
+            setErrorMessage(e.message || t('player.join.errors.notFound'));
             setDigits(['', '', '', '']);
             setFocusedIndex(null);
             Keyboard.dismiss();
@@ -83,9 +85,9 @@ export default function JoinScreen() {
             <Box flex={1} align="center" p={6} style={{ paddingTop: height * 0.2 }}>
                 <Box maxWidth={450} width="100%" align="center" style={{ gap: 40 }}>
                     <Box align="center" gap={2} >
-                        <Text variant="h3">Введите код игры</Text>
+                        <Text variant="h3">{t('player.join.title')}</Text>
                         <Text variant="bodyS" style={{ color: colors.neutralDark.light, textAlign: 'center' }}>
-                            Спросите четырехзначный код у организатора
+                            {t('player.join.hint')}
                         </Text>
                     </Box>
 
@@ -133,12 +135,12 @@ export default function JoinScreen() {
 
             <Box p={6} gap={3} width="100%" maxWidth={450} style={{ alignSelf: 'center' }}>
                 <Button
-                    title="Назад"
+                    title={t('common.back')}
                     onPress={() => router.back()}
                     variant="tertiary"
                 />
                 <Button
-                    title={loading ? "Поиск..." : "Продолжить"}
+                    title={loading ? t('common.searching') : t('common.continue')}
                     onPress={handleJoin}
                     disabled={loading || digits.join('').length < 4}
                     variant="primary"

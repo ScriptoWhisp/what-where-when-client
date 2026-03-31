@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import {ScrollView} from 'react-native';
 import {Ionicons} from '@expo/vector-icons';
 import { Box } from '@/src/ui/Box';
@@ -14,6 +15,8 @@ interface HistoryTabProps {
 }
 
 export const HistoryTab = ({ history }: HistoryTabProps) => {
+    const { t } = useTranslation();
+
     const getStatusConfig = (status: string) => {
         switch (status) {
             case AnswerStatus.CORRECT:
@@ -27,18 +30,8 @@ export const HistoryTab = ({ history }: HistoryTabProps) => {
         }
     };
 
-    const statusLabel = (status: AnswerStatus | string) => {
-        switch (status) {
-            case AnswerStatus.CORRECT:
-                return 'Correct';
-            case AnswerStatus.INCORRECT:
-                return 'Incorrect';
-            case AnswerStatus.DISPUTABLE:
-                return 'Under review';
-            default:
-                return 'Pending';
-        }
-    };
+    const statusLabel = (status: AnswerStatus | string) =>
+        t(`historyTab.status.${status}`, { defaultValue: t('historyTab.status.PENDING') });
 
     return (
         <ScrollView
@@ -53,16 +46,16 @@ export const HistoryTab = ({ history }: HistoryTabProps) => {
             {history.length === 0 ? (
                 <Box align="center" gap={2} style={{ justifyContent: 'center' }}>
                     <Text variant="h2" style={{ color: colors.neutralDark.darkest, maxWidth: 240, textAlign: 'center' }}>
-                        Nothing here for now
+                        {t('historyTab.emptyTitle')}
                     </Text>
                     <Text variant="bodyM" style={{ color: colors.neutralDark.light, maxWidth: 240, textAlign: 'center' }}>
-                        This is where you’ll find your answered questions
+                        {t('historyTab.emptySubtitle')}
                     </Text>
                 </Box>
             ) : (
                 <Box style={{ paddingHorizontal: 18 }}>
                     <Text variant={"bodyS"} style={{alignSelf: 'center', paddingBottom: 16}}>
-                        Answered {history.length}
+                        {t('historyTab.answeredCount', { count: history.length })}
                     </Text>
                     {[...history].reverse().map((item) => {
                         const statusInfo = getStatusConfig(item.status);

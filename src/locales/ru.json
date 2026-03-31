@@ -1,0 +1,80 @@
+{
+  "common": {
+    "back": "Назад",
+    "continue": "Продолжить",
+    "or": "или",
+    "searching": "Поиск...",
+    "error": "Ошибка"
+  },
+  "home": {
+    "title": "Что? Где? Когда?",
+    "subtitle": "Платформа для проведения турниров",
+    "joinGame": "Войти в игру",
+    "feedback": "Дать обратную связь"
+  },
+  "player": {
+    "join": {
+      "title": "Введите код игры",
+      "hint": "Спросите четырехзначный код у организатора",
+      "errors": {
+        "notFound": "Игра не найдена. Проверьте код."
+      }
+    },
+    "selectTeam": {
+      "navTitle": "Выбор команды",
+      "screenTitle": "Вход в игру",
+      "noTeams": "В этой игре пока нет команд",
+      "taken": "Занято",
+      "pollError": "Не удалось обновить список команд"
+    },
+    "game": {
+      "phase": {
+        "thinking": "Время на обсуждение",
+        "answering": "Время для ответа",
+        "preparation": "Внимание, вопрос...",
+        "idle": "Ожидание..."
+      }
+    },
+    "tabs": {
+      "play": "Игра",
+      "history": "История",
+      "results": "Результаты"
+    }
+  },
+  "playTab": {
+    "finishedTitle": "Игра завершена! 🎉",
+    "finishedBody": "Вы можете посмотреть таблицу результатов и свои ответы в соседних вкладках.",
+    "feedback": "Дать обратную связь",
+    "waitingTitle": "Организатор скоро запустит игру",
+    "waitingSubtitle": "Будте готовы!",
+    "idleTitle": "Ожидаем организатора",
+    "preparationSubtitle": "Внимание, читается вопрос...",
+    "questionTitle": "Вопрос {{n}}",
+    "timerRunning": "{{seconds}} сек · {{hint}}",
+    "hintThinking": "обсуждение с командой",
+    "hintAnswering": "напишите ваш ответ!",
+    "timeUp": "Время вышло! Завершайте ответ",
+    "answerPlaceholder": "Впишите ответ",
+    "answerAccepted": "Ответ принят!",
+    "answerChangeHint": "Вы можете поменять ответ",
+    "submit": "Отправить",
+    "resubmit": "Отправить повторно"
+  },
+  "historyTab": {
+    "emptyTitle": "Пока здесь пусто",
+    "emptySubtitle": "Здесь будут ваши ответы на вопросы",
+    "answeredCount": "Отвечено: {{count}}",
+    "status": {
+      "CORRECT": "Верно",
+      "INCORRECT": "Неверно",
+      "DISPUTABLE": "На проверке",
+      "UNSET": "Ожидание",
+      "PENDING": "Ожидание"
+    }
+  },
+  "leaderboardTab": {
+    "emptyTitle": "Пока здесь пусто",
+    "emptySubtitle": "Здесь будет ваше место среди команд",
+    "rating": "Рейтинг: {{rating}}"
+  }
+}
