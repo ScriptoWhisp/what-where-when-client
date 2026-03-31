@@ -12,7 +12,7 @@ import { colors } from "../theme/colors";
 import { metrics } from "../theme/metrics";
 import { Text } from "./Text";
 
-type ListItemVariant = "default" | "highlight";
+type ListItemVariant = "default" | "highlight" | "empty";
 
 type TitleVariant = React.ComponentProps<typeof Text>["variant"];
 
@@ -86,6 +86,7 @@ const variantStyles = StyleSheet.create({
     highlight: {
         backgroundColor: colors.highlight.lightest,
     },
+    empty: {},
 });
 
 const styles = StyleSheet.create({

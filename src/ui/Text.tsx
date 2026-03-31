@@ -3,7 +3,7 @@ import { Text as RNText, TextProps, StyleSheet } from "react-native";
 import { typography } from "../theme/typography";
 import { colors } from "../theme/colors";
 
-type Variant =
+export type Variant =
     | "h1" | "h2" | "h3" | "h4" | "h5"
     | "bodyXL" | "bodyL" | "bodyM" | "bodyS" | "bodyXS"
     | "actionL" | "actionM" | "actionS"

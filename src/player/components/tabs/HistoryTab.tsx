@@ -1,6 +1,6 @@
 import React from 'react';
-import { StyleSheet, ScrollView, View } from 'react-native';
-import {Feather, Ionicons} from '@expo/vector-icons';
+import {ScrollView} from 'react-native';
+import {Ionicons} from '@expo/vector-icons';
 import { Box } from '@/src/ui/Box';
 import { Text } from '@/src/ui/Text';
 import { ListItem } from '@/src/ui/ListItem';
@@ -45,7 +45,6 @@ export const HistoryTab = ({ history }: HistoryTabProps) => {
             contentContainerStyle={{
                 flexGrow: 1,
                 paddingTop: 10,
-                paddingBottom: 24,
                 justifyContent: history.length === 0 ? 'center' : 'space-between',
                 backgroundColor: colors.neutralLight.light,
             }}

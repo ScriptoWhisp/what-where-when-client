@@ -157,7 +157,7 @@ export default function GameScreen() {
                             />
                         )}
 
-                        {!isKeyboardVisible && (
+                        { (hasGameStarted || gameStarted) && !isKeyboardVisible && (
                             <GameBottomTabs
                                 activeTab={activeTab}
                                 onTabChange={setActiveTab}
