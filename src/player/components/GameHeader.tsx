@@ -11,8 +11,8 @@ interface GameHeaderProps {
 
 export const GameHeader = ({ teamName, gameName, roundInfo }: GameHeaderProps) => {
     return (
-        <Box p={4} pb={2} gap={1} style={{ borderBottomWidth: 1, borderColor: colors.neutralLight.medium }}>
-            <Text variant="h3" style={{ textAlign: 'center', color: colors.neutralDark.darkest }}>
+        <Box height={56} gap={1} style={{ paddingVertical: 21 }}>
+            <Text variant="h4" style={{ textAlign: 'center', color: colors.neutralDark.darkest}}>
                 {teamName}
             </Text>
 

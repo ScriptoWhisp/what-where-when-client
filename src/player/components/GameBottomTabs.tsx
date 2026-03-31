@@ -21,6 +21,7 @@ export const GameBottomTabs = ({ activeTab, onTabChange }: GameBottomTabsProps) 
                 paddingBottom: Platform.OS === 'ios' ? 20 : 0
             }}
             px={4}
+            mt={4}
             mb={8}
             gap={2}
         >

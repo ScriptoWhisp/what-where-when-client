@@ -30,16 +30,11 @@ export const HistoryTab = ({ history }: HistoryTabProps) => {
             contentContainerStyle={styles.container}
             showsVerticalScrollIndicator={false}
         >
-            <Box mb={4} style={{ paddingHorizontal: 16 }}>
-                <Text variant="h2" style={{ color: colors.neutralDark.darkest }}>
-                    История ответов
-                </Text>
-            </Box>
-
             {history.length === 0 ? (
-                <Box align="center" justify="center" style={styles.emptyBox}>
-                    <Text variant="bodyM" style={{ color: colors.neutralDark.light, textAlign: 'center' }}>
-                        Ваша команда еще не отправила ни одного ответа
+                <Box align="center" gap={2} style={{ justifyContent: 'center' }}>
+                    <Text variant="h2" style={{ color: colors.neutralDark.darkest, maxWidth: 240, textAlign: "center" }}>Nothing here for now</Text>
+                    <Text variant="bodyM" style={{ color: colors.neutralDark.light, maxWidth: 240, textAlign: 'center' }}>
+                        This is where you’ll find your answered questions
                     </Text>
                 </Box>
             ) : (
@@ -79,7 +74,9 @@ export const HistoryTab = ({ history }: HistoryTabProps) => {
 const styles = StyleSheet.create({
     container: {
         flexGrow: 1,
-        paddingVertical: 12,
+        paddingVertical: 24,
+        justifyContent: 'center',
+        backgroundColor: colors.neutralLight.light
     },
     emptyBox: {
         marginTop: 40,
