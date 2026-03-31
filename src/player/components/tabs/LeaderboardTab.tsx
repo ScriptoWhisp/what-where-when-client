@@ -50,7 +50,7 @@ export const LeaderboardTab = ({ leaderboard, currentParticipantId }: Leaderboar
                     </Text>
                 </Box>
             ) : (
-                <Box gap={3} style={{ paddingHorizontal: 8 }}>
+                <Box style={{ paddingHorizontal: 8 }}>
                     {rankedData.map((item) => {
                         const isMe = item.participantId === currentParticipantId;
 

@@ -76,7 +76,8 @@ export const HistoryTab = ({ history }: HistoryTabProps) => {
                                 left={
                                     <Ionicons name={statusInfo.icon} size={20} color={statusInfo.color} />
                                 }
-                                right={<Icon name="chevron-right" size={12} color={colors.neutralDark.lightest} />}
+                                // Will be added with Disputes
+                                // right={<Icon name="chevron-right" size={12} color={colors.neutralDark.lightest} />}
                             />
                         );
                     })}
