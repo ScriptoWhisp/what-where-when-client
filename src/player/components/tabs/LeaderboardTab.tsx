@@ -61,7 +61,7 @@ export const LeaderboardTab = ({ leaderboard, currentParticipantId }: Leaderboar
                                 titleVariant="h5"
                                 style={{borderRadius: 0}}
                                 description={`Рейтинг: ${item.rating}`}
-                                variant={isMe ? 'highlight' : 'empty'}
+                                variant={isMe ? 'highlight' : 'default'}
                                 right={
                                     <Bullet
                                         size={"sm"}
