@@ -43,7 +43,7 @@ export function ListItem({
                              onPress,
                              style,
                              variant = "default",
-                             titleVariant = "bodyM",
+                             titleVariant = "h5",
                              titleStyle,
                              accessibilityRole,
                              accessibilityState,
@@ -98,9 +98,9 @@ const styles = StyleSheet.create({
         backgroundColor: colors.neutralLight.lightest,
         gap: 16
     },
-    left: { width: 34, alignItems: "center", justifyContent: "center" },
+    left: { alignItems: "center", justifyContent: "center" },
     mid: { flex: 1, gap: 4 },
-    right: { minWidth: 34, alignItems: "center", justifyContent: "center" },
+    right: { alignItems: "center", justifyContent: "center" },
     title: { color: colors.neutralDark.darkest},
     desc: { color: colors.neutralDark.light },
 });
