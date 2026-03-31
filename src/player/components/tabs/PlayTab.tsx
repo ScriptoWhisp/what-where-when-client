@@ -157,7 +157,7 @@ export const PlayTab = ({
                             }`
                             : 'Время вышло! Завершайте ответ'}
                     </Text>
-                    <TimerBar timeLeft={timer} totalTime={totalTime} height={8} />
+                    <TimerBar timeLeft={timer} totalTime={totalTime} />
                 </Box>
 
                 <Box gap={2} mt={2}>
