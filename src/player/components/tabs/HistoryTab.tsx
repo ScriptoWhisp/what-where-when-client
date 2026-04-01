@@ -1,8 +1,11 @@
 import React from 'react';
-import { StyleSheet, ScrollView } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
+import {ScrollView} from 'react-native';
+import {Ionicons} from '@expo/vector-icons';
 import { Box } from '@/src/ui/Box';
 import { Text } from '@/src/ui/Text';
+import { ListItem } from '@/src/ui/ListItem';
+import { Icon } from '@/src/ui/Icon';
 import { colors } from '@/src/theme/colors';
 import { AnswerDomain } from '@/src/dto/game.dto';
 import { AnswerStatus } from '@/src/dto/common.dto';
@@ -12,62 +15,63 @@ interface HistoryTabProps {
 }
 
 export const HistoryTab = ({ history }: HistoryTabProps) => {
+    const { t } = useTranslation();
+
     const getStatusConfig = (status: string) => {
         switch (status) {
             case AnswerStatus.CORRECT:
-                return { icon: 'check', color: colors.success.medium };
+                return { icon: 'checkmark-circle' as const, color: colors.success.dark };
             case AnswerStatus.INCORRECT:
-                return { icon: 'x', color: colors.error.medium };
+                return { icon: 'close-circle' as const, color: colors.error.dark };
             case AnswerStatus.DISPUTABLE:
-                return { icon: 'help-circle', color: colors.highlight.dark };
+                return { icon: 'alert-circle' as const, color: colors.highlight.dark };
             default:
-                return { icon: 'clock', color: colors.neutralDark.light };
+                return { icon: 'eye' as const, color: colors.warning.dark };
         }
     };
 
+    const statusLabel = (status: AnswerStatus | string) =>
+        t(`historyTab.status.${status}`, { defaultValue: t('historyTab.status.PENDING') });
+
     return (
         <ScrollView
-            contentContainerStyle={styles.container}
+            contentContainerStyle={{
+                flexGrow: 1,
+                paddingTop: 10,
+                justifyContent: history.length === 0 ? 'center' : 'space-between',
+                backgroundColor: colors.neutralLight.light,
+            }}
             showsVerticalScrollIndicator={false}
         >
-            <Box mb={4} style={{ paddingHorizontal: 16 }}>
-                <Text variant="h2" style={{ color: colors.neutralDark.darkest }}>
-                    История ответов
-                </Text>
-            </Box>
-
             {history.length === 0 ? (
-                <Box align="center" justify="center" style={styles.emptyBox}>
-                    <Text variant="bodyM" style={{ color: colors.neutralDark.light, textAlign: 'center' }}>
-                        Ваша команда еще не отправила ни одного ответа
+                <Box align="center" gap={2} style={{ justifyContent: 'center' }}>
+                    <Text variant="h2" style={{ color: colors.neutralDark.darkest, maxWidth: 240, textAlign: 'center' }}>
+                        {t('historyTab.emptyTitle')}
+                    </Text>
+                    <Text variant="bodyM" style={{ color: colors.neutralDark.light, maxWidth: 240, textAlign: 'center' }}>
+                        {t('historyTab.emptySubtitle')}
                     </Text>
                 </Box>
             ) : (
-                <Box>
+                <Box style={{ paddingHorizontal: 18 }}>
+                    <Text variant={"bodyS"} style={{alignSelf: 'center', paddingBottom: 16}}>
+                        {t('historyTab.answeredCount', { count: history.length })}
+                    </Text>
                     {[...history].reverse().map((item) => {
                         const statusInfo = getStatusConfig(item.status);
+                        const n = item.questionNumber ?? '?';
 
                         return (
-                            <Box key={item.id} row align="center" style={styles.row}>
-                                <Box style={styles.iconContainer}>
-                                    <Feather
-                                        name={statusInfo.icon as any}
-                                        size={20}
-                                        color={statusInfo.color}
-                                    />
-                                </Box>
-
-                                <Box flex={1}>
-                                    <Text variant="bodyL" style={{ lineHeight: 22 }}>
-                                        <Text style={styles.questionNumber}>
-                                            {item.questionNumber || '?'}.{' '}
-                                        </Text>
-                                        <Text style={styles.answerText}>
-                                            {item.answerText}
-                                        </Text>
-                                    </Text>
-                                </Box>
-                            </Box>
+                            <ListItem
+                                key={item.id}
+                                title={`${n}. ${item.answerText}`}
+                                description={statusLabel(item.status)}
+                                left={
+                                    <Ionicons name={statusInfo.icon} size={20} color={statusInfo.color} />
+                                }
+                                // Will be added with Disputes
+                                // right={<Icon name="chevron-right" size={12} color={colors.neutralDark.lightest} />}
+                            />
                         );
                     })}
                 </Box>
@@ -75,40 +79,3 @@ export const HistoryTab = ({ history }: HistoryTabProps) => {
         </ScrollView>
     );
 };
-
-const styles = StyleSheet.create({
-    container: {
-        flexGrow: 1,
-        paddingVertical: 12,
-    },
-    emptyBox: {
-        marginTop: 40,
-        marginHorizontal: 16,
-        padding: 32,
-        backgroundColor: colors.neutralLight.light,
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: colors.neutralLight.medium,
-        borderStyle: 'dashed'
-    },
-    row: {
-        paddingVertical: 14,
-        paddingHorizontal: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: colors.neutralLight.medium,
-        minHeight: 48,
-    },
-    iconContainer: {
-        width: 26,
-        marginRight: 8,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    questionNumber: {
-        fontWeight: 'bold',
-        color: colors.neutralDark.darkest,
-    },
-    answerText: {
-        color: colors.neutralDark.darkest,
-    }
-});

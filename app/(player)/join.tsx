@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
     TextInput,
     KeyboardAvoidingView,
@@ -19,6 +20,7 @@ import { colors } from '@/src/theme/colors';
 type InputRef = TextInput | null;
 
 export default function JoinScreen() {
+    const { t } = useTranslation();
     const [digits, setDigits] = useState<string[]>(['', '', '', '']);
     const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
     const [loading, setLoading] = useState(false);
@@ -43,7 +45,7 @@ export default function JoinScreen() {
                 params: { gameData: JSON.stringify(gameData), code }
             });
         } catch (e: any) {
-            setErrorMessage(e.message || 'Игра не найдена. Проверьте код.');
+            setErrorMessage(e.message || t('player.join.errors.notFound'));
             setDigits(['', '', '', '']);
             setFocusedIndex(null);
             Keyboard.dismiss();
@@ -80,70 +82,68 @@ export default function JoinScreen() {
 
     const content = (
         <View style={{ flex: 1 }}>
-            {/* 1. ВЕРХНЯЯ ЧАСТЬ */}
             <Box flex={1} align="center" p={6} style={{ paddingTop: height * 0.2 }}>
-                <Box maxWidth={450} width="100%" align="center">
-                    <Box align="center" gap={2} mb={8}>
-                        <Text variant="h1">Введите код игры</Text>
-                        <Text variant="bodyM" style={{ color: colors.neutralDark.light, textAlign: 'center' }}>
-                            Спросите четырехзначный код у организатора
+                <Box maxWidth={450} width="100%" align="center" style={{ gap: 40 }}>
+                    <Box align="center" gap={2} >
+                        <Text variant="h3">{t('player.join.title')}</Text>
+                        <Text variant="bodyS" style={{ color: colors.neutralDark.light, textAlign: 'center' }}>
+                            {t('player.join.hint')}
                         </Text>
                     </Box>
 
-                    <Box row gap={2} justify="center" mb={4}>
-                        {digits.map((digit, index) => (
-                            <TextInput
-                                key={index}
-                                ref={(ref) => { inputRefs.current[index] = ref; }}
-                                style={[
-                                    styles.otpInput,
-                                    (focusedIndex === index || digit) && styles.otpInputActive,
-                                    errorMessage ? styles.otpInputError : null
-                                ]}
-                                value={digit}
-                                onFocus={() => setFocusedIndex(index)}
-                                onBlur={() => setFocusedIndex(null)}
-                                onChangeText={(text) => handleChangeText(text, index)}
-                                onKeyPress={(e) => {
-                                    // Добавляем setTimeout и для Backspace
-                                    if (e.nativeEvent.key === 'Backspace' && !digits[index] && index > 0) {
-                                        const newDigits = [...digits];
-                                        newDigits[index - 1] = '';
-                                        setDigits(newDigits);
-                                        setTimeout(() => {
-                                            inputRefs.current[index - 1]?.focus();
-                                        }, 10);
-                                    }
-                                }}
-                                keyboardType="number-pad"
-                                maxLength={1}
-                                placeholder="0"
-                                placeholderTextColor={colors.neutralLight.dark}
-                            />
-                        ))}
-                    </Box>
-
-                    <Box height={20} justify="center">
-                        {errorMessage && (
-                            <Text variant="bodyS" style={{ color: colors.error.dark, fontWeight: '600' }}>
-                                {errorMessage}
-                            </Text>
-                        )}
+                    <Box maxWidth={450} width="100%" align="center" style={{ gap: 8 }}>
+                        <Box row gap={2} justify="center">
+                            {digits.map((digit, index) => (
+                                <TextInput
+                                    key={index}
+                                    ref={(ref) => { inputRefs.current[index] = ref; }}
+                                    style={[
+                                        styles.otpInput,
+                                        (focusedIndex === index || digit) && styles.otpInputActive,
+                                        errorMessage ? styles.otpInputError : null
+                                    ]}
+                                    value={digit}
+                                    onFocus={() => setFocusedIndex(index)}
+                                    onBlur={() => setFocusedIndex(null)}
+                                    onChangeText={(text) => handleChangeText(text, index)}
+                                    onKeyPress={(e) => {
+                                        if (e.nativeEvent.key === 'Backspace' && !digits[index] && index > 0) {
+                                            const newDigits = [...digits];
+                                            newDigits[index - 1] = '';
+                                            setDigits(newDigits);
+                                            setTimeout(() => {
+                                                inputRefs.current[index - 1]?.focus();
+                                            }, 10);
+                                        }
+                                    }}
+                                    keyboardType="number-pad"
+                                    maxLength={1}
+                                    placeholderTextColor={colors.neutralLight.dark}
+                                />
+                            ))}
+                        </Box>
+                        <Box height={20} justify="center">
+                            {errorMessage && (
+                                <Text variant="bodyS" style={{ color: colors.error.dark, fontWeight: '600' }}>
+                                    {errorMessage}
+                                </Text>
+                            )}
+                        </Box>
                     </Box>
                 </Box>
             </Box>
 
             <Box p={6} gap={3} width="100%" maxWidth={450} style={{ alignSelf: 'center' }}>
                 <Button
-                    title={loading ? "Поиск..." : "Продолжить"}
+                    title={t('common.back')}
+                    onPress={() => router.back()}
+                    variant="tertiary"
+                />
+                <Button
+                    title={loading ? t('common.searching') : t('common.continue')}
                     onPress={handleJoin}
                     disabled={loading || digits.join('').length < 4}
                     variant="primary"
-                />
-                <Button
-                    title="Назад"
-                    onPress={() => router.back()}
-                    variant="tertiary"
                 />
             </Box>
         </View>
@@ -169,14 +169,14 @@ export default function JoinScreen() {
 
 const styles = StyleSheet.create({
     otpInput: {
-        width: 52,
-        height: 64,
-        borderRadius: 16,
-        borderWidth: 2,
+        width: 48,
+        height: 48,
+        borderRadius: 12,
+        borderWidth: 1,
         borderColor: colors.neutralLight.dark,
         backgroundColor: colors.neutralLight.lightest,
         textAlign: 'center',
-        fontSize: 32,
+        fontSize: 14,
         fontFamily: 'InterBold',
         color: colors.neutralDark.darkest,
         ...(Platform.OS === 'web' ? { outlineStyle: 'none' as any } : {}),
@@ -185,6 +185,6 @@ const styles = StyleSheet.create({
         borderColor: colors.highlight.darkest,
     },
     otpInputError: {
-        borderColor: colors.error.light,
+        borderColor: colors.error.dark,
     }
 });

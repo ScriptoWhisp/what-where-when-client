@@ -30,7 +30,7 @@ export function Tag({
 
             {showText ? (
                 <Text variant="captionM" style={{...textStyles[variant], paddingHorizontal: 4}}>
-                    {text}
+                    {text.toUpperCase()}
                 </Text>
             ) : null}
 

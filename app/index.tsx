@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Stack, useRouter } from 'expo-router';
 import { Box } from '@/src/ui/Box';
 import { Button } from '@/src/ui/Button';
@@ -8,6 +9,7 @@ import Feather from "@expo/vector-icons/Feather";
 
 export default function Index() {
     const router = useRouter();
+    const { t } = useTranslation();
 
     return (
         <Box flex={1} bg="neutralLight.lightest" justify="center" p={6}>
@@ -22,7 +24,7 @@ export default function Index() {
             >
                 <Box align="center">
                     <Text variant="h1" style={{ textAlign: 'center' }}>
-                        Что? Где? Когда?
+                        {t('home.title')}
                     </Text>
                     <Text
                         variant="bodyM"
@@ -32,31 +34,22 @@ export default function Index() {
                             marginTop: 8
                         }}
                     >
-                        Платформа для проведения турниров
+                        {t('home.subtitle')}
                     </Text>
                 </Box>
 
-                <Box gap={6}>
-                    <Box gap={3}>
-                        <Button
-                            title="Войти в игру"
-                            variant="primary"
-                            onPress={() => router.push('/(player)/join')}
-                        />
-                    </Box>
-                </Box>
-
-                <Box
-                    pt={6}
-                    mt={3}
-                    style={{
-                        borderTopWidth: 1,
-                        borderTopColor: colors.neutralLight.medium
-                    }}
-                >
+                <Box gap={3}>
                     <Button
-                        title="Дать обратную связь"
-                        variant="tertiary"
+                        title={t('home.joinGame')}
+                        variant="primary"
+                        onPress={() => router.push('/(player)/join')}
+                    />
+                    <Text variant="bodyM" style={{ textAlign: 'center', color: colors.neutralDark.light }}>
+                        {t('common.or')}
+                    </Text>
+                    <Button
+                        title={t('home.feedback')}
+                        variant="secondary"
                         onPress={() => router.push('https://docs.google.com/forms/d/e/1FAIpQLSei713QAvW06XJrjDr89hVMFkevLimHf8r_X18EW4VUmYuLiw/viewform')}
                     />
                 </Box>

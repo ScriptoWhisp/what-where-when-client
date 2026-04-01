@@ -1,0 +1,80 @@
+{
+  "common": {
+    "back": "Back",
+    "continue": "Continue",
+    "or": "or",
+    "searching": "Searching...",
+    "error": "Error"
+  },
+  "home": {
+    "title": "What? Where? When?",
+    "subtitle": "A platform for running tournaments",
+    "joinGame": "Join game",
+    "feedback": "Send feedback"
+  },
+  "player": {
+    "join": {
+      "title": "Enter game code",
+      "hint": "Ask the host for the four-digit code",
+      "errors": {
+        "notFound": "Game not found. Check the code."
+      }
+    },
+    "selectTeam": {
+      "navTitle": "Choose team",
+      "screenTitle": "Join game",
+      "noTeams": "This game has no teams yet",
+      "taken": "Taken",
+      "pollError": "Could not refresh the team list"
+    },
+    "game": {
+      "phase": {
+        "thinking": "Discussion time",
+        "answering": "Time to answer",
+        "preparation": "Attention, question...",
+        "idle": "Waiting..."
+      }
+    },
+    "tabs": {
+      "play": "Game",
+      "history": "History",
+      "results": "Results"
+    }
+  },
+  "playTab": {
+    "finishedTitle": "Game over! 🎉",
+    "finishedBody": "You can view the scoreboard and your answers in the other tabs.",
+    "feedback": "Send feedback",
+    "waitingTitle": "The host will start the game soon",
+    "waitingSubtitle": "Get ready!",
+    "idleTitle": "Waiting for the host",
+    "preparationSubtitle": "Attention, the question is being read...",
+    "questionTitle": "Question {{n}}",
+    "timerRunning": "{{seconds}} sec · {{hint}}",
+    "hintThinking": "discuss with your team",
+    "hintAnswering": "type your answer!",
+    "timeUp": "Time is up! Finish your answer",
+    "answerPlaceholder": "Type your answer",
+    "answerAccepted": "Answer submitted!",
+    "answerChangeHint": "You can change your answer",
+    "submit": "Submit",
+    "resubmit": "Submit again"
+  },
+  "historyTab": {
+    "emptyTitle": "Nothing here for now",
+    "emptySubtitle": "This is where you’ll find your answered questions",
+    "answeredCount": "Answered {{count}}",
+    "status": {
+      "CORRECT": "Correct",
+      "INCORRECT": "Incorrect",
+      "DISPUTABLE": "Under review",
+      "UNSET": "Pending",
+      "PENDING": "Pending"
+    }
+  },
+  "leaderboardTab": {
+    "emptyTitle": "Nothing here for now",
+    "emptySubtitle": "This is where you’ll find your placement among other teams",
+    "rating": "Rating: {{rating}}"
+  }
+}
