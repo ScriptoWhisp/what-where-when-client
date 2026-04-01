@@ -35,10 +35,10 @@ export interface PlayerAppFeedbackPayload {
     locale?: string;
 }
 
-/** POST /player/feedback — request JSON body. */
+/** POST /player/feedback — request JSON body (omit ids for home-screen / anonymous feedback). */
 export interface SubmitPlayerFeedbackDto {
-    gameId: number;
-    participantId: number;
+    gameId?: number;
+    participantId?: number;
     payload: PlayerAppFeedbackPayload;
 }
 

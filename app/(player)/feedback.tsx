@@ -36,13 +36,18 @@ function toggleChipInSection(
 export default function PlayerFeedbackScreen() {
     const { t } = useTranslation();
     const router = useRouter();
-    const { gameId, participantId } = useLocalSearchParams<{
+    const { gameId, participantId, fromHome } = useLocalSearchParams<{
         gameId?: string;
         participantId?: string;
+        /** Set to `'1'` when opened from the home screen (no game context). */
+        fromHome?: string;
     }>();
 
-    const gid = gameId ? parseInt(gameId, 10) : NaN;
-    const pid = participantId ? parseInt(participantId, 10) : NaN;
+    const isStandaloneFromHome = fromHome === '1';
+
+    const gid = gameId && String(gameId).length > 0 ? parseInt(String(gameId), 10) : NaN;
+    const pid =
+        participantId && String(participantId).length > 0 ? parseInt(String(participantId), 10) : NaN;
 
     const [rating, setRating] = useState(0);
     const [selectedBySection, setSelectedBySection] = useState<Record<string, string[]>>({});
@@ -88,7 +93,9 @@ export default function PlayerFeedbackScreen() {
         setSelectedBySection((p) => toggleChipInSection(p, sectionKey, chipKey));
     }, []);
 
-    const invalidParams = !Number.isFinite(gid) || !Number.isFinite(pid);
+    const hasGameContext = Number.isFinite(gid) && Number.isFinite(pid);
+    /** In-game flow must include both ids; standalone home flow skips them on purpose. */
+    const malformedGameFeedback = !isStandaloneFromHome && !hasGameContext;
     const lang = i18n.language;
 
     const hasUserInput = useMemo(() => {
@@ -97,22 +104,26 @@ export default function PlayerFeedbackScreen() {
         return Object.values(selectedBySection).some((keys) => keys.length > 0);
     }, [rating, comment, selectedBySection]);
 
-    const goSkip = useCallback(() => {
+    const goLeaveWithoutSubmit = useCallback(() => {
         if (submitting) return;
-        if (invalidParams) {
+        if (isStandaloneFromHome) {
+            router.replace('/');
+            return;
+        }
+        if (!hasGameContext) {
             router.replace('/');
             return;
         }
         router.replace({ pathname: '/(player)/thank-you' });
-    }, [submitting, invalidParams, router]);
+    }, [submitting, isStandaloneFromHome, hasGameContext, router]);
 
     const handlePrimaryPress = async () => {
         if (submitting) return;
         if (!hasUserInput) {
-            goSkip();
+            goLeaveWithoutSubmit();
             return;
         }
-        if (!Number.isFinite(gid) || !Number.isFinite(pid)) {
+        if (!hasGameContext && !isStandaloneFromHome) {
             Alert.alert(t('common.error'), t('feedback.errorGeneric'));
             return;
         }
@@ -124,8 +135,7 @@ export default function PlayerFeedbackScreen() {
         setSubmitting(true);
         try {
             await submitPlayerFeedback({
-                gameId: gid,
-                participantId: pid,
+                ...(hasGameContext ? { gameId: gid, participantId: pid } : {}),
                 payload: {
                     rating,
                     selections: selectedBySection,
@@ -142,6 +152,10 @@ export default function PlayerFeedbackScreen() {
             setSubmitting(false);
         }
     };
+
+    const primaryLabelNoInput = isStandaloneFromHome
+        ? t('feedback.returnHome')
+        : t('feedback.skip');
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: colors.neutralLight.lightest }} edges={['top']}>
@@ -160,7 +174,7 @@ export default function PlayerFeedbackScreen() {
                     keyboardShouldPersistTaps="handled"
                     showsVerticalScrollIndicator={false}
                 >
-                    {invalidParams ? (
+                    {malformedGameFeedback ? (
                         <Text variant="bodyM" style={{ color: colors.error.dark, textAlign: 'center' }}>
                             {t('feedback.errorGeneric')}
                         </Text>
@@ -224,10 +238,10 @@ export default function PlayerFeedbackScreen() {
 
                 <Box pb={Platform.OS === 'ios' ? 8 : 6} p={6}>
                     <Button
-                        title={hasUserInput ? t('feedback.submit') : t('feedback.skip')}
+                        title={hasUserInput ? t('feedback.submit') : primaryLabelNoInput}
                         variant="primary"
                         onPress={handlePrimaryPress}
-                        disabled={submitting || formLoading}
+                        disabled={submitting || (formLoading && (!isStandaloneFromHome || hasUserInput))}
                         loading={submitting}
                     />
                 </Box>
