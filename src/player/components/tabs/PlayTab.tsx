@@ -39,7 +39,7 @@ export const PlayTab = ({
                             submitAnswer,
                             lastAnswerStatus,
                             gameStatus
-}: PlayTabProps) => {
+                        }: PlayTabProps) => {
     const savedAnswer = React.useMemo(() => {
         return history.find(a => a.questionNumber === questionNumber) || null;
     }, [history, questionNumber]);
@@ -73,119 +73,152 @@ export const PlayTab = ({
         Keyboard.dismiss();
     };
 
-    const isWaiting = !gameStarted || phase === GamePhase.IDLE || phase === GamePhase.PREPARATION || gameStatus === GameStatuses.FINISHED;
+    const isWaiting =
+        !gameStarted ||
+        phase === GamePhase.IDLE ||
+        phase === GamePhase.PREPARATION ||
+        gameStatus === GameStatuses.FINISHED;
+
+    const renderFinished = () => (
+        <Box align="center" gap={4}>
+            <Text variant="h2" style={{ color: colors.neutralDark.darkest, textAlign: 'center' }}>
+                Игра завершена! 🎉
+            </Text>
+            <Text
+                variant="bodyM"
+                style={{
+                    color: colors.neutralDark.light,
+                    textAlign: 'center',
+                    marginBottom: 16,
+                    lineHeight: 22,
+                }}
+            >
+                Вы можете посмотреть таблицу результатов и свои ответы в соседних вкладках.
+            </Text>
+            <Button
+                title="Дать обратную связь"
+                variant="primary"
+                onPress={() => {
+                    Linking.openURL(
+                        'https://docs.google.com/forms/d/e/1FAIpQLSei713QAvW06XJrjDr89hVMFkevLimHf8r_X18EW4VUmYuLiw/viewform',
+                    );
+                }}
+            />
+        </Box>
+    );
+
+    const renderWaiting = () => (
+        <Box align="center" gap={2}>
+            <Text variant="h2" style={{ color: colors.neutralDark.darkest, maxWidth: 240, textAlign: "center" }}>Организатор скоро запустит игру</Text>
+            <Text variant="bodyM" style={{ color: colors.neutralDark.light, maxWidth: 240, textAlign: 'center' }}>
+                Будте готовы!
+            </Text>
+        </Box>
+    );
+
+    const renderIdle = () => (
+        <Box align="center" gap={2}>
+            <Text variant="h2" style={{ color: colors.neutralDark.darkest, textAlign: 'center' }}>
+                Ожидаем организатора
+            </Text>
+        </Box>
+    );
+
+    const renderPreparation = () => (
+        <Box align="center" gap={2}>
+            <Text variant="h2" style={{ color: colors.neutralDark.darkest, textAlign: 'center' }}>
+                Вопрос {questionNumber || ''}
+            </Text>
+            <Text variant="bodyM" style={{ color: colors.neutralDark.light, textAlign: 'center' }}>
+                Внимание, читается вопрос...
+            </Text>
+        </Box>
+    );
+
+    const renderActive = () => (
+        <Box flex={1} justify="space-between">
+            <Box gap={6}>
+                <Text variant="h2" style={{ color: colors.neutralDark.darkest }}>
+                    Вопрос {questionNumber || ''}
+                </Text>
+
+                <Box style={{ gap: 6 }}>
+                    <Text
+                        variant="bodyM"
+                        style={{
+                            color: timer === 0 ? colors.error.medium : colors.neutralDark.medium,
+                        }}
+                    >
+                        {timer > 0
+                            ? `${timer} сек · ${
+                                phase === GamePhase.THINKING
+                                    ? 'обсуждение с командой'
+                                    : 'напишите ваш ответ!'
+                            }`
+                            : 'Время вышло! Завершайте ответ'}
+                    </Text>
+                    <TimerBar timeLeft={timer} totalTime={totalTime} />
+                </Box>
+
+                <Box gap={2} mt={2}>
+                    <TextInput
+                        style={[styles.input, timer === 0 && styles.inputLate]}
+                        placeholder="Впишите ответ"
+                        placeholderTextColor={colors.neutralDark.light}
+                        value={answer}
+                        onChangeText={setAnswer}
+                        editable={!isSubmitting}
+                        multiline
+                        blurOnSubmit
+                    />
+
+                    {(lastAnswerStatus === 'success' || savedAnswer) && (
+                        <>
+                            <Text variant="bodyM" style={{ color: colors.success.dark, textAlign: 'center' }}>
+                                Ответ принят!
+                            </Text>
+                            <Text
+                                variant="bodyM"
+                                style={{ color: colors.neutralDark.lightest, textAlign: 'center' }}
+                            >
+                                Вы можете поменять ответ
+                            </Text>
+                        </>
+                    )}
+                </Box>
+            </Box>
+
+            <Box pt={6}>
+                <Button
+                    title={savedAnswer ? 'Отправить повторно' : 'Отправить'}
+                    variant="primary"
+                    onPress={handleSend}
+                    disabled={!answer.trim() || isSubmitting}
+                />
+            </Box>
+        </Box>
+    );
 
     const content = (
         <View style={{ flex: 1 }}>
             <ScrollView
                 contentContainerStyle={{
                     flexGrow: 1,
-                    paddingVertical: 16,
-                    paddingHorizontal: 24,
-                    justifyContent: isWaiting ? 'center' : 'space-between'
+                    padding: 24,
+                    justifyContent: isWaiting ? 'center' : 'space-between',
                 }}
                 keyboardShouldPersistTaps="handled"
                 showsVerticalScrollIndicator={false}
             >
-                {gameStatus === GameStatuses.FINISHED ? (
-                        <Box align="center" gap={4}>
-                            <Text variant="h2" style={{ color: colors.neutralDark.darkest, textAlign: 'center' }}>
-                                Игра завершена! 🎉
-                            </Text>
-                            <Text variant="bodyM" style={{ color: colors.neutralDark.light, textAlign: 'center', marginBottom: 16, lineHeight: 22 }}>
-                                Вы можете посмотреть таблицу результатов и свои ответы в соседних вкладках.
-                            </Text>
-                            <Button
-                                title="Дать обратную связь"
-                                variant="primary"
-                                onPress={() => {
-                                    Linking.openURL('https://docs.google.com/forms/d/e/1FAIpQLSei713QAvW06XJrjDr89hVMFkevLimHf8r_X18EW4VUmYuLiw/viewform');
-                                }}
-                            />
-                        </Box>
-                    ) : !gameStarted ? (
-                    <Box align="center" gap={2}>
-                        <Text variant="h2" style={{ color: colors.neutralDark.medium }}>Ожидание...</Text>
-                        <Text variant="bodyM" style={{ color: colors.neutralDark.light, textAlign: 'center' }}>
-                            Организатор скоро запустит игру
-                        </Text>
-                    </Box>
-
-                ) : phase === GamePhase.IDLE ? (
-                    <Box align="center" gap={2}>
-                        <Text variant="h2" style={{ color: colors.neutralDark.darkest, textAlign: 'center' }}>
-                            Ожидание...
-                        </Text>
-                    </Box>
-
-                ) : phase === GamePhase.PREPARATION ? (
-                    <Box align="center" gap={2}>
-                        <Text variant="h2" style={{ color: colors.neutralDark.darkest, textAlign: 'center' }}>
-                            Вопрос {questionNumber || ''}
-                        </Text>
-                        <Text variant="bodyM" style={{ color: colors.neutralDark.light, textAlign: 'center' }}>
-                            Внимание, читается вопрос...
-                        </Text>
-                    </Box>
-
-                ) : (
-                    <Box flex={1} justify="space-between">
-                        <Box gap={6}>
-                            <Text variant="h2" style={{ color: colors.neutralDark.darkest }}>
-                                Вопрос {questionNumber || ''}
-                            </Text>
-
-                            <Box gap={3}>
-                                <Text variant="bodyM" style={{
-                                    color: timer === 0 ? colors.error.medium : colors.neutralDark.medium,
-                                    fontWeight: '500'
-                                }}>
-                                    {timer > 0
-                                        ? `${timer} сек · ${phase === GamePhase.THINKING ? 'обсуждение с командой' : 'напишите ваш ответ!'}`
-                                        : 'Время вышло! Завершайте ответ'
-                                    }
-                                </Text>
-                                <TimerBar timeLeft={timer} totalTime={totalTime} height={8} />
-                            </Box>
-
-                            <Box gap={2} mt={2}>
-                                <TextInput
-                                    style={[
-                                        styles.input,
-                                        timer === 0 && styles.inputLate
-                                    ]}
-                                    placeholder="Впишите ответ"
-                                    placeholderTextColor={colors.neutralDark.light}
-                                    value={answer}
-                                    onChangeText={setAnswer}
-                                    editable={!isSubmitting}
-                                    multiline
-                                    blurOnSubmit
-                                />
-
-                                {(lastAnswerStatus === 'success' || savedAnswer) && (
-                                    <>
-                                        <Text variant="bodyM" style={{ color: colors.success.dark, textAlign: 'center' }}>
-                                            Ответ принят!
-                                        </Text>
-                                        <Text variant="bodyM" style={{ color: colors.neutralDark.lightest, textAlign: 'center' }}>
-                                            Вы можете поменять ответ
-                                        </Text>
-                                    </>
-                                )}
-                            </Box>
-                        </Box>
-
-                        <Box pt={6}>
-                            <Button
-                                title={savedAnswer ? "Отправить повторно" : "Отправить"}
-                                variant="primary"
-                                onPress={handleSend}
-                                disabled={!answer.trim() || isSubmitting}
-                            />
-                        </Box>
-                    </Box>
-                )}
+                {gameStatus === GameStatuses.FINISHED
+                    ? renderFinished()
+                    : !gameStarted
+                        ? renderWaiting()
+                        : phase === GamePhase.IDLE
+                            ? renderIdle()
+                            : phase === GamePhase.PREPARATION
+                                ? renderPreparation()
+                                : renderActive()}
             </ScrollView>
         </View>
     );

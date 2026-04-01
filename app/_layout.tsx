@@ -8,6 +8,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import {Platform, useColorScheme} from 'react-native';
 import 'react-native-reanimated';
+import {Ionicons} from "@expo/vector-icons";
 
 export {
   ErrorBoundary,
@@ -38,6 +39,10 @@ if (Platform.OS === 'web') {
         font-family: 'MaterialIcons';
         src: url('https://unpkg.com/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/MaterialIcons.ttf') format('truetype');
       }
+      @font-face {
+        font-family: 'Ionicons';
+        src: url('/assets/node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Ionicons.ttf') format('truetype');
+      }
     `;
     document.head.appendChild(style);
   };
@@ -58,6 +63,7 @@ export default function RootLayout() {
     ...FontAwesome.font,
     ...Feather.font,
     ...MaterialIcons.font,
+    ...Ionicons.font
   });
 
   useEffect(() => {
