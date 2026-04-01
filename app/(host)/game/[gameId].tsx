@@ -190,7 +190,7 @@ export default function GameAdminScreen() {
 
                                 {activeTab === 'Leaderboard' && (
                                     <Box flex={1}>
-                                        <HostLeaderboard leaderboard={leaderboard} />
+                                        <HostLeaderboard leaderboard={leaderboard} gameId={Number(gameId)} />
                                     </Box>
                                 )}
 
