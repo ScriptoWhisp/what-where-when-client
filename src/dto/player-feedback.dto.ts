@@ -6,7 +6,8 @@ export interface FeedbackChips {
 
 export interface FeedbackSection {
     key: string;
-    title: string;
+    /** Locale code → section heading (same shape as {@link FeedbackChips.name}). */
+    title: Record<string, string>;
     chips: FeedbackChips[];
 }
 

@@ -12,23 +12,25 @@ export function FeedbackDynamicSections({
     lang,
     selectionsBySection,
     onToggleChip,
-}: {
+}: Readonly<{
     sections: FeedbackSection[];
     lang: string;
     selectionsBySection: Record<string, string[]>;
     onToggleChip: (sectionKey: string, chipKey: string) => void;
-}) {
+}>) {
     return (
         <>
             {sections.map((section, idx) => {
                 const selected = selectionsBySection[section.key] ?? [];
+                const sectionTitle =
+                    pickLocalizedString(section.title, lang) || section.key;
                 return (
                     <React.Fragment key={section.key}>
                         <Text
                             variant="h5"
                             style={[styles.sectionTitle, idx > 0 ? styles.sectionTitleSpaced : null]}
                         >
-                            {section.title}
+                            {sectionTitle}
                         </Text>
                         <Box row style={styles.tagWrap} gap={2}>
                             {section.chips.map((chip) => (

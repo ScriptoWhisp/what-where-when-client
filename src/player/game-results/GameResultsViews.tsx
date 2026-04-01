@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScrollView } from 'react-native';
+import {Platform, ScrollView} from 'react-native';
 import { Box } from '@/src/ui/Box';
 import { Text } from '@/src/ui/Text';
 import { Button } from '@/src/ui/Button';
@@ -10,7 +10,6 @@ import { RankedLeaderboardEntry } from '@/src/player/leaderboardRank';
 import { PlayerLeaderboardListItem } from '@/src/player/components/PlayerLeaderboardListItem';
 import { LeaderboardEntry } from '@/src/dto/game.dto';
 import {
-    feedbackBtnWrap,
     heroWrap,
     listPad,
     praiseText,
@@ -18,6 +17,7 @@ import {
     textEmptySub,
     textEmptyTitle,
 } from '@/src/player/game-results/gameResultsStyles';
+import {router} from "expo-router";
 
 export function GameResultsLoadingView() {
     const { t } = useTranslation();
@@ -30,7 +30,7 @@ export function GameResultsLoadingView() {
     );
 }
 
-export function GameResultsErrorView({ message }: { message: string }) {
+export function GameResultsErrorView({ message }: Readonly<{ message: string }>) {
     return (
         <Box flex={1} justify="center" align="center" p={6}>
             <Text variant="bodyM" style={{ color: colors.error.medium, textAlign: 'center' }}>
@@ -54,10 +54,10 @@ export function GameResultsEmptyListView() {
     );
 }
 
-function ResultsHero({ myScore }: { myScore: number }) {
+function ResultsHero({ myScore }: Readonly<{ myScore: number }>) {
     const { t } = useTranslation();
     return (
-        <Box align="center" gap={3} style={heroWrap}>
+        <Box align="center" style={heroWrap}>
             <Bullet value={myScore} variant="primary" size="lg" />
             <Text variant="h2" style={praiseText}>
                 {t('resultsScreen.praise')}
@@ -69,10 +69,10 @@ function ResultsHero({ myScore }: { myScore: number }) {
 function ResultsRow({
     item,
     isMe,
-}: {
+}: Readonly<{
     item: RankedLeaderboardEntry;
     isMe: boolean;
-}) {
+}>) {
     const { t } = useTranslation();
     return (
         <PlayerLeaderboardListItem
@@ -92,20 +92,20 @@ export function GameResultsFilledView({
     myTeam,
     onFeedback,
     showFeedback,
-}: {
+}: Readonly<{
     rankedData: RankedLeaderboardEntry[];
     currentParticipantId: number | null;
     myTeam: LeaderboardEntry | undefined;
     onFeedback: () => void;
     showFeedback: boolean;
-}) {
+}>) {
     const { t } = useTranslation();
     const empty = rankedData.length === 0;
-    const extraBottom = showFeedback && !empty;
 
     return (
+    <Box maxWidth={450} width="100%" flex={1} pb={6}>
         <ScrollView
-            contentContainerStyle={scrollContentStyle(empty, extraBottom)}
+            contentContainerStyle={scrollContentStyle(empty)}
             showsVerticalScrollIndicator={false}
         >
             {empty ? (
@@ -122,17 +122,20 @@ export function GameResultsFilledView({
                             />
                         ))}
                     </Box>
-                    {showFeedback ? (
-                        <Box style={feedbackBtnWrap}>
-                            <Button
-                                title={t('resultsScreen.giveFeedback')}
-                                variant="primary"
-                                onPress={onFeedback}
-                            />
-                        </Box>
-                    ) : null}
                 </>
             )}
         </ScrollView>
+
+        <Box pt={6} pb={Platform.OS === 'ios' ? 4 : 0} gap={3} px={6}>
+            <Button title={t('common.back')} variant="tertiary" onPress={() => router.back()} />
+            {showFeedback ? (
+                <Button
+                    title={t('resultsScreen.giveFeedback')}
+                    variant="primary"
+                    onPress={onFeedback}
+                />
+            ) : null}
+        </Box>
+    </Box>
     );
 }

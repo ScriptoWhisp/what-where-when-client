@@ -37,9 +37,10 @@ export function parseFeedbackScreen(raw: unknown): FeedbackScreen | null {
     for (const s of sectionsRaw) {
         if (!isRecord(s)) continue;
         if (typeof s.key !== 'string' || s.key.length === 0) continue;
-        if (typeof s.title !== 'string') continue;
+        const title = parseNameMap(s.title);
+        if (Object.keys(title).length === 0) continue;
         const chips = parseChips(s.chips);
-        sections.push({ key: s.key, title: s.title, chips });
+        sections.push({ key: s.key, title, chips });
     }
     if (sections.length === 0) return null;
     return { sections };
