@@ -33,6 +33,9 @@ export const AnswersDashboard = ({ rounds, answers, onJudge, activeQuestionId, t
 
     const activeQuestion = allQuestions.find(q => q.id === selectedQId);
 
+    const correctCount = currentAnswers.filter(a => a.status === AnswerStatus.CORRECT).length;
+    const incorrectCount = currentAnswers.filter(a => a.status === AnswerStatus.INCORRECT).length;
+
     return (
         <Box style={styles.container}>
             <ScrollView contentContainerStyle={{ margin: 10 }} showsVerticalScrollIndicator={false}>
@@ -40,9 +43,9 @@ export const AnswersDashboard = ({ rounds, answers, onJudge, activeQuestionId, t
                 <Box style={styles.topCard}>
                     <Box row style={{ gap: 32 }}>
                         <Box style={{ flex: 1 }}>
-                            <Box style={{ gap: 20 }}>
+                            <Box style={{ gap: 8 }}>
                                 {rounds.map((round) => (
-                                    <Box key={round.id || round._tmpId} style={{ gap: 8 }}>
+                                    <Box key={round.id || round._tmpId} style={{ gap: 4 }}>
                                         <Text variant="captionM" style={{ color: colors.neutralDark.medium, fontWeight: 'bold' }}>
                                             {round.name || `Раунд ${round.round_number}`}
                                         </Text>
@@ -75,13 +78,6 @@ export const AnswersDashboard = ({ rounds, answers, onJudge, activeQuestionId, t
                                     </Box>
                                 ))}
                             </Box>
-
-                            {/*<Box row style={{ gap: 16, flexWrap: 'wrap', marginTop: 24 }}>*/}
-                            {/*    <LegendItem color={colors.success.medium} label="all checked" />*/}
-                            {/*    <LegendItem color={colors.warning.medium} label="dispute" />*/}
-                            {/*    <LegendItem color={colors.error.medium} label="not checked" />*/}
-                            {/*    <LegendItem color={colors.highlight.darkest} label="current" />*/}
-                            {/*</Box>*/}
                         </Box>
 
                         <Box style={{ flex: 1 }}>
@@ -93,11 +89,20 @@ export const AnswersDashboard = ({ rounds, answers, onJudge, activeQuestionId, t
                     </Box>
                 </Box>
 
-                <Box row align="center" justify="space-between" style={{ marginBottom: 16 }}>
-                    <Text variant="h3">Ответы команд</Text>
-                    <Box row align="center" style={styles.badge}>
-                        <Text style={styles.badgeText}>
-                            Собрано: {currentAnswers.length}
+                <Box row align="center" style={{ marginBottom: 10, gap: 16, flexWrap: 'wrap' }}>
+                    <Box row align="center" style={[styles.badge, styles.badgeBlue]}>
+                        <Text style={[styles.badgeText, styles.badgeTextBlue]}>
+                            Всего: {currentAnswers.length}
+                        </Text>
+                    </Box>
+                    <Box row align="center" style={[styles.badge, styles.badgeGreen]}>
+                        <Text style={[styles.badgeText, styles.badgeTextGreen]}>
+                            Правильные: {correctCount}
+                        </Text>
+                    </Box>
+                    <Box row align="center" style={[styles.badge, styles.badgeRed]}>
+                        <Text style={[styles.badgeText, styles.badgeTextRed]}>
+                            Неправильные: {incorrectCount}
                         </Text>
                     </Box>
                 </Box>
@@ -105,12 +110,12 @@ export const AnswersDashboard = ({ rounds, answers, onJudge, activeQuestionId, t
                 <Box row justify="space-between" align="center" style={styles.tableHeader}>
                     <Text variant="captionM" style={{ flex: 1, color: colors.neutralDark.medium }}>Название команды</Text>
                     <Text variant="captionM" style={{ flex: 2, color: colors.neutralDark.medium }}>Текст ответа</Text>
-                    <Box style={{ width: 120 }} />
+                    <Box style={{ width: 140 }} />
                 </Box>
 
-                <Box style={{ gap: 12 }}>
+                <Box style={{ gap: 10 }}>
                     {currentAnswers.length === 0 ? (
-                        <Text variant="bodyM" style={{ color: colors.neutralDark.light, textAlign: 'center', marginTop: 20 }}>
+                        <Text variant="bodyM" style={{ color: colors.neutralDark.light, textAlign: 'center', padding: 20 }}>
                             Пока нет ответов от команд
                         </Text>
                     ) : (
@@ -119,11 +124,7 @@ export const AnswersDashboard = ({ rounds, answers, onJudge, activeQuestionId, t
                             const isWrong = ans.status === AnswerStatus.INCORRECT;
 
                             return (
-                                <Box key={ans.id} row align="center" justify="space-between" style={[
-                                    styles.answerRow,
-                                    isCorrect && styles.rowCorrect,
-                                    isWrong && styles.rowWrong
-                                ]}>
+                                <Box key={ans.id} row align="center" justify="space-between" style={styles.answerRow}>
                                     <Box style={{ flex: 1 }}>
                                         <Text variant="bodyL" style={{ fontWeight: '600', color: colors.neutralDark.darkest }}>
                                             {ans.teamName}
@@ -136,28 +137,40 @@ export const AnswersDashboard = ({ rounds, answers, onJudge, activeQuestionId, t
                                         </Text>
                                     </Box>
 
-                                    <Box row align="center" style={{ gap: 12 }}>
+                                    <Box row align="center" justify="flex-end" style={{ width: 140, gap: 16, position: 'relative' }}>
+
                                         {ans.lateBySeconds ? (
-                                            <Text style={{ color: colors.error.dark }}>Опоздание: {ans.lateBySeconds} сек</Text>
+                                            <Text style={{
+                                                position: 'absolute',
+                                                right: 156,
+                                                color: colors.error.dark,
+                                                fontSize: 12,
+                                                width: 100,
+                                                textAlign: 'right'
+                                            }}>
+                                                Опоздание: {ans.lateBySeconds} с
+                                            </Text>
                                         ) : null}
 
-                                        <TouchableOpacity
-                                            style={[styles.actionCircle, isWrong && { backgroundColor: colors.error.medium }]}
-                                            onPress={() => onJudge(ans.id, AnswerStatus.INCORRECT)}
-                                        >
-                                            <Feather name="x" size={16} color={isWrong ? '#fff' : colors.neutralDark.medium} />
-                                        </TouchableOpacity>
+                                        <Box row align="center" style={[
+                                            styles.actionPill,
+                                            isCorrect && styles.pillCorrect,
+                                            isWrong && styles.pillWrong
+                                        ]}>
+                                            <TouchableOpacity
+                                                style={[styles.actionCircle, isWrong && styles.actionCircleWrong]}
+                                                onPress={() => onJudge(ans.id, AnswerStatus.INCORRECT)}
+                                            >
+                                                <Feather name="x" size={20} color={isWrong ? '#fff' : colors.neutralDark.medium} />
+                                            </TouchableOpacity>
 
-                                        <TouchableOpacity
-                                            style={[styles.actionCircle, isCorrect && { backgroundColor: colors.success.medium }]}
-                                            onPress={() => onJudge(ans.id, AnswerStatus.CORRECT)}
-                                        >
-                                            <Feather name="check" size={16} color={isCorrect ? '#fff' : colors.neutralDark.medium} />
-                                        </TouchableOpacity>
-
-                                        <TouchableOpacity>
-                                            <Feather name="star" size={20} color={colors.warning.medium} />
-                                        </TouchableOpacity>
+                                            <TouchableOpacity
+                                                style={[styles.actionCircle, isCorrect && styles.actionCircleCorrect]}
+                                                onPress={() => onJudge(ans.id, AnswerStatus.CORRECT)}
+                                            >
+                                                <Feather name="check" size={20} color={isCorrect ? '#fff' : colors.neutralDark.medium} />
+                                            </TouchableOpacity>
+                                        </Box>
                                     </Box>
                                 </Box>
                             )
@@ -169,13 +182,6 @@ export const AnswersDashboard = ({ rounds, answers, onJudge, activeQuestionId, t
     );
 };
 
-const LegendItem = ({ color, label }: { color: string, label: string }) => (
-    <Box row align="center" style={{ gap: 6 }}>
-        <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: color }} />
-        <Text variant="captionM" style={{ color: colors.neutralDark.medium }}>{label}</Text>
-    </Box>
-);
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -183,36 +189,66 @@ const styles = StyleSheet.create({
     topCard: {
         backgroundColor: colors.neutralLight.lightest,
         padding: 24,
-        marginBottom: 32,
+        marginBottom: 10,
+        borderRadius: 16,
     },
     qCircle: {
         width: 36, height: 36, borderRadius: 18,
         borderWidth: 1, justifyContent: 'center', alignItems: 'center',
-        backgroundColor: '#fff'
+        backgroundColor: colors.neutralLight.lightest
     },
     tableHeader: {
         paddingHorizontal: 16,
         paddingBottom: 12,
         borderBottomWidth: 1,
         borderColor: colors.neutralLight.medium,
-        marginBottom: 12
+        marginBottom: 8
     },
     answerRow: {
-        padding: 16, borderRadius: 8, borderWidth: 1,
-        borderColor: colors.neutralLight.medium, backgroundColor: '#fff'
+        paddingVertical: 16,
+        paddingHorizontal: 16,
+        backgroundColor: colors.neutralLight.lightest
     },
-    rowCorrect: { backgroundColor: colors.success.light, borderColor: colors.success.light },
-    rowWrong: { backgroundColor: colors.error.light, borderColor: colors.error.light },
+    actionPill: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderRadius: 32,
+        paddingVertical: 6,
+        paddingHorizontal: 16,
+        gap: 24,
+    },
+    pillCorrect: { backgroundColor: colors.success.light },
+    pillWrong: { backgroundColor: colors.error.light },
     actionCircle: {
-        width: 32, height: 32, borderRadius: 16,
+        width: 40, height: 40, borderRadius: 20,
         backgroundColor: colors.neutralLight.medium,
         justifyContent: 'center', alignItems: 'center'
     },
+    actionCircleCorrect: { backgroundColor: colors.success.medium },
+    actionCircleWrong: { backgroundColor: colors.error.medium },
     badge: {
-        backgroundColor: colors.highlight.lightest, paddingHorizontal: 12, paddingVertical: 6,
-        borderRadius: 12, borderWidth: 1, borderColor: colors.highlight.light
+        paddingHorizontal: 16, paddingVertical: 8,
+        borderRadius: 12, borderWidth: 1
     },
     badgeText: {
-        fontSize: 13, color: colors.highlight.darkest, fontWeight: 'bold'
+        fontSize: 14, fontWeight: 'bold'
+    },
+    badgeBlue: {
+        backgroundColor: colors.highlight.lightest, borderColor: colors.highlight.light
+    },
+    badgeTextBlue: {
+        color: colors.highlight.darkest
+    },
+    badgeGreen: {
+        backgroundColor: colors.success.light, borderColor: colors.success.medium
+    },
+    badgeTextGreen: {
+        color: colors.success.dark
+    },
+    badgeRed: {
+        backgroundColor: colors.error.light, borderColor: colors.error.medium
+    },
+    badgeTextRed: {
+        color: colors.error.dark
     }
 });

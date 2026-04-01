@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { ActivityIndicator, StyleSheet, TouchableOpacity } from "react-native";
+import { ActivityIndicator, StyleSheet, TouchableOpacity, useWindowDimensions } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 
@@ -15,11 +15,14 @@ import { useHostGame } from "@/src/host/game/hooks/useHostGame";
 import { AnswersDashboard } from "@/src/host/game/components/tabs/AnswersDashboard";
 import { GameStatuses } from "@/src/dto/common.dto";
 import { HostLeaderboard } from "@/src/host/game/components/tabs/HostLeaderboard";
-import {Teams} from "@/src/host/game/components/tabs/Teams";
+import { Teams } from "@/src/host/game/components/tabs/Teams";
 
 export default function GameAdminScreen() {
     const router = useRouter();
+    const { width } = useWindowDimensions();
     const { gameId } = useLocalSearchParams<{ gameId: string }>();
+
+    const isMobile = width < 768;
 
     const editor = useGameEditor(gameId);
 
@@ -53,10 +56,6 @@ export default function GameAdminScreen() {
     }, [editor.isNew]);
 
     const [activeTab, setActiveTab] = useState('Settings');
-
-    const handleMobileView = () => {
-        router.push(`/(host)/game/${gameId}/mobile`);
-    };
 
     const handleBack = () => {
         if (router.canGoBack()) {
@@ -94,7 +93,7 @@ export default function GameAdminScreen() {
             <Box style={styles.layout}>
 
                 {!editor.isNew && (
-                    <Box style={{width: 350}}>
+                    <Box style={isMobile ? { flex: 1 } : { width: 350 }}>
                         <ControlSidebar
                             isNew={editor.isNew}
                             rounds={editor.rounds}
@@ -117,97 +116,76 @@ export default function GameAdminScreen() {
                     </Box>
                 )}
 
-                <Box style={styles.mainContent}>
-                    <NavBar
-                        title={editor.isNew ? "Создание игры" : "Управление игрой"}
-                        leftIcon={<Feather name="grid" size={24} color={colors.highlight.darkest} />}
-                        onLeftPress={handleBack}
-                        onRightPress={
-                            editor.isNew
-                                ? editor.primaryAction
-                                : (canFinishGame ? finishGame : undefined)
-                        }
-                        rightIcon={
-                            <Text
-                                variant="bodyM"
-                                style={{
-                                    color: editor.isNew
-                                        ? colors.highlight.darkest
-                                        : (canFinishGame ? colors.error.dark : colors.neutralDark.light),
-                                    fontWeight: 'bold'
-                                }}
-                            >
-                                {editor.isNew ? "Сохранить" : "Завершить игру"}
-                            </Text>
-                        }
-                    />
+                {(!isMobile || editor.isNew) && (
+                    <Box style={styles.mainContent}>
+                        <NavBar
+                            title={editor.isNew ? "Создание игры" : "Управление игрой"}
+                            leftIcon={<Feather name="grid" size={24} color={colors.highlight.darkest} />}
+                            onLeftPress={handleBack}
+                            onRightPress={
+                                editor.isNew
+                                    ? editor.primaryAction
+                                    : (canFinishGame ? finishGame : undefined)
+                            }
+                            rightIcon={
+                                <Text
+                                    variant="bodyM"
+                                    style={{
+                                        color: editor.isNew
+                                            ? colors.highlight.darkest
+                                            : (canFinishGame ? colors.error.dark : colors.neutralDark.light),
+                                        fontWeight: 'bold'
+                                    }}
+                                >
+                                    {editor.isNew ? "Сохранить" : "Завершить игру"}
+                                </Text>
+                            }
+                        />
 
-                    {!editor.isNew && (
-                        <Box row justify="flex-start" style={styles.tabsMenu}>
-                            {tabs.map(t => {
-                                const isActive = activeTab === t.key;
-                                return (
-                                    <TouchableOpacity
-                                        key={t.key}
-                                        onPress={() => setActiveTab(t.key)}
-                                        style={styles.tabItem}
-                                    >
-                                        <Text variant="bodyM" style={{
-                                            fontWeight: isActive ? 'bold' : 'normal',
-                                            color: isActive ? colors.neutralDark.darkest : colors.neutralDark.light
-                                        }}>
-                                            {t.label}
-                                        </Text>
-
-                                        {isActive && (
-                                            <Box style={styles.activeIndicator} />
-                                        )}
-                                    </TouchableOpacity>
-                                );
-                            })}
-                        </Box>
-                    )}
-
-                    <Box flex={1} style={[styles.tabContentArea, editor.isNew && { paddingTop: 24 }]}>
-                        <TouchableOpacity onPress={handleMobileView}>
-                            <Feather name="smartphone" size={20} color={colors.neutralDark.medium} />
-                        </TouchableOpacity>
-
-                        {activeTab === 'Settings' && (
-                            <Box flex={1}>
-                                {!editor.isNew && (
-                                    <Box row justify="flex-end" mb={4} style={{ paddingHorizontal: 16 }}>
+                        {!editor.isNew && (
+                            <Box row justify="flex-start" style={styles.tabsMenu}>
+                                {tabs.map(t => {
+                                    const isActive = activeTab === t.key;
+                                    return (
                                         <TouchableOpacity
-                                            onPress={editor.primaryAction}
-                                            style={styles.saveButton}
+                                            key={t.key}
+                                            onPress={() => setActiveTab(t.key)}
+                                            style={styles.tabItem}
                                         >
-                                            <Feather
-                                                name={editor.isNew ? "plus-circle" : "save"}
-                                                size={18}
-                                                color={colors.neutralLight.lightest}
-                                                style={{ marginRight: 8 }}
-                                            />
-                                            <Text variant="bodyM" style={{ color: colors.neutralLight.lightest, fontWeight: 'bold' }}>
-                                                Сохранить изменения
+                                            <Text variant="bodyM" style={{
+                                                fontWeight: isActive ? 'bold' : 'normal',
+                                                color: isActive ? colors.neutralDark.darkest : colors.neutralDark.light
+                                            }}>
+                                                {t.label}
                                             </Text>
+
+                                            {isActive && (
+                                                <Box style={styles.activeIndicator} />
+                                            )}
                                         </TouchableOpacity>
-                                    </Box>
-                                )}
-                                <EditorContent editor={editor} />
+                                    );
+                                })}
                             </Box>
                         )}
 
-                        {!editor.isNew && (
-                            <>
-                                {activeTab === 'Answers' && (
-                                    <AnswersDashboard
-                                        rounds={editor.rounds}
-                                        answers={answers}
-                                        onJudge={judgeAnswer}
-                                        activeQuestionId={gameState.activeQuestionId}
-                                        totalParticipants={participants.length}
-                                    />
-                                )}
+                        <Box flex={1} style={[styles.tabContentArea, editor.isNew && { paddingTop: 24 }]}>
+                            {activeTab === 'Settings' && (
+                                <Box flex={1}>
+                                    <EditorContent editor={editor} />
+                                </Box>
+                            )}
+
+                            {!editor.isNew && (
+                                <>
+                                    {activeTab === 'Answers' && (
+                                        <AnswersDashboard
+                                            rounds={editor.rounds}
+                                            answers={answers}
+                                            onJudge={judgeAnswer}
+                                            activeQuestionId={gameState.activeQuestionId}
+                                            totalParticipants={participants.length}
+                                        />
+                                    )}
 
                                 {activeTab === 'Leaderboard' && (
                                     <Box flex={1}>
@@ -215,15 +193,16 @@ export default function GameAdminScreen() {
                                     </Box>
                                 )}
 
-                                {activeTab === 'Teams' && (
-                                    <Box flex={1}>
-                                        <Teams participants={participants} />
-                                    </Box>
-                                )}
-                            </>
-                        )}
+                                    {activeTab === 'Teams' && (
+                                        <Box flex={1}>
+                                            <Teams participants={participants} />
+                                        </Box>
+                                    )}
+                                </>
+                            )}
+                        </Box>
                     </Box>
-                </Box>
+                )}
             </Box>
         </Box>
     );

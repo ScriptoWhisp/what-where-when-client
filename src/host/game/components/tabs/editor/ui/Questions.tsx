@@ -46,10 +46,10 @@ export function QuestionsSection({
     const questions = ((selectedRound?.questions as UIQuestion[]) ?? []);
 
     return (
-        <View style={{ paddingHorizontal: 16 }}>
-            <Text variant="h3" style={{ paddingVertical: 20 }}>Questions</Text>
+        <View>
+            <Text variant="h3" style={{ marginBottom: 10 }}>Questions</Text>
 
-            <View style={{ flexDirection: "row", gap: 24 }}>
+            <View style={{ flexDirection: "row", gap: 12 }}>
                 {/* Rounds */}
                 <View style={{ flex: 1, gap: 10, maxWidth: 300 }}>
                     <Button title="Add round" variant="secondary" onPress={onAddRound} />

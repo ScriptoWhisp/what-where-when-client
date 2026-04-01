@@ -66,11 +66,8 @@ export const HostLeaderboard = ({ leaderboard, gameId }: HostLeaderboardProps) =
 
     return (
         <Box style={styles.container}>
-            <ScrollView contentContainerStyle={{ padding: 32 }} showsVerticalScrollIndicator={false}>
-                <Box row align="center" justify="space-between" mb={8} style={{ flexWrap: 'wrap', gap: 12 }}>
-                    <Text variant="h2" style={{ color: colors.neutralDark.darkest }}>
-                        Турнирная таблица
-                    </Text>
+            <ScrollView contentContainerStyle={{ margin: 10 }} showsVerticalScrollIndicator={false}>
+                <Box row align="center" justify="flex-end" style={{ marginBottom: 10 }}>
                     <TouchableOpacity
                         onPress={handleExportGame}
                         disabled={exporting}
@@ -96,13 +93,20 @@ export const HostLeaderboard = ({ leaderboard, gameId }: HostLeaderboardProps) =
                         </Text>
                     </Box>
                 ) : (
-                    <Box style={{ gap: 40 }}>
+                    <Box style={{ gap: 10 }}>
                         {groupedData.map((group) => (
                             <Box key={group.categoryName}>
 
-                                <Text variant="h3" style={{ color: colors.neutralDark.darkest, marginBottom: 16 }}>
-                                    {group.categoryName}
-                                </Text>
+                                <Box row align="center" style={{ marginBottom: 10, marginLeft: 16, gap: 12 }}>
+                                    <Text variant="h3" style={{ color: colors.neutralDark.darkest }}>
+                                        {group.categoryName}
+                                    </Text>
+                                    <Box row align="center" style={[styles.badge, styles.badgeGray]}>
+                                        <Text style={[styles.badgeText, styles.badgeTextGray]}>
+                                            Команд: {group.teams.length}
+                                        </Text>
+                                    </Box>
+                                </Box>
 
                                 <Box row justify="space-between" align="center" style={styles.tableHeader}>
                                     <Text variant="captionM" style={{ width: 40, color: colors.neutralDark.medium }}>#</Text>
@@ -111,7 +115,7 @@ export const HostLeaderboard = ({ leaderboard, gameId }: HostLeaderboardProps) =
                                     <Text variant="captionM" style={{ width: 70, textAlign: 'right', color: colors.neutralDark.medium }}>Рейтинг</Text>
                                 </Box>
 
-                                <Box style={{ gap: 12 }}>
+                                <Box style={{ gap: 4 }}>
                                     {group.teams.map((team) => (
                                         <Box
                                             key={team.participantId}
@@ -171,11 +175,28 @@ const styles = StyleSheet.create({
         borderWidth: 1, borderColor: colors.neutralLight.medium, borderStyle: 'dashed'
     },
     tableHeader: {
-        paddingHorizontal: 16, paddingBottom: 12,
-        borderBottomWidth: 1, borderColor: colors.neutralLight.medium, marginBottom: 12
+        paddingHorizontal: 16,
+        paddingBottom: 12,
+        borderBottomWidth: 1,
+        borderColor: colors.neutralLight.medium,
+        marginBottom: 8
     },
     teamRow: {
-        padding: 16, borderRadius: 8, borderWidth: 1,
-        borderColor: colors.neutralLight.medium, backgroundColor: '#fff'
+        paddingVertical: 16,
+        paddingHorizontal: 16,
+        backgroundColor: colors.neutralLight.lightest
+    },
+    badge: {
+        paddingHorizontal: 12, paddingVertical: 4,
+        borderRadius: 12, borderWidth: 1
+    },
+    badgeText: {
+        fontSize: 13, fontWeight: 'bold'
+    },
+    badgeGray: {
+        backgroundColor: colors.neutralLight.light, borderColor: colors.neutralLight.dark
+    },
+    badgeTextGray: {
+        color: colors.neutralDark.medium
     }
 });

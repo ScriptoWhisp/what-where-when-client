@@ -2,27 +2,29 @@ import React, { useState, useEffect } from "react";
 import { Pressable, View, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
 import { Text } from "@/src/ui/Text";
 import { TextField } from "@/src/ui/TextField";
-import { Tag } from "@/src/ui/Tag";
 import { Icon } from "@/src/ui/Icon";
 import { colors } from "@/src/theme/colors";
 import { UITeam, UICategory } from "@/src/host/game/components/tabs/editor/types";
 import { Button } from "@/src/ui/Button";
+import {Ionicons} from "@expo/vector-icons";
 
 export function TeamsSection({
                                  teams,
                                  categories,
                                  onAdd,
                                  onRemove,
+                                 onUpdate
                              }: {
     teams: UITeam[];
     categories: UICategory[];
     onAdd: (name: string, code: string, categoryId: number | null) => void;
     onRemove: (t: UITeam) => void;
+    onUpdate: (t: UITeam, name: string, code: string, categoryId: number) => void;
 }) {
     const [name, setName] = useState("");
     const [code, setCode] = useState("");
-
     const [selectedCatId, setSelectedCatId] = useState<number | null>(null);
+    const [editingTeam, setEditingTeam] = useState<UITeam | null>(null);
 
     const validCategories = categories.filter(c => c.id != null);
 
@@ -34,12 +36,36 @@ export function TeamsSection({
 
     const isReadyToAdd = name.trim().length > 0 && code.trim().length > 0 && selectedCatId !== null;
 
+    const handleSave = () => {
+        if (!isReadyToAdd) return;
+        if (editingTeam) {
+            onUpdate(editingTeam, name, code, selectedCatId!);
+            setEditingTeam(null);
+        } else {
+            onAdd(name, code, selectedCatId!);
+        }
+        setName("");
+        setCode("");
+    };
+
+    const handleEdit = (team: any) => {
+        setEditingTeam(team);
+        setName(team.name);
+        setCode(team.team_code || "");
+        setSelectedCatId(team.category_id || team.categoryId);
+    };
+
+    const handleCancel = () => {
+        setEditingTeam(null);
+        setName("");
+        setCode("");
+    };
+
     return (
-        <View style={{ paddingHorizontal: 16 }}>
-            <Text variant="h3" style={{ paddingVertical: 20 }}>Команды</Text>
+        <View style={{ gap: 10 }}>
+            <Text variant="h3">Команды</Text>
 
-            <View style={{ gap: 16, paddingBottom: 20 }}>
-
+            <View style={{ gap: 10 }}>
                 <Text variant="captionM" style={{ color: colors.neutralDark.medium }}>Лига / Категория</Text>
 
                 {validCategories.length === 0 ? (
@@ -47,7 +73,7 @@ export function TeamsSection({
                         Сначала создайте и сохраните хотя бы одну категорию, чтобы добавлять команды.
                     </Text>
                 ) : (
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 4 }}>
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                         {validCategories.map(c => {
                             const isActive = selectedCatId === c.id;
                             return (
@@ -69,7 +95,7 @@ export function TeamsSection({
                         {categories.some(c => c.id == null) && (
                             <View style={[styles.catChip, { backgroundColor: 'transparent', borderColor: colors.neutralLight.medium, borderStyle: 'dashed' }]}>
                                 <Text style={{ color: colors.neutralDark.light, fontSize: 12 }}>
-                                    Сохраните игру, чтобы использовать новые категории
+                                    Сохраните изменения, чтобы использовать новые категории
                                 </Text>
                             </View>
                         )}
@@ -85,42 +111,61 @@ export function TeamsSection({
                         <TextField value={code} placeholder="Код команды" onChangeText={setCode} />
                     </View>
 
-                    <View style={{ flex: 1, alignSelf: "center" }}>
+                    <View style={{ flexDirection: "row", gap: 8, alignSelf: "center" }}>
+                        {editingTeam && (
+                            <Button title="Отмена" variant="secondary" onPress={handleCancel} />
+                        )}
                         <Button
-                            title={"Добавить команду"}
-                            variant="secondary"
-                            onPress={() => {
-                                if (!isReadyToAdd) return;
-                                onAdd(name, code, selectedCatId);
-                                setName("");
-                                setCode("");
-                            }}
+                            title={editingTeam ? "Сохранить" : "Добавить"}
+                            variant={editingTeam ? "primary" : "secondary"}
+                            onPress={handleSave}
                         />
                     </View>
                 </View>
 
-                <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10, marginTop: 12 }}>
+                <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
                     {teams.map((t: any) => {
-
                         const actualCategoryId = t.category_id || t.categoryId;
-
                         const catName = categories.find(c => c.id != null && c.id === actualCategoryId)?.name;
-
-                        const displayText = catName
-                            ? `${t.name} (${catName})`
-                            : t.name;
+                        const displayText = catName ? `${t.name} (${catName})` : t.name;
 
                         return (
-                            <View key={t.id ? `team_${t.id}` : t._tmpId!} style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-                                <Tag
-                                    text={displayText.toUpperCase()}
-                                    variant="light"
-                                    rightIcon={
-                                        <Pressable onPress={() => onRemove(t)} hitSlop={10}>
-                                            <Icon name="x" size={12} color={colors.neutralDark.dark} />
-                                        </Pressable>
-                                    }
-                                />
+                            <View
+                                key={t.id ? `team_${t.id}` : t._tmpId!}
+                                style={{
+                                    flexDirection: "row",
+                                    alignItems: "center",
+                                    backgroundColor: colors.highlight.lightest,
+                                    paddingVertical: 6,
+                                    paddingHorizontal: 10,
+                                    borderRadius: 100,
+                                    gap: 6
+                                }}
+                            >
+                                <Pressable onPress={() => handleEdit(t)} hitSlop={10}>
+                                    <Ionicons name="pencil" size={12} color={colors.highlight.darkest} />
+                                </Pressable>
+
+                                <Text style={{
+                                    color: colors.highlight.darkest,
+                                    fontWeight: 'normal',
+                                    fontSize: 12
+                                }}>
+                                    {displayText.toUpperCase()}
+                                </Text>
+
+                                <Pressable onPress={() => onRemove(t)} hitSlop={10}>
+                                    <View style={{
+                                        backgroundColor: colors.neutralDark.light,
+                                        width: 16,
+                                        height: 16,
+                                        borderRadius: 8,
+                                        alignItems: 'center',
+                                        justifyContent: 'center'
+                                    }}>
+                                        <Icon name="x" size={10} color="#fff" />
+                                    </View>
+                                </Pressable>
                             </View>
                         );
                     })}

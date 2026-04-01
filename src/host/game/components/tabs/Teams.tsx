@@ -3,14 +3,17 @@ import { StyleSheet, ScrollView } from 'react-native';
 import { Box } from '@/src/ui/Box';
 import { Text } from '@/src/ui/Text';
 import { colors } from '@/src/theme/colors';
-import {ParticipantDomain} from "@/src/dto/game.dto";
+import { ParticipantDomain } from "@/src/dto/game.dto";
 
 interface HostTeamsProps {
     participants: ParticipantDomain[];
 }
 
 export const Teams = ({ participants }: HostTeamsProps) => {
-    const connectedCount = participants.filter(p => p.isConnected).length;
+    const totalCount = participants.length;
+    const onlineCount = participants.filter(p => p.isConnected).length;
+    const offlineCount = totalCount - onlineCount;
+
     const sortedParticipants = useMemo(() => {
         return [...participants].sort((a, b) => {
             if (a.isConnected !== b.isConnected) {
@@ -24,19 +27,25 @@ export const Teams = ({ participants }: HostTeamsProps) => {
 
     return (
         <Box style={styles.container}>
-            <ScrollView contentContainerStyle={{ padding: 32 }} showsVerticalScrollIndicator={false}>
-                <Box mb={16} row align="center" justify="space-between">
-                    <Box>
-                        <Text variant="h2">Команды в игре</Text>
-                        <Text variant="bodyM" style={{ color: colors.neutralDark.light }}>
-                            Следите за подключением участников
-                        </Text>
-                    </Box>
-                    <Box align="flex-end">
-                        <Text variant="h1" style={{ color: colors.highlight.darkest }}>
-                            {connectedCount}
-                        </Text>
-                        <Text variant="captionM" style={{ color: colors.neutralDark.light }}>подключено</Text>
+            <ScrollView contentContainerStyle={{ margin: 10 }} showsVerticalScrollIndicator={false}>
+
+                <Box style={{marginBottom: 10}}>
+                    <Box row align="center" style={{ gap: 16, flexWrap: 'wrap' }}>
+                        <Box row align="center" style={[styles.badge, styles.badgeBlue]}>
+                            <Text style={[styles.badgeText, styles.badgeTextBlue]}>
+                                Всего: {totalCount}
+                            </Text>
+                        </Box>
+                        <Box row align="center" style={[styles.badge, styles.badgeGreen]}>
+                            <Text style={[styles.badgeText, styles.badgeTextGreen]}>
+                                В игре: {onlineCount}
+                            </Text>
+                        </Box>
+                        <Box row align="center" style={[styles.badge, styles.badgeGray]}>
+                            <Text style={[styles.badgeText, styles.badgeTextGray]}>
+                                Оффлайн: {offlineCount}
+                            </Text>
+                        </Box>
                     </Box>
                 </Box>
 
@@ -58,20 +67,15 @@ export const Teams = ({ participants }: HostTeamsProps) => {
                                     row
                                     align="center"
                                     justify="space-between"
-                                    style={styles.teamRow}
+                                    style={[
+                                        styles.teamRow,
+                                        !participant.isConnected && styles.teamRowOffline
+                                    ]}
                                 >
-                                    <Box row align="center" gap={8}>
+                                    <Box row align="center">
                                         <Text variant="bodyM" style={{ color: colors.neutralDark.light, width: 24, fontWeight: '600' }}>
                                             {index + 1}.
                                         </Text>
-
-                                        <Box style={[
-                                            styles.statusDot,
-                                            {
-                                                backgroundColor: participant.isConnected ? '#4CAF50' : '#9E9E9E',
-                                                shadowColor: participant.isConnected ? '#4CAF50' : 'transparent',
-                                            }
-                                        ]} />
 
                                         <Box>
                                             <Text variant="bodyL" style={{ fontWeight: '600', color: colors.neutralDark.darkest }}>
@@ -85,17 +89,13 @@ export const Teams = ({ participants }: HostTeamsProps) => {
                                         </Box>
                                     </Box>
 
-                                    <Box>
-                                        <Text
-                                            variant="captionM"
-                                            style={{
-                                                fontWeight: '600',
-                                                color: participant.isConnected ? '#388E3C' : colors.neutralDark.light
-                                            }}
-                                        >
-                                            {participant.isConnected ? 'Онлайн' : 'Офлайн'}
-                                        </Text>
-                                    </Box>
+                                    <Box style={[
+                                        styles.statusDot,
+                                        {
+                                            backgroundColor: participant.isConnected ? colors.success.medium : colors.neutralLight.dark,
+                                            shadowColor: participant.isConnected ? colors.success.medium : 'transparent',
+                                        }
+                                    ]} />
                                 </Box>
                             );
                         })}
@@ -114,15 +114,45 @@ const styles = StyleSheet.create({
         borderWidth: 1, borderColor: colors.neutralLight.medium, borderStyle: 'dashed'
     },
     teamRow: {
-        padding: 16, borderRadius: 8, borderWidth: 1,
-        borderColor: colors.neutralLight.medium, backgroundColor: '#fff'
+        paddingVertical: 16,
+        paddingHorizontal: 20,
+        backgroundColor: colors.neutralLight.lightest
+    },
+    teamRowOffline: {
+        opacity: 0.5,
+        backgroundColor: colors.neutralLight.lightest,
     },
     statusDot: {
         width: 12,
         height: 12,
         borderRadius: 6,
-        shadowOpacity: 0.5,
+        shadowOpacity: 0.6,
         shadowRadius: 6,
-        elevation: 3, // Для Android
+        elevation: 3,
+    },
+    badge: {
+        paddingHorizontal: 16, paddingVertical: 8,
+        borderRadius: 12, borderWidth: 1
+    },
+    badgeText: {
+        fontSize: 14, fontWeight: 'bold'
+    },
+    badgeBlue: {
+        backgroundColor: colors.highlight.lightest, borderColor: colors.highlight.light
+    },
+    badgeTextBlue: {
+        color: colors.highlight.darkest
+    },
+    badgeGreen: {
+        backgroundColor: colors.success.light, borderColor: colors.success.medium
+    },
+    badgeTextGreen: {
+        color: colors.success.dark
+    },
+    badgeGray: {
+        backgroundColor: colors.neutralLight.light, borderColor: colors.neutralLight.dark
+    },
+    badgeTextGray: {
+        color: colors.neutralDark.medium
     }
 });

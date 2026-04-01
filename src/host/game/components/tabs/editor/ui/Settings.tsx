@@ -1,8 +1,8 @@
 import React from "react";
-import {View} from "react-native";
+import { View } from "react-native";
 import { Text } from "@/src/ui/Text";
 import { NumberInput } from "@/src/ui/NumberInput";
-import {SwitchListItem} from "@/src/ui/SwitchListItem";
+import { SwitchListItem } from "@/src/ui/SwitchListItem";
 
 export function SettingsSections({
                                      settings,
@@ -12,14 +12,15 @@ export function SettingsSections({
     onChange: (next: any) => void;
 }) {
     return (
-        <>
-            <View style={{ paddingHorizontal: 16 }}>
-                <Text variant="h3" style={{ paddingVertical: 20 }}>Time settings</Text>
+        <View style={{ gap: 48 }}>
 
-                <View style={{ flexDirection: "row", gap: 100, paddingVertical: 20 }}>
-                    <View style={{ flex: 1 }}>
+            <View style={{ gap: 10 }}>
+                <Text variant="h3">Настройки времени</Text>
+
+                <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 24 }}>
+                    <View style={{ flex: 1, minWidth: 200 }}>
                         <NumberInput
-                            title="Time to think (sec)"
+                            title="Время на обсуждение (сек)"
                             value={settings.time_to_think_sec}
                             min={0}
                             max={999}
@@ -27,9 +28,9 @@ export function SettingsSections({
                         />
                     </View>
 
-                    <View style={{ flex: 1 }}>
+                    <View style={{ flex: 1, minWidth: 200 }}>
                         <NumberInput
-                            title="Time to answer (sec)"
+                            title="Время на ввод ответа (сек)"
                             value={settings.time_to_answer_sec}
                             min={0}
                             max={999}
@@ -37,9 +38,9 @@ export function SettingsSections({
                         />
                     </View>
 
-                    <View style={{ flex: 1 }}>
+                    <View style={{ flex: 1, minWidth: 200 }}>
                         <NumberInput
-                            title="Time to dispute in the end (min)"
+                            title="Время на апелляции (мин)"
                             value={settings.time_to_dispute_end_min}
                             min={0}
                             max={999}
@@ -49,47 +50,48 @@ export function SettingsSections({
                 </View>
             </View>
 
-            <View>
-                <Text variant="h3" style={{ paddingHorizontal: 16, paddingVertical: 20 }}>Other settings</Text>
+            <View style={{ gap: 16 }}>
+                <Text variant="h3">Дополнительные настройки</Text>
 
-                <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 30, paddingVertical: 20 }}>
-                    <View style={{ flex: 1 }}>
+                <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 24 }}>
+                    <View style={{ flex: 1, minWidth: 250 }}>
                         <SwitchListItem
-                            title="Show leaderboard"
-                            description="Description. Lorem ipsum dolor sit amet consectetur adipisicing elit, sed do"
+                            title="Показывать таблицу лидеров"
+                            description="Команды смогут видеть таблицу результатов во время игры"
                             value={settings.show_leaderboard}
                             onValueChange={(v) => onChange({ ...settings, show_leaderboard: v })}
                         />
                     </View>
 
-                    <View style={{ flex: 1 }}>
+                    <View style={{ flex: 1, minWidth: 250 }}>
                         <SwitchListItem
-                            title="Show questions"
-                            description="Description. Lorem ipsum dolor sit amet consectetur adipisicing elit, sed do"
+                            title="Показывать вопросы"
+                            description="Текст вопроса будет отображаться на экранах участников"
                             value={settings.show_questions}
                             onValueChange={(v) => onChange({ ...settings, show_questions: v })}
                         />
                     </View>
 
-                    <View style={{ flex: 1 }}>
+                    <View style={{ flex: 1, minWidth: 250 }}>
                         <SwitchListItem
-                            title="Show answers"
-                            description="Description. Lorem ipsum dolor sit amet consectetur adipisicing elit, sed do"
+                            title="Показывать ответы"
+                            description="Правильные ответы будут показаны участникам после завершения раунда"
                             value={settings.show_answers}
                             onValueChange={(v) => onChange({ ...settings, show_answers: v })}
                         />
                     </View>
 
-                    <View style={{ flex: 1 }}>
+                    <View style={{ flex: 1, minWidth: 250 }}>
                         <SwitchListItem
-                            title="Can appeal"
-                            description="Description. Lorem ipsum dolor sit amet consectetur adipisicing elit, sed do"
+                            title="Разрешить апелляции"
+                            description="Команды смогут оспаривать результаты и подавать апелляции на свои ответы"
                             value={settings.can_appeal}
                             onValueChange={(v) => onChange({ ...settings, can_appeal: v })}
                         />
                     </View>
                 </View>
             </View>
-        </>
+
+        </View>
     );
 }
