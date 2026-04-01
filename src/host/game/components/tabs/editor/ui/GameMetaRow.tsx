@@ -4,6 +4,7 @@ import { TextField } from "@/src/ui/TextField";
 import { ListItem } from "@/src/ui/ListItem";
 import { Icon } from "@/src/ui/Icon";
 import { colors } from "@/src/theme/colors";
+import { Text } from "@/src/ui/Text";
 
 export function GameMetaRow({ title, date_of_event, passcode, onChangeTitle, onChangeDate }: {
     title: string;
@@ -26,7 +27,7 @@ export function GameMetaRow({ title, date_of_event, passcode, onChangeTitle, onC
     };
 
     return (
-        <View style={{ flexDirection: "row", gap: 40, alignItems: "flex-start", paddingHorizontal: 16 }}>
+        <View style={{ flexDirection: "row", gap: 24, alignItems: "flex-start" }}>
             <View style={{ flex: 1.5 }}>
                 <TextField
                     label="Название игры"
@@ -37,7 +38,7 @@ export function GameMetaRow({ title, date_of_event, passcode, onChangeTitle, onC
             </View>
 
             <View style={{ flex: 1 }}>
-                <Text variant="captionM" style={{ marginBottom: 8, color: colors.neutralDark.medium }}>
+                <Text variant="captionM" style={{ marginBottom: 10, color: colors.neutralDark.medium, fontWeight: '500' }}>
                     Дата проведения
                 </Text>
 
@@ -46,17 +47,25 @@ export function GameMetaRow({ title, date_of_event, passcode, onChangeTitle, onC
                         type="date"
                         value={getNativeDateValue()}
                         onChange={(e) => handleNativeDateChange(e.target.value)}
+                        onFocus={(e) => {
+                            e.target.style.borderColor = colors.highlight.darkest;
+                        }}
+                        onBlur={(e) => {
+                            e.target.style.borderColor = colors.neutralLight.dark;
+                        }}
                         style={{
-                            height: 44,
-                            padding: '0 12px',
-                            borderRadius: 8,
-                            border: `1px solid ${colors.neutralLight.darkest}`,
+                            height: 48,
+                            padding: '0 16px',
+                            borderRadius: 12,
+                            border: `2px solid ${colors.neutralLight.dark}`,
                             backgroundColor: colors.neutralLight.lightest,
                             color: colors.neutralDark.darkest,
-                            fontSize: 14,
+                            fontSize: 16,
                             outline: 'none',
                             fontFamily: 'inherit',
-                            width: '100%'
+                            width: '100%',
+                            boxSizing: 'border-box',
+                            transition: 'border-color 0.2s ease',
                         }}
                     />
                 ) : (
@@ -68,7 +77,7 @@ export function GameMetaRow({ title, date_of_event, passcode, onChangeTitle, onC
                 )}
             </View>
 
-            <View style={{ flex: 1.2, alignSelf: "center" }}>
+            <View style={{ flex: 1.2, alignSelf: "flex-end" }}>
                 {passcode && (
                     <ListItem
                         variant="highlight"
@@ -85,5 +94,3 @@ export function GameMetaRow({ title, date_of_event, passcode, onChangeTitle, onC
         </View>
     );
 }
-
-import { Text } from "@/src/ui/Text";

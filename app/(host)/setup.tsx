@@ -40,9 +40,9 @@ export default function SetupScreen() {
     return (
         <View style={{ flex: 1, backgroundColor: colors.neutralLight.lightest }}>
             <NavBar
-                title="Game setup"
-                leftText="Logout"
-                rightText="Create game"
+                title="Игры"
+                leftText="Выйти"
+                rightText="Создать игру"
                 onLeftPress={async () => {
                     await clearStoredSession();
                     router.replace("/login");

@@ -6,9 +6,9 @@ import { Text } from '@/src/ui/Text';
 import { Button } from '@/src/ui/Button';
 import { colors } from '@/src/theme/colors';
 import { UIRound } from '@/src/host/game/components/tabs/editor/types';
-import { GamePhase, GameStatuses } from "@/src/dto/common.dto";
+import { GamePhase, GameStatuses, AnswerStatus } from "@/src/dto/common.dto";
 import { TimerBar } from '@/src/ui/TimerBar';
-import { GameState, AnswerDomain } from "@/src/dto/game.dto";
+import {GameState, AnswerDomain, ParticipantDomain } from "@/src/dto/game.dto";
 
 interface ControlSidebarProps {
     isNew: boolean;
@@ -16,6 +16,7 @@ interface ControlSidebarProps {
     answers: AnswerDomain[];
     gameName?: string;
     passcode?: string;
+    participants: ParticipantDomain[];
     gameState: GameState;
     onStartGame: () => void;
     onPrepareQuestion: (id: number) => void;
@@ -30,7 +31,7 @@ interface ControlSidebarProps {
 }
 
 export const ControlSidebar = ({
-                                   isNew, rounds, answers, gameName, passcode = '2345',
+                                   isNew, rounds, answers, gameName, passcode = '2345', participants = [],
                                    gameState, onStartGame, onPrepareQuestion, onStartQuestion,
                                    onNextQuestion, onPrevQuestion, onStartTimer, onStopTimer,
                                    onStopQuestion, onFinishGame, onAdjustTime
@@ -42,6 +43,17 @@ export const ControlSidebar = ({
     const isPaused = gameState.isPaused ?? false;
     const isPreparation = gameState.phase === GamePhase.PREPARATION;
     const isTimerTicking = isPhaseActive && !isPaused && !isPreparation;
+
+    const connectedCount = useMemo(() =>
+            participants.filter(p => p.isConnected).length,
+        [participants]);
+
+    const uncheckedAnswersCount = useMemo(() => {
+        return answers.filter(a =>
+            a.status !== AnswerStatus.CORRECT &&
+            a.status !== AnswerStatus.INCORRECT
+        ).length;
+    }, [answers]);
 
     const { currentQuestion, currentRound, totalQuestions } = useMemo(() => {
         const allQs = rounds.flatMap(r => r.questions);
@@ -71,13 +83,13 @@ export const ControlSidebar = ({
         }
     };
 
-    let topBtnTitle = "Начать вопрос";
+    let topBtnTitle = "Запустить таймер";
     let topBtnAction = () => {};
     let topBtnVariant: "primary" | "secondary" | "tertiary" = "primary";
     let nextBtnVariant: "primary" | "secondary" | "tertiary" = "secondary";
 
     if (isPreparation) {
-        topBtnTitle = "Начать вопрос";
+        topBtnTitle = "Запустить таймер";
         topBtnAction = () => onStartQuestion(gameState.activeQuestionId!);
         topBtnVariant = "primary";
         nextBtnVariant = "secondary";
@@ -104,8 +116,8 @@ export const ControlSidebar = ({
 
             <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 24 }}>
 
-                <Box style={{ gap: 12 }}>
-                    <Text variant="h2">{gameName || 'Без названия'}</Text>
+                <Box style={{ gap: 8 }}>
+                    <Text variant="h1" style={{marginBottom: 5}}>{gameName || 'Без названия'}</Text>
 
                     <Box
                         row
@@ -142,7 +154,25 @@ export const ControlSidebar = ({
                             <Text variant="h4">{passcode}</Text>
                             <Text style={{ fontSize: 10, color: colors.neutralDark.light }}>Код игры</Text>
                         </Box>
-                        <TouchableOpacity><Feather name="copy" size={16} color={colors.highlight.darkest} /></TouchableOpacity>
+                        <TouchableOpacity><Feather name="copy" style={{fontSize: 20, color: colors.highlight.darkest, marginRight: 2}} /></TouchableOpacity>
+                    </Box>
+
+                    <Box row align="center" justify="space-between" style={styles.numericPill}>
+                        <Box row align="center" gap={8}>
+                            <Text variant="bodyS" style={{ color: colors.neutralDark.darkest }}>Команды в игре:</Text>
+                        </Box>
+                        <View style={styles.badge}>
+                            <Text style={styles.badgeText}>{connectedCount}</Text>
+                        </View>
+                    </Box>
+
+                    <Box row align="center" justify="space-between" style={styles.numericPill}>
+                        <Box row align="center" gap={8}>
+                            <Text variant="bodyS" style={{ color: colors.neutralDark.darkest }}>Непроверенные ответы:</Text>
+                        </Box>
+                        <View style={styles.badge}>
+                            <Text style={styles.badgeText}>{uncheckedAnswersCount}</Text>
+                        </View>
                     </Box>
                 </Box>
 
@@ -172,9 +202,9 @@ export const ControlSidebar = ({
                     </Box>
                 ) : (
                     <>
-                        <Box row justify="space-between" style={styles.statRow}>
+                        <Box row align="center" justify="space-between" style={styles.numericPill}>
                             <Text variant="bodyS" style={{ color: colors.neutralDark.medium }}>Получено ответов</Text>
-                            <View style={[styles.badge, currentAnswersCount > 0 && { backgroundColor: colors.highlight.darkest }]}>
+                            <View style={styles.badge}>
                                 <Text style={styles.badgeText}>{currentAnswersCount}</Text>
                             </View>
                         </Box>
@@ -201,7 +231,7 @@ export const ControlSidebar = ({
                                     <Text style={styles.timeBtnText}>-10 сек</Text>
                                 </TouchableOpacity>
 
-                                <TouchableOpacity style={[styles.playBtn, isTimerTicking && { backgroundColor: colors.highlight.light }]} onPress={handleStartPress}>
+                                <TouchableOpacity style={styles.playBtn} onPress={handleStartPress}>
                                     <Feather name={isTimerTicking ? "pause" : "play"} size={16} color={colors.highlight.darkest} />
                                 </TouchableOpacity>
 
@@ -246,15 +276,25 @@ export const ControlSidebar = ({
 };
 
 const styles = StyleSheet.create({
-    sidebar: { width: 280, flexShrink: 0, height: '100%', borderRightWidth: 1, borderRightColor: colors.neutralLight.medium, backgroundColor: colors.neutralLight.lightest, paddingTop: 16, paddingHorizontal: 16 },
-    bottomPanel: { paddingVertical: 16, borderTopWidth: 1, borderColor: colors.neutralLight.medium, backgroundColor: colors.neutralLight.lightest, marginHorizontal: -16, paddingHorizontal: 16 },
-    statusPill: { paddingHorizontal: 12, paddingVertical: 18, borderRadius: 12 },
-    statusDot: { width: 8, height: 8, borderRadius: 4 },
-    codeBlock: { backgroundColor: colors.highlight.lightest, padding: 17, borderRadius: 12, borderWidth: 1, borderColor: colors.highlight.light },
-    statRow: { borderWidth: 1, borderColor: colors.neutralLight.medium, borderRadius: 6, padding: 10, alignItems: 'center' },
-    badge: { backgroundColor: colors.neutralLight.dark, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 10 },
-    badgeText: { fontSize: 10, color: '#fff', fontWeight: 'bold' },
-    timeBtn: { flex: 1, height: 36, borderWidth: 1, borderColor: colors.highlight.medium, borderRadius: 6, justifyContent: 'center', alignItems: 'center' },
-    timeBtnText: { color: colors.highlight.darkest, fontWeight: '600', fontSize: 13 },
-    playBtn: { width: 60, height: 36, borderWidth: 1, borderColor: colors.highlight.medium, borderRadius: 6, justifyContent: 'center', alignItems: 'center' }
+    sidebar: { width: '100%', flexShrink: 0, height: '100%', backgroundColor: colors.neutralLight.lightest, paddingTop: 30, paddingHorizontal: 16 },
+    bottomPanel: { paddingVertical: 16, backgroundColor: colors.neutralLight.lightest, marginHorizontal: -16, paddingHorizontal: 16 },
+    statusPill: { paddingHorizontal: 16, paddingVertical: 18, borderRadius: 12 },
+    statusDot: { width: 8, height: 8, borderRadius: 4, marginRight: 8 },
+    codeBlock: { backgroundColor: colors.highlight.lightest, paddingHorizontal: 16, paddingVertical: 18, borderRadius: 12 },
+    badge: {
+        backgroundColor: colors.neutralLight.darkest,
+        width: 24,
+        height: 24,
+        borderRadius: 12,
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    badgeText: {
+        fontSize: 10,
+        color: colors.neutralLight.lightest
+    },
+    timeBtn: { flex: 2, height: 51, borderWidth: 2, borderColor: colors.highlight.darkest, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
+    timeBtnText: { color: colors.highlight.darkest, fontWeight: 'bold', fontSize: 13 },
+    playBtn: { flex: 3, height: 51, borderWidth: 2, borderColor: colors.highlight.darkest, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
+    numericPill: { backgroundColor: colors.neutralLight.light, paddingHorizontal: 16, paddingVertical: 14, borderRadius: 12 }
 });

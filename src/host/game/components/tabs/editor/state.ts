@@ -182,6 +182,19 @@ export function useGameEditor(gameIdParam: string) {
         setDraft((d) => ({ ...d, categories: [...(d.categories as UICategory[]), next] }));
     }
 
+    function updateCategory(cat: UICategory, name: string, description?: string) {
+        const n = name.trim();
+        if (!n) return;
+        setDraft((d) => ({
+            ...d,
+            categories: (d.categories as UICategory[]).map((c) =>
+                (cat.id ? c.id === cat.id : c._tmpId === cat._tmpId)
+                    ? { ...c, name: n, description: description?.trim() || undefined }
+                    : c
+            ),
+        }));
+    }
+
     function removeCategory(cat: UICategory) {
         if (cat.id) setDeletedCategoryIds((prev) => (prev.includes(cat.id!) ? prev : [...prev, cat.id!]));
 
@@ -206,6 +219,20 @@ export function useGameEditor(gameIdParam: string) {
             category_id: categoryId
         };
         setDraft((d) => ({ ...d, teams: [...(d.teams as UITeam[]), next] }));
+    }
+
+    function updateTeam(team: UITeam, name: string, code: string, categoryId: number) {
+        const n = name.trim();
+        const c = code.trim().toUpperCase().replace(/\s+/g, "");
+        if (!n) return;
+        setDraft((d) => ({
+            ...d,
+            teams: (d.teams as UITeam[]).map((t) =>
+                (team.id ? t.id === team.id : t._tmpId === team._tmpId)
+                    ? { ...t, name: n, team_code: c, category_id: categoryId }
+                    : t
+            ),
+        }));
     }
 
     function removeTeam(team: UITeam) {
@@ -352,8 +379,10 @@ export function useGameEditor(gameIdParam: string) {
         primaryAction,
 
         addCategory,
+        updateCategory,
         removeCategory,
         addTeam,
+        updateTeam,
         removeTeam,
 
         addRound,
