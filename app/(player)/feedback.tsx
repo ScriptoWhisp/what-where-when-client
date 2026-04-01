@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
     Alert,
     KeyboardAvoidingView,
@@ -88,12 +88,38 @@ export default function PlayerFeedbackScreen() {
         setSelectedBySection((p) => toggleChipInSection(p, sectionKey, chipKey));
     }, []);
 
-    const handleSubmit = async () => {
+    const invalidParams = !Number.isFinite(gid) || !Number.isFinite(pid);
+    const lang = i18n.language;
+
+    const hasUserInput = useMemo(() => {
+        if (rating >= 1) return true;
+        if (comment.trim().length > 0) return true;
+        return Object.values(selectedBySection).some((keys) => keys.length > 0);
+    }, [rating, comment, selectedBySection]);
+
+    const goSkip = useCallback(() => {
+        if (submitting) return;
+        if (invalidParams) {
+            router.replace('/');
+            return;
+        }
+        router.replace({ pathname: '/(player)/thank-you' });
+    }, [submitting, invalidParams, router]);
+
+    const handlePrimaryPress = async () => {
+        if (submitting) return;
+        if (!hasUserInput) {
+            goSkip();
+            return;
+        }
         if (!Number.isFinite(gid) || !Number.isFinite(pid)) {
             Alert.alert(t('common.error'), t('feedback.errorGeneric'));
             return;
         }
-        if (rating < 1) return;
+        if (rating < 1) {
+            Alert.alert(t('common.error'), t('feedback.ratingRequired'));
+            return;
+        }
 
         setSubmitting(true);
         try {
@@ -116,9 +142,6 @@ export default function PlayerFeedbackScreen() {
             setSubmitting(false);
         }
     };
-
-    const invalidParams = !Number.isFinite(gid) || !Number.isFinite(pid);
-    const lang = i18n.language;
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: colors.neutralLight.lightest }} edges={['top']}>
@@ -201,16 +224,10 @@ export default function PlayerFeedbackScreen() {
 
                 <Box pb={Platform.OS === 'ios' ? 8 : 6} p={6}>
                     <Button
-                        title={t('feedback.submit')}
+                        title={hasUserInput ? t('feedback.submit') : t('feedback.skip')}
                         variant="primary"
-                        onPress={handleSubmit}
-                        disabled={
-                            invalidParams ||
-                            rating < 1 ||
-                            submitting ||
-                            formLoading ||
-                            !!formError
-                        }
+                        onPress={handlePrimaryPress}
+                        disabled={submitting || formLoading}
                         loading={submitting}
                     />
                 </Box>
