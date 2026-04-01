@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { ScrollView } from 'react-native';
 import { Box } from '@/src/ui/Box';
 import { Text } from '@/src/ui/Text';
@@ -13,6 +14,7 @@ interface LeaderboardTabProps {
 }
 
 export const LeaderboardTab = ({ leaderboard, currentParticipantId }: LeaderboardTabProps) => {
+    const { t } = useTranslation();
     const myTeam = leaderboard.find(team => team.participantId === currentParticipantId);
 
     const displayData = leaderboard.filter(team => team.categoryId === myTeam?.categoryId);
@@ -43,10 +45,10 @@ export const LeaderboardTab = ({ leaderboard, currentParticipantId }: Leaderboar
             {rankedData.length === 0 ? (
                 <Box align="center" gap={2} style={{ justifyContent: 'center' }}>
                     <Text variant="h2" style={{ color: colors.neutralDark.darkest, maxWidth: 240, textAlign: 'center' }}>
-                        Nothing here for now
+                        {t('leaderboardTab.emptyTitle')}
                     </Text>
                     <Text variant="bodyM" style={{ color: colors.neutralDark.light, maxWidth: 240, textAlign: 'center' }}>
-                        This is where you’ll find your placement among other teams
+                        {t('leaderboardTab.emptySubtitle')}
                     </Text>
                 </Box>
             ) : (
@@ -60,7 +62,7 @@ export const LeaderboardTab = ({ leaderboard, currentParticipantId }: Leaderboar
                                 title={`${item.displayRank}. ${item.teamName}`}
                                 titleVariant="h5"
                                 style={{borderRadius: 0}}
-                                description={`Рейтинг: ${item.rating}`}
+                                description={t('leaderboardTab.rating', { rating: item.rating })}
                                 variant={isMe ? 'highlight' : 'default'}
                                 right={
                                     <Bullet

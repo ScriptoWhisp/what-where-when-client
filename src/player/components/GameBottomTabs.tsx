@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { TouchableOpacity, Platform } from 'react-native';
 import {Feather, Ionicons} from '@expo/vector-icons';
 import { Box } from '@/src/ui/Box';
@@ -13,6 +14,8 @@ interface GameBottomTabsProps {
 }
 
 export const GameBottomTabs = ({ activeTab, onTabChange }: GameBottomTabsProps) => {
+    const { t } = useTranslation();
+
     return (
         <Box
             row
@@ -26,19 +29,19 @@ export const GameBottomTabs = ({ activeTab, onTabChange }: GameBottomTabsProps) 
             gap={2}
         >
             <TabButton
-                title="Игра"
+                title={t('player.tabs.play')}
                 icon="play"
                 isActive={activeTab === 'play'}
                 onPress={() => onTabChange('play')}
             />
             <TabButton
-                title="История"
+                title={t('player.tabs.history')}
                 icon="compass"
                 isActive={activeTab === 'history'}
                 onPress={() => onTabChange('history')}
             />
             <TabButton
-                title="Результаты"
+                title={t('player.tabs.results')}
                 icon="star"
                 isActive={activeTab === 'results'}
                 onPress={() => onTabChange('results')}

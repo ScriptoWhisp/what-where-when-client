@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
     ScrollView,
     StyleSheet,
@@ -17,6 +18,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import {Tag} from "@/src/ui/Tag";
 
 export default function SelectTeamScreen() {
+    const { t } = useTranslation();
     const { gameData, code } = useLocalSearchParams();
     const router = useRouter();
 
@@ -79,7 +81,7 @@ export default function SelectTeamScreen() {
                 restoreScroll();
             } catch (e: any) {
                 if (!cancelled) {
-                    Alert.alert('Ошибка', 'Не удалось обновить список команд');
+                    Alert.alert(t('common.error'), t('player.selectTeam.pollError'));
                 }
             } finally {
                 inFlightRef.current = false;
@@ -95,7 +97,7 @@ export default function SelectTeamScreen() {
             cancelled = true;
             clearInterval(intervalId);
         };
-    }, [code]);
+    }, [code, t]);
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: colors.neutralLight.lightest }}>
@@ -105,7 +107,7 @@ export default function SelectTeamScreen() {
                 <Box maxWidth={450} width="100%" flex={1} p={6}>
                     <Box mb={6} gap={2}>
                         <Box align="flex-start">
-                            <Text variant="h1">Вход в игру</Text>
+                            <Text variant="h1">{t('player.selectTeam.screenTitle')}</Text>
                         </Box>
                     </Box>
 
@@ -140,7 +142,7 @@ export default function SelectTeamScreen() {
                                     accessibilityState={{ disabled: isTaken, selected: isSelected }}
                                     right={
                                         isTaken ? (
-                                            <Tag text={'Taken'} variant="solid" />
+                                            <Tag text={t('player.selectTeam.taken')} variant="solid" />
                                         ) : (
                                             <RadioButton selected={isSelected} />
                                         )
@@ -152,15 +154,15 @@ export default function SelectTeamScreen() {
                         {allTeams.length === 0 && (
                             <Box flex={1} justify="center" align="center" mt={8}>
                                 <Text variant="bodyM" style={{ color: colors.neutralDark.light }}>
-                                    В этой игре пока нет команд
+                                    {t('player.selectTeam.noTeams')}
                                 </Text>
                             </Box>
                         )}
                     </ScrollView>
 
                     <Box pt={6} pb={Platform.OS === 'ios' ? 4 : 0} gap={3}>
-                        <Button title="Назад" variant="tertiary" onPress={() => router.back()} />
-                        <Button title="Продолжить" variant="primary" onPress={handleContinue} disabled={!selectedTeam} />
+                        <Button title={t('common.back')} variant="tertiary" onPress={() => router.back()} />
+                        <Button title={t('common.continue')} variant="primary" onPress={handleContinue} disabled={!selectedTeam} />
                     </Box>
                 </Box>
             </Box>

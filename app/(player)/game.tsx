@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Box } from '@/src/ui/Box';
@@ -18,6 +19,7 @@ import { Keyboard, KeyboardAvoidingView, Platform } from "react-native";
 import { LeaderboardTab } from "@/src/player/components/tabs/LeaderboardTab";
 
 export default function GameScreen() {
+    const { t } = useTranslation();
     const { gameId, teamId, teamName } = useLocalSearchParams();
 
     const [activeTab, setActiveTab] = useState<TabType>('play');
@@ -124,10 +126,10 @@ export default function GameScreen() {
         (phase === GamePhase.THINKING || phase === GamePhase.ANSWERING);
 
     const getPhaseText = () => {
-        if (phase === GamePhase.THINKING) return 'Время на обсуждение';
-        if (phase === GamePhase.ANSWERING) return 'Время для ответа';
-        if (phase === GamePhase.PREPARATION) return 'Внимание, вопрос...';
-        return 'Ожидание...';
+        if (phase === GamePhase.THINKING) return t('player.game.phase.thinking');
+        if (phase === GamePhase.ANSWERING) return t('player.game.phase.answering');
+        if (phase === GamePhase.PREPARATION) return t('player.game.phase.preparation');
+        return t('player.game.phase.idle');
     };
 
     return (
