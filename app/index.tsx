@@ -50,7 +50,12 @@ export default function Index() {
                     <Button
                         title={t('home.feedback')}
                         variant="secondary"
-                        onPress={() => router.push('https://docs.google.com/forms/d/e/1FAIpQLSei713QAvW06XJrjDr89hVMFkevLimHf8r_X18EW4VUmYuLiw/viewform')}
+                        onPress={() =>
+                            router.push({
+                                pathname: '/(player)/feedback',
+                                params: { fromHome: '1' },
+                            })
+                        }
                     />
                 </Box>
 
