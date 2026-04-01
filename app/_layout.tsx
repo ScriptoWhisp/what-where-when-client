@@ -8,6 +8,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import {Platform, useColorScheme} from 'react-native';
 import 'react-native-reanimated';
+import {Ionicons} from "@expo/vector-icons";
 
 export {
   ErrorBoundary,
@@ -62,6 +63,7 @@ export default function RootLayout() {
     ...FontAwesome.font,
     ...Feather.font,
     ...MaterialIcons.font,
+    ...Ionicons.font
   });
 
   useEffect(() => {
