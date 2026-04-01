@@ -4,28 +4,15 @@ import { Text } from '@/src/ui/Text';
 import { colors } from '@/src/theme/colors';
 
 interface GameHeaderProps {
-    teamName: string;
-    gameName?: string;
-    roundInfo?: string;
+    title: string;
 }
 
-export const GameHeader = ({ teamName, gameName, roundInfo }: GameHeaderProps) => {
+export const GameHeader = ({ title }: GameHeaderProps) => {
     return (
         <Box height={56} gap={1} style={{ paddingVertical: 21 }}>
             <Text variant="h4" style={{ textAlign: 'center', color: colors.neutralDark.darkest}}>
-                {teamName}
+                {title}
             </Text>
-
-            {gameName && (
-                <Text variant="bodyS" style={{ textAlign: 'center', color: colors.highlight.darkest, fontWeight: 'bold' }}>
-                    {gameName}
-                </Text>
-            )}
-            {roundInfo && (
-                <Text variant="bodyS" style={{ textAlign: 'center', color: colors.neutralDark.light }}>
-                    {roundInfo}
-                </Text>
-            )}
         </Box>
     );
 };

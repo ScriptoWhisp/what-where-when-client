@@ -56,7 +56,7 @@ export function GameResultsScreen() {
         <SafeAreaView style={{ flex: 1, backgroundColor: colors.neutralLight.lightest }}>
             <Box flex={1} align="center">
                 <Box maxWidth={450} width="100%" flex={1}>
-                    <GameHeader teamName={t("resultsScreen.title")} />
+                    <GameHeader title={t("resultsScreen.title")} />
                     <Box flex={1} style={{ width: '100%' }}>
                         {loading ? (
                             <GameResultsLoadingView />

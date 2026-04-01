@@ -17,13 +17,28 @@ function parseNameMap(raw: unknown): Record<string, string> {
     return out;
 }
 
+/** API may send either `{ en, ru }` or a plain string (older servers / caches). */
+function parseLocalizedField(raw: unknown): Record<string, string> | null {
+    if (typeof raw === 'string') {
+        const t = raw.trim();
+        return t.length > 0 ? { en: t } : null;
+    }
+    const map = parseNameMap(raw);
+    return Object.keys(map).length > 0 ? map : null;
+}
+
+function parseChipLabel(raw: unknown): Record<string, string> {
+    const loc = parseLocalizedField(raw);
+    return loc ?? {};
+}
+
 function parseChips(raw: unknown): FeedbackChips[] {
     if (!Array.isArray(raw)) return [];
     const out: FeedbackChips[] = [];
     for (const c of raw) {
         if (!isRecord(c)) continue;
         if (typeof c.key !== 'string' || c.key.length === 0) continue;
-        out.push({ key: c.key, name: parseNameMap(c.name) });
+        out.push({ key: c.key, name: parseChipLabel(c.name) });
     }
     return out;
 }
@@ -37,8 +52,8 @@ export function parseFeedbackScreen(raw: unknown): FeedbackScreen | null {
     for (const s of sectionsRaw) {
         if (!isRecord(s)) continue;
         if (typeof s.key !== 'string' || s.key.length === 0) continue;
-        const title = parseNameMap(s.title);
-        if (Object.keys(title).length === 0) continue;
+        const title = parseLocalizedField(s.title);
+        if (!title) continue;
         const chips = parseChips(s.chips);
         sections.push({ key: s.key, title, chips });
     }

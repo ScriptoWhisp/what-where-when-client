@@ -194,7 +194,7 @@ export default function GameScreen() {
                     <Box maxWidth={450} width="100%" flex={1} justify="space-between">
 
                         <GameHeader
-                            teamName={teamName as string}
+                            title={teamName as string}
                         />
 
                         <Box flex={1} style={{ width: '100%' }}>

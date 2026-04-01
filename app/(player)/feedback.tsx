@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
     Alert,
     KeyboardAvoidingView,
@@ -21,6 +21,7 @@ import type { FeedbackScreen } from '@/src/dto/player-feedback.dto';
 import { FeedbackDynamicSections } from '@/src/player/feedback/FeedbackDynamicSections';
 import { parseFeedbackScreen } from '@/src/player/feedback/parseFeedbackScreen';
 import i18n from '@/src/i18n';
+import {GameHeader} from "@/src/player/components/GameHeader";
 
 function toggleChipInSection(
     prev: Record<string, string[]>,
@@ -127,14 +128,9 @@ export default function PlayerFeedbackScreen() {
                 behavior={Platform.OS === 'ios' ? 'padding' : undefined}
                 keyboardVerticalOffset={Platform.OS === 'ios' ? 8 : 0}
             >
-                <Box row align="center" style={{ paddingHorizontal: 16, paddingVertical: 12 }}>
-                    <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button">
-                        <Ionicons name="chevron-back" size={28} color={colors.highlight.darkest} />
-                    </Pressable>
-                    <Text variant="h4" style={{ flex: 1, textAlign: 'center', marginRight: 28 }}>
-                        {t('feedback.screenTitle')}
-                    </Text>
-                </Box>
+                <GameHeader
+                    title={t('feedback.screenTitle')}
+                />
 
                 <ScrollView
                     contentContainerStyle={styles.scrollContent}
@@ -162,7 +158,7 @@ export default function PlayerFeedbackScreen() {
                                 {t('feedback.ratingPrompt')}
                             </Text>
 
-                            <Box row justify="center" gap={2} style={{ marginTop: 16, marginBottom: 28 }}>
+                            <Box row justify="flex-start" gap={1} style={{ marginBottom: 56 }}>
                                 {[1, 2, 3, 4, 5].map((star) => (
                                     <Pressable
                                         key={star}
@@ -173,7 +169,7 @@ export default function PlayerFeedbackScreen() {
                                     >
                                         <Ionicons
                                             name={rating >= star ? 'star' : 'star-outline'}
-                                            size={36}
+                                            size={24}
                                             color={colors.highlight.darkest}
                                         />
                                     </Pressable>
@@ -187,7 +183,7 @@ export default function PlayerFeedbackScreen() {
                                 onToggleChip={onToggleChip}
                             />
 
-                            <Text variant="h5" style={[styles.sectionTitle, { marginTop: 24 }]}>
+                            <Text variant="h5" style={[styles.sectionTitle, { marginBottom: 16 }]}>
                                 {t('feedback.commentHeading')}
                             </Text>
                             <TextInput
@@ -203,7 +199,7 @@ export default function PlayerFeedbackScreen() {
                     )}
                 </ScrollView>
 
-                <Box px={4} pb={Platform.OS === 'ios' ? 8 : 4} pt={2}>
+                <Box pb={Platform.OS === 'ios' ? 8 : 6} p={6}>
                     <Button
                         title={t('feedback.submit')}
                         variant="primary"
@@ -225,15 +221,16 @@ export default function PlayerFeedbackScreen() {
 
 const styles = StyleSheet.create({
     scrollContent: {
-        paddingHorizontal: 20,
-        paddingBottom: 24,
+        paddingHorizontal: 24,
+        paddingTop: 24
     },
     mainTitle: {
         color: colors.neutralDark.darkest,
-        marginBottom: 8,
+        marginBottom: 10,
     },
     muted: {
         color: colors.neutralDark.light,
+        marginBottom: 20
     },
     sectionTitle: {
         color: colors.neutralDark.darkest,

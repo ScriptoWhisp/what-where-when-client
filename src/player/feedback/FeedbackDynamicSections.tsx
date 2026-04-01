@@ -20,30 +20,32 @@ export function FeedbackDynamicSections({
 }>) {
     return (
         <>
-            {sections.map((section, idx) => {
+            {sections.map((section) => {
                 const selected = selectionsBySection[section.key] ?? [];
                 const sectionTitle =
                     pickLocalizedString(section.title, lang) || section.key;
                 return (
                     <React.Fragment key={section.key}>
-                        <Text
-                            variant="h5"
-                            style={[styles.sectionTitle, idx > 0 ? styles.sectionTitleSpaced : null]}
-                        >
-                            {sectionTitle}
-                        </Text>
-                        <Box row style={styles.tagWrap} gap={2}>
-                            {section.chips.map((chip) => (
-                                <Pressable
-                                    key={chip.key}
-                                    onPress={() => onToggleChip(section.key, chip.key)}
-                                >
-                                    <Tag
-                                        text={pickLocalizedString(chip.name, lang) || chip.key}
-                                        variant={selected.includes(chip.key) ? 'solid' : 'light'}
-                                    />
-                                </Pressable>
-                            ))}
+                        <Box style={{marginBottom: 56}}>
+                            <Text
+                                variant="h5"
+                                style={[styles.sectionTitle]}
+                            >
+                                {sectionTitle}
+                            </Text>
+                            <Box row style={styles.tagWrap} gap={2}>
+                                {section.chips.map((chip) => (
+                                    <Pressable
+                                        key={chip.key}
+                                        onPress={() => onToggleChip(section.key, chip.key)}
+                                    >
+                                        <Tag
+                                            text={pickLocalizedString(chip.name, lang) || chip.key}
+                                            variant={selected.includes(chip.key) ? 'solid' : 'light'}
+                                        />
+                                    </Pressable>
+                                ))}
+                            </Box>
                         </Box>
                     </React.Fragment>
                 );
@@ -55,10 +57,7 @@ export function FeedbackDynamicSections({
 const styles = StyleSheet.create({
     sectionTitle: {
         color: colors.neutralDark.darkest,
-        marginBottom: 12,
-    },
-    sectionTitleSpaced: {
-        marginTop: 24,
+        marginBottom: 16,
     },
     tagWrap: {
         flexWrap: 'wrap',
