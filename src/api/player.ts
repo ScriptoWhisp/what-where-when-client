@@ -1,6 +1,10 @@
 import { Platform } from 'react-native';
 import type { LeaderboardEntry } from '@/src/dto/game.dto';
-import type { FeedbackScreen, SubmitPlayerFeedbackBody } from '@/src/dto/player-feedback.dto';
+import type {
+    GetPlayerFeedbackFormResponse,
+    SubmitPlayerFeedbackDto,
+    SubmitPlayerFeedbackResponse,
+} from '@/src/dto/player-feedback.dto';
 
 // Для Android эмулятора используем 10.0.2.2, для iOS/Web - localhost или твой IP
 // Лучше вынести в конфиг, но для MVP так:
@@ -45,7 +49,8 @@ export const fetchGameLeaderboard = async (gameId: string): Promise<LeaderboardE
     return res.json() as Promise<LeaderboardEntry[]>;
 };
 
-export const fetchPlayerFeedbackForm = async (): Promise<FeedbackScreen> => {
+/** GET /player/feedback-form */
+export const fetchPlayerFeedbackForm = async (): Promise<GetPlayerFeedbackFormResponse> => {
     const res = await fetch(`${API_URL}/player/feedback-form`);
     if (!res.ok) {
         let message = 'Request failed';
@@ -57,10 +62,13 @@ export const fetchPlayerFeedbackForm = async (): Promise<FeedbackScreen> => {
         }
         throw new Error(message);
     }
-    return res.json() as Promise<FeedbackScreen>;
+    return res.json() as Promise<GetPlayerFeedbackFormResponse>;
 };
 
-export const submitPlayerFeedback = async (body: SubmitPlayerFeedbackBody) => {
+/** POST /player/feedback */
+export const submitPlayerFeedback = async (
+    body: SubmitPlayerFeedbackDto,
+): Promise<SubmitPlayerFeedbackResponse> => {
     const response = await fetch(`${API_URL}/player/feedback`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -78,5 +86,5 @@ export const submitPlayerFeedback = async (body: SubmitPlayerFeedbackBody) => {
         throw new Error(message);
     }
 
-    return response.json() as Promise<{ ok: true }>;
+    return response.json() as Promise<SubmitPlayerFeedbackResponse>;
 };
