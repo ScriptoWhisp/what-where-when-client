@@ -52,4 +52,8 @@ export const hostApi = {
     saveGame(body: SaveGameRequest): Promise<SaveGameResponse> {
         return api.post<SaveGameResponse>("/host/game/save", body);
     },
+
+    exportGameXlsx(gameId: number): Promise<ArrayBuffer> {
+        return api.postBinary("/host/game/export-game", { game_id: gameId });
+    },
 };

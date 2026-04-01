@@ -1,15 +1,21 @@
-import React, { useMemo } from 'react';
-import { StyleSheet, ScrollView } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import { Box } from '@/src/ui/Box';
 import { Text } from '@/src/ui/Text';
 import { colors } from '@/src/theme/colors';
 import { LeaderboardEntry } from '@/src/dto/game.dto';
+import { hostApi } from '@/src/api/host';
+import type { ApiError } from '@/src/api/client';
+import { saveGameXlsx } from '@/src/host/game/utils/saveGameExport';
 
 interface HostLeaderboardProps {
     leaderboard: LeaderboardEntry[];
+    gameId: number;
 }
 
-export const HostLeaderboard = ({ leaderboard }: HostLeaderboardProps) => {
+export const HostLeaderboard = ({ leaderboard, gameId }: HostLeaderboardProps) => {
+    const [exporting, setExporting] = useState(false);
 
     const groupedData = useMemo(() => {
         const groups: { categoryName: string; teams: (LeaderboardEntry & { displayRank: number })[] }[] = [];
@@ -41,13 +47,46 @@ export const HostLeaderboard = ({ leaderboard }: HostLeaderboardProps) => {
         return groups;
     }, [leaderboard]);
 
+    const handleExportGame = async () => {
+        setExporting(true);
+        try {
+            const buffer = await hostApi.exportGameXlsx(gameId);
+            await saveGameXlsx(gameId, buffer);
+        } catch (e) {
+            const err = e as ApiError;
+            const msg =
+                typeof err?.message === "string"
+                    ? err.message
+                    : "Не удалось выгрузить файл";
+            Alert.alert("Ошибка экспорта", msg);
+        } finally {
+            setExporting(false);
+        }
+    };
+
     return (
         <Box style={styles.container}>
             <ScrollView contentContainerStyle={{ padding: 32 }} showsVerticalScrollIndicator={false}>
-                <Box mb={8}>
+                <Box row align="center" justify="space-between" mb={8} style={{ flexWrap: 'wrap', gap: 12 }}>
                     <Text variant="h2" style={{ color: colors.neutralDark.darkest }}>
                         Турнирная таблица
                     </Text>
+                    <TouchableOpacity
+                        onPress={handleExportGame}
+                        disabled={exporting}
+                        style={[styles.exportButton, exporting && styles.exportButtonDisabled]}
+                        accessibilityRole="button"
+                        accessibilityLabel="Экспорт в Excel в формате листа Игра"
+                    >
+                        {exporting ? (
+                            <ActivityIndicator size="small" color={colors.neutralLight.lightest} />
+                        ) : (
+                            <Feather name="download" size={18} color={colors.neutralLight.lightest} style={{ marginRight: 8 }} />
+                        )}
+                        <Text variant="bodyM" style={{ color: colors.neutralLight.lightest, fontWeight: '600' }}>
+                            Экспорт (лист Игра)
+                        </Text>
+                    </TouchableOpacity>
                 </Box>
 
                 {groupedData.length === 0 ? (
@@ -117,6 +156,15 @@ export const HostLeaderboard = ({ leaderboard }: HostLeaderboardProps) => {
 
 const styles = StyleSheet.create({
     container: { flex: 1 },
+    exportButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: colors.highlight.darkest,
+        paddingVertical: 10,
+        paddingHorizontal: 16,
+        borderRadius: 8,
+    },
+    exportButtonDisabled: { opacity: 0.7 },
     emptyBox: {
         marginTop: 20, padding: 32,
         backgroundColor: colors.neutralLight.light, borderRadius: 12,
