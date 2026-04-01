@@ -4,6 +4,7 @@
     "continue": "Continue",
     "or": "or",
     "searching": "Searching...",
+    "loading": "Loading...",
     "error": "Error"
   },
   "home": {
@@ -76,5 +77,26 @@
     "emptyTitle": "Nothing here for now",
     "emptySubtitle": "This is where you’ll find your placement among other teams",
     "rating": "Rating: {{rating}}"
+  },
+  "resultsScreen": {
+    "title": "Game results",
+    "praise": "You did a really good job!",
+    "yourTeam": "Your team",
+    "giveFeedback": "Give feedback",
+    "loadError": "Could not load results."
+  },
+  "feedback": {
+    "ctaRateApp": "Rate the app",
+    "screenTitle": "Feedback",
+    "mainTitle": "Game has finished",
+    "ratingPrompt": "How would you rate the application?",
+    "commentHeading": "Anything else?",
+    "commentPlaceholder": "Tell us everything.",
+    "submit": "Submit",
+    "thankYouTitle": "Thank you!",
+    "thankYouSubtitle": "See you in next games",
+    "returnHome": "Return to Home",
+    "errorGeneric": "Could not send feedback. Try again.",
+    "formLoadError": "Could not load the feedback form. Try again later."
   }
 }

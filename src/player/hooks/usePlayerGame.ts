@@ -1,6 +1,35 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { getSocketUrl } from '@/src/api/player';
+
+const PARTICIPANT_SESSION_KEY = (gameId: string, teamId: string) =>
+  `www-player-participant:${gameId}:${teamId}`;
+
+export function readStoredParticipantId(gameId: string, teamId: string): number | null {
+  try {
+    const g = globalThis as typeof globalThis & { sessionStorage?: Storage };
+    if (!g.sessionStorage) return null;
+    const raw = g.sessionStorage.getItem(PARTICIPANT_SESSION_KEY(gameId, teamId));
+    if (!raw) return null;
+    const n = parseInt(raw, 10);
+    return Number.isFinite(n) ? n : null;
+  } catch {
+    return null;
+  }
+}
+
+function persistParticipantId(gameId: string, teamId: string, participantId: number) {
+  try {
+    const g = globalThis as typeof globalThis & { sessionStorage?: Storage };
+    if (!g.sessionStorage) return;
+    g.sessionStorage.setItem(
+      PARTICIPANT_SESSION_KEY(gameId, teamId),
+      String(participantId),
+    );
+  } catch {
+    /* private mode / unavailable */
+  }
+}
 import {
     GamePhase,
     GameStatuses,
@@ -38,6 +67,7 @@ export function usePlayerGame(gameId: string, teamId: string, teamName: string) 
 
     const [history, setHistory] = useState<AnswerDomain[]>([]);
     const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+    const [finishedJoinBlocked, setFinishedJoinBlocked] = useState(false);
 
     const updateGameState = useCallback((data: GameState) => {
         setGameState(prev => ({
@@ -102,8 +132,12 @@ export function usePlayerGame(gameId: string, teamId: string, teamName: string) 
             syncHistory();
         });
 
-        socket.on('error', (err: { message: string }) => {
-            setStatus(`Ошибка: ${err.message}`);
+        socket.on('error', (err: { message?: string }) => {
+            const msg = typeof err?.message === 'string' ? err.message : '';
+            if (msg.includes('already finished')) {
+                setFinishedJoinBlocked(true);
+            }
+            setStatus(`Ошибка: ${msg || 'unknown'}`);
             setLastAnswerStatus('error');
         });
 
@@ -114,6 +148,16 @@ export function usePlayerGame(gameId: string, teamId: string, teamName: string) 
             socketRef.current = null;
         };
     }, [gameId, teamId, teamName, syncHistory, updateGameState]);
+
+    useEffect(() => {
+        setFinishedJoinBlocked(false);
+    }, [gameId, teamId]);
+
+    useEffect(() => {
+        if (participantId != null && gameId && teamId) {
+            persistParticipantId(gameId, teamId, participantId);
+        }
+    }, [participantId, gameId, teamId]);
 
     useEffect(() => {
         if (participantId) {
@@ -158,6 +202,7 @@ export function usePlayerGame(gameId: string, teamId: string, teamName: string) 
         leaderboard,
         submitAnswer,
         syncHistory,
-        syncLeaderboard
+        syncLeaderboard,
+        finishedJoinBlocked,
     };
 }

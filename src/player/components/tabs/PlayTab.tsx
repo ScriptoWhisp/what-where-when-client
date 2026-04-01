@@ -7,7 +7,7 @@ import {
     StyleSheet,
     TextInput,
     ScrollView,
-    View, Linking
+    View,
 } from 'react-native';
 import { Box } from '@/src/ui/Box';
 import { Text } from '@/src/ui/Text';
@@ -15,7 +15,7 @@ import { Button } from '@/src/ui/Button';
 import { colors } from '@/src/theme/colors';
 import { TimerBar } from '@/src/ui/TimerBar';
 import {GamePhase, GameStatus, GameStatuses} from '@/src/dto/common.dto';
-import {AnswerDomain} from "@/src/dto/game.dto";
+import { AnswerDomain } from '@/src/dto/game.dto';
 
 interface PlayTabProps {
     phase: GamePhase;
@@ -27,6 +27,7 @@ interface PlayTabProps {
     submitAnswer: (answer: string) => void;
     lastAnswerStatus?: 'success' | 'error' | null;
     gameStatus?: GameStatus | null;
+    participantId: number | null;
 }
 
 export const PlayTab = ({
@@ -38,7 +39,8 @@ export const PlayTab = ({
                             gameStarted,
                             submitAnswer,
                             lastAnswerStatus,
-                            gameStatus
+                            gameStatus,
+                            participantId,
                         }: PlayTabProps) => {
     const { t } = useTranslation();
 
@@ -78,36 +80,11 @@ export const PlayTab = ({
     const isWaiting =
         !gameStarted ||
         phase === GamePhase.IDLE ||
-        phase === GamePhase.PREPARATION ||
-        gameStatus === GameStatuses.FINISHED;
+        phase === GamePhase.PREPARATION;
 
-    const renderFinished = () => (
-        <Box align="center" gap={4}>
-            <Text variant="h2" style={{ color: colors.neutralDark.darkest, textAlign: 'center' }}>
-                {t('playTab.finishedTitle')}
-            </Text>
-            <Text
-                variant="bodyM"
-                style={{
-                    color: colors.neutralDark.light,
-                    textAlign: 'center',
-                    marginBottom: 16,
-                    lineHeight: 22,
-                }}
-            >
-                {t('playTab.finishedBody')}
-            </Text>
-            <Button
-                title={t('playTab.feedback')}
-                variant="primary"
-                onPress={() => {
-                    Linking.openURL(
-                        'https://docs.google.com/forms/d/e/1FAIpQLSei713QAvW06XJrjDr89hVMFkevLimHf8r_X18EW4VUmYuLiw/viewform',
-                    );
-                }}
-            />
-        </Box>
-    );
+    if (gameStatus === GameStatuses.FINISHED) {
+        return <Box flex={1} />;
+    }
 
     const renderWaiting = () => (
         <Box align="center" gap={2}>
@@ -214,15 +191,13 @@ export const PlayTab = ({
                 keyboardShouldPersistTaps="handled"
                 showsVerticalScrollIndicator={false}
             >
-                {gameStatus === GameStatuses.FINISHED
-                    ? renderFinished()
-                    : !gameStarted
-                        ? renderWaiting()
-                        : phase === GamePhase.IDLE
-                            ? renderIdle()
-                            : phase === GamePhase.PREPARATION
-                                ? renderPreparation()
-                                : renderActive()}
+                {!gameStarted
+                    ? renderWaiting()
+                    : phase === GamePhase.IDLE
+                        ? renderIdle()
+                        : phase === GamePhase.PREPARATION
+                            ? renderPreparation()
+                            : renderActive()}
             </ScrollView>
         </View>
     );

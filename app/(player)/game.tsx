@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
+import React, { useLayoutEffect, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Box } from '@/src/ui/Box';
-import { Text } from '@/src/ui/Text';
 import { colors } from '@/src/theme/colors';
 
 import { GameHeader } from '../../src/player/components/GameHeader';
@@ -13,13 +12,14 @@ import { MiniGameWidget } from '../../src/player/components/MiniGameWidget';
 import { PlayTab } from '@/src/player/components/tabs/PlayTab';
 import { HistoryTab } from '@/src/player/components/tabs/HistoryTab';
 
-import { usePlayerGame } from '@/src/player/hooks/usePlayerGame';
-import { GamePhase } from '@/src/dto/common.dto';
+import { usePlayerGame, readStoredParticipantId } from '@/src/player/hooks/usePlayerGame';
+import { GamePhase, GameStatuses } from '@/src/dto/common.dto';
 import { Keyboard, KeyboardAvoidingView, Platform } from "react-native";
 import { LeaderboardTab } from "@/src/player/components/tabs/LeaderboardTab";
 
 export default function GameScreen() {
     const { t } = useTranslation();
+    const router = useRouter();
     const { gameId, teamId, teamName } = useLocalSearchParams();
 
     const [activeTab, setActiveTab] = useState<TabType>('play');
@@ -55,7 +55,6 @@ export default function GameScreen() {
     }, []);
 
     const {
-        status: connectionStatus,
         gameStatus,
         gameStarted,
         phase,
@@ -65,12 +64,55 @@ export default function GameScreen() {
         submitAnswer,
         history,
         leaderboard,
-        participantId
+        participantId,
+        finishedJoinBlocked,
     } = usePlayerGame(
         gameId as string,
         teamId as string,
         teamName as string
     );
+
+    const didRedirectToResultsRef = useRef(false);
+
+    useLayoutEffect(() => {
+        if (didRedirectToResultsRef.current) return;
+
+        const gid = String(gameId ?? '');
+        const tid = String(teamId ?? '');
+        const tname = String(teamName ?? '');
+
+        if (gameStatus === GameStatuses.FINISHED && participantId != null) {
+            didRedirectToResultsRef.current = true;
+            router.replace({
+                pathname: '/(player)/game-results',
+                params: {
+                    gameId: gid,
+                    teamId: tid,
+                    teamName: tname,
+                    participantId: String(participantId),
+                },
+            });
+            return;
+        }
+
+        if (finishedJoinBlocked) {
+            didRedirectToResultsRef.current = true;
+            const stored = readStoredParticipantId(gid, tid);
+            router.replace({
+                pathname: '/(player)/game-results',
+                params: {
+                    gameId: gid,
+                    teamId: tid,
+                    teamName: tname,
+                    participantId: stored != null ? String(stored) : '',
+                },
+            });
+        }
+    }, [gameStatus, participantId, finishedJoinBlocked, gameId, teamId, teamName, router]);
+
+    const isExitingToResults =
+        finishedJoinBlocked ||
+        gameStatus === GameStatuses.FINISHED;
 
     React.useEffect(() => {
         if (gameStarted) {
@@ -105,6 +147,7 @@ export default function GameScreen() {
                         submitAnswer={submitAnswer}
                         lastAnswerStatus={lastAnswerStatus}
                         gameStatus={gameStatus}
+                        participantId={participantId}
                     />
                 );
             case 'history':
@@ -131,6 +174,14 @@ export default function GameScreen() {
         if (phase === GamePhase.PREPARATION) return t('player.game.phase.preparation');
         return t('player.game.phase.idle');
     };
+
+    if (isExitingToResults) {
+        return (
+            <SafeAreaView style={{ flex: 1, backgroundColor: colors.neutralLight.lightest }}>
+                <Box flex={1} />
+            </SafeAreaView>
+        );
+    }
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: colors.neutralLight.lightest }}>

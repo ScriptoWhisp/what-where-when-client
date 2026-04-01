@@ -5,7 +5,7 @@ import {Text, Variant} from "./Text";
 
 export type BulletVariant = "plain" | "light" | "primary";
 
-type Size = "sm" | "md";
+type Size = "sm" | "md" | "lg";
 
 type Props = {
     value: number | string;
@@ -16,6 +16,7 @@ type Props = {
 const dimensions: Record<Size, { diameter: number; font: Variant }> = {
     sm: { diameter: 24, font: "captionM" },
     md: { diameter: 32, font: "captionM" },
+    lg: { diameter: 96, font: "h1" },
 };
 
 export function Bullet({ value, variant = "light", size = "md" }: Readonly<Props>) {
