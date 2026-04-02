@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
         borderColor: colors.neutralLight.dark,
         backgroundColor: colors.neutralLight.lightest,
         textAlign: 'center',
-        fontSize: 14,
+        fontSize: Platform.OS === 'web' ? 16 : 14,
         fontFamily: 'InterBold',
         color: colors.neutralDark.darkest,
         ...(Platform.OS === 'web' ? { outlineStyle: 'none' as any } : {}),
