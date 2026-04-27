@@ -16,6 +16,7 @@ import { Text } from '@/src/ui/Text';
 import { Button } from '@/src/ui/Button';
 import { checkGameByCode } from '@/src/api/player';
 import { colors } from '@/src/theme/colors';
+import { mixpanel } from "@/src/analytics/mixpanel";
 
 type InputRef = TextInput | null;
 
@@ -29,23 +30,37 @@ export default function JoinScreen() {
 
     const router = useRouter();
     const inputRefs = useRef<InputRef[]>([]);
+    const enteredOnceRef = useRef(false);
 
     const handleJoin = async () => {
         const code = digits.join('');
         if (code.length < 4) return;
 
+        const t0 = Date.now();
         setLoading(true);
         setErrorMessage(null);
         Keyboard.dismiss();
 
         try {
+            void mixpanel.track("Player Join Code Submitted", { code, result: "pending" });
             const gameData = await checkGameByCode(code);
+            void mixpanel.track("Player Join Code Submitted", {
+                code,
+                result: "success",
+                response_time_ms: Date.now() - t0,
+            });
             router.push({
                 pathname: '/(player)/select-team',
                 params: { gameData: JSON.stringify(gameData), code }
             });
         } catch (e: any) {
             setErrorMessage(e.message || t('player.join.errors.notFound'));
+            void mixpanel.track("Player Join Code Submitted", {
+                code,
+                result: "fail",
+                error_message: e?.message ?? String(e),
+                response_time_ms: Date.now() - t0,
+            });
             setDigits(['', '', '', '']);
             setFocusedIndex(null);
             Keyboard.dismiss();
@@ -61,6 +76,14 @@ export default function JoinScreen() {
             const newDigits = text.slice(0, 4).split('');
             setDigits(newDigits);
             if (newDigits.length === 4) {
+                if (!enteredOnceRef.current) {
+                    enteredOnceRef.current = true;
+                    void mixpanel.track("Player Join Code Entered", {
+                        code_length: 4,
+                        input_method: "paste",
+                        has_error_before: Boolean(errorMessage),
+                    });
+                }
                 setTimeout(() => {
                     inputRefs.current[3]?.focus();
                     Keyboard.dismiss();
@@ -74,6 +97,14 @@ export default function JoinScreen() {
         setDigits(newDigits);
 
         if (text !== '' && index < 3) {
+            if (!enteredOnceRef.current && newDigits.join("").length === 4) {
+                enteredOnceRef.current = true;
+                void mixpanel.track("Player Join Code Entered", {
+                    code_length: 4,
+                    input_method: "type",
+                    has_error_before: Boolean(errorMessage),
+                });
+            }
             setTimeout(() => {
                 inputRefs.current[index + 1]?.focus();
             }, 10);

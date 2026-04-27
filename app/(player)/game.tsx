@@ -17,12 +17,14 @@ import { usePlayerGame } from '@/src/player/hooks/usePlayerGame';
 import { GamePhase } from '@/src/dto/common.dto';
 import { Keyboard, KeyboardAvoidingView, Platform } from "react-native";
 import { LeaderboardTab } from "@/src/player/components/tabs/LeaderboardTab";
+import { mixpanel } from "@/src/analytics/mixpanel";
 
 export default function GameScreen() {
     const { t } = useTranslation();
     const { gameId, teamId, teamName } = useLocalSearchParams();
 
     const [activeTab, setActiveTab] = useState<TabType>('play');
+    const prevTabRef = React.useRef<TabType>('play');
     const [isKeyboardVisible, setKeyboardVisible] = useState(false);
 
     const [hasGameStarted, setHasGameStarted] = useState(false);
@@ -77,6 +79,21 @@ export default function GameScreen() {
             setHasGameStarted(true);
         }
     }, [gameStarted]);
+
+    React.useEffect(() => {
+        const prev = prevTabRef.current;
+        if (prev !== activeTab) {
+            prevTabRef.current = activeTab;
+            void mixpanel.track("Player Tab Changed", {
+                game_id: Number(gameId),
+                team_id: Number(teamId),
+                tab_from: prev,
+                tab_to: activeTab,
+                game_phase: String(phase),
+                game_status: gameStatus ? String(gameStatus) : undefined,
+            });
+        }
+    }, [activeTab, gameId, gameStatus, phase, teamId]);
 
     const [phaseTotalTime, setPhaseTotalTime] = useState(timer > 0 ? timer : 1);
     const [prevPhase, setPrevPhase] = useState(phase);

@@ -16,6 +16,7 @@ import { RadioButton } from '@/src/ui/RadioButton';
 import { colors } from '@/src/theme/colors';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {Tag} from "@/src/ui/Tag";
+import { mixpanel } from "@/src/analytics/mixpanel";
 
 export default function SelectTeamScreen() {
     const { t } = useTranslation();
@@ -33,10 +34,20 @@ export default function SelectTeamScreen() {
     const handleSelect = (team: any) => {
         if (!team.isAvailable) return;
         setSelectedTeam(team);
+        void mixpanel.track("Player Team Selected", {
+            game_id: game?.gameId,
+            team_id: team?.teamId,
+            team_name: team?.name,
+            is_available: Boolean(team?.isAvailable),
+        });
     };
 
     const handleContinue = () => {
         if (!selectedTeam) return;
+        void mixpanel.track("Player Entered Game", {
+            game_id: game?.gameId,
+            team_id: selectedTeam?.teamId,
+        });
         router.replace({
             pathname: '/(player)/game',
             params: {

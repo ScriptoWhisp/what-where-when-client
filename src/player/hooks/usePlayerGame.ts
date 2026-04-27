@@ -10,11 +10,14 @@ import {
     PlayerResponseEvent
 } from "@/src/dto/common.dto";
 import { AnswerDomain, GameState, LeaderboardEntry } from "@/src/dto/game.dto";
+import { mixpanel } from "@/src/analytics/mixpanel";
 
 export function usePlayerGame(gameId: string, teamId: string, teamName: string) {
     const socketRef = useRef<Socket | null>(null);
 
     const participantIdRef = useRef<number | null>(null);
+    const identifiedRef = useRef(false);
+    const lastSubmitRef = useRef<{ submittedAtIso: string; questionId: number } | null>(null);
 
     const [status, setStatus] = useState('Подключение...');
     const [participantId, setParticipantId] = useState<number | null>(null);
@@ -69,6 +72,16 @@ export function usePlayerGame(gameId: string, teamId: string, teamName: string) 
 
         socket.on('connect', () => {
             setStatus(`Команда: ${teamName}`);
+            mixpanel.setSuperProps({
+                role: "player",
+                game_id: Number(gameId),
+                team_id: Number(teamId),
+            });
+            void mixpanel.track("Socket Connected", { namespace: "game", role: "player" });
+            void mixpanel.track("Player Join Game Emitted", {
+                game_id: Number(gameId),
+                team_id: Number(teamId),
+            });
             socket.emit(PlayerRequestEvent.JoinGame, {
                 gameId: Number(gameId),
                 teamId: Number(teamId)
@@ -79,6 +92,18 @@ export function usePlayerGame(gameId: string, teamId: string, teamName: string) 
             if (data.participantId) {
                 participantIdRef.current = data.participantId;
                 setParticipantId(data.participantId);
+
+                if (!identifiedRef.current) {
+                    identifiedRef.current = true;
+                    void mixpanel.alias(String(data.participantId));
+                    void mixpanel.identify(String(data.participantId), {
+                        $name: teamName,
+                        role: "player",
+                        game_id: Number(gameId),
+                        team_id: Number(teamId),
+                        team_name: teamName,
+                    });
+                }
             }
             if (data.state) updateGameState(data.state);
         });
@@ -99,15 +124,34 @@ export function usePlayerGame(gameId: string, teamId: string, teamName: string) 
         socket.on(PlayerResponseEvent.AnswerReceived, () => {
             setLastAnswerStatus('success');
             setStatus(`Команда: ${teamName}`);
+            const last = lastSubmitRef.current;
+            if (last) {
+                const latencyMs = Date.now() - Date.parse(last.submittedAtIso);
+                void mixpanel.track("Player Answer Ack", {
+                    game_id: Number(gameId),
+                    team_id: Number(teamId),
+                    participant_id: participantIdRef.current,
+                    question_id: last.questionId,
+                    latency_ms: Number.isFinite(latencyMs) ? latencyMs : undefined,
+                });
+            }
             syncHistory();
         });
 
         socket.on('error', (err: { message: string }) => {
             setStatus(`Ошибка: ${err.message}`);
             setLastAnswerStatus('error');
+            void mixpanel.track("Player Socket Error", {
+                game_id: Number(gameId),
+                team_id: Number(teamId),
+                error_message: err?.message,
+            });
         });
 
-        socket.on('disconnect', () => setStatus('Связь потеряна...'));
+        socket.on('disconnect', () => {
+            setStatus('Связь потеряна...');
+            void mixpanel.track("Socket Disconnected", { namespace: "game", role: "player" });
+        });
 
         return () => {
             socket.disconnect();
@@ -138,16 +182,29 @@ export function usePlayerGame(gameId: string, teamId: string, teamName: string) 
             gameState.activeQuestionId;
 
         if (canSubmit) {
+            const submittedAt = new Date().toISOString();
+            lastSubmitRef.current = { submittedAtIso: submittedAt, questionId: gameState.activeQuestionId! };
+
+            void mixpanel.track("Player Answer Submitted", {
+                game_id: Number(gameId),
+                team_id: Number(teamId),
+                participant_id: id,
+                question_id: gameState.activeQuestionId,
+                question_number: gameState.activeQuestionNumber,
+                phase: String(gameState.phase),
+                time_left_s: gameState.timer,
+                answer_length: answerText?.length ?? 0,
+            });
             socketRef.current?.emit(PlayerRequestEvent.SubmitAnswer, {
                 gameId: Number(gameId),
                 participantId: id,
                 questionId: gameState.activeQuestionId,
                 answer: answerText,
-                submittedAt: new Date().toISOString()
+                submittedAt
             });
             setStatus('Отправка...');
         }
-    }, [gameId, gameState.phase, gameState.activeQuestionId]);
+    }, [gameId, teamId, gameState.phase, gameState.activeQuestionId, gameState.activeQuestionNumber, gameState.timer]);
 
     return {
         status,

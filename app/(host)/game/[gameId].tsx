@@ -16,6 +16,7 @@ import { AnswersDashboard } from "@/src/host/game/components/tabs/AnswersDashboa
 import { GameStatuses } from "@/src/dto/common.dto";
 import { HostLeaderboard } from "@/src/host/game/components/tabs/HostLeaderboard";
 import { Teams } from "@/src/host/game/components/tabs/Teams";
+import { mixpanel } from "@/src/analytics/mixpanel";
 
 export default function GameAdminScreen() {
     const router = useRouter();
@@ -56,6 +57,17 @@ export default function GameAdminScreen() {
     }, [editor.isNew]);
 
     const [activeTab, setActiveTab] = useState('Settings');
+    const lastTabRef = React.useRef<string | null>(null);
+
+    React.useEffect(() => {
+        if (lastTabRef.current === activeTab) return;
+        lastTabRef.current = activeTab;
+        void mixpanel.track("Host Tab Viewed", {
+            game_id: gameId && gameId !== "new" ? Number(gameId) : undefined,
+            tab: activeTab,
+            is_new: editor.isNew,
+        });
+    }, [activeTab, editor.isNew, gameId]);
 
     const handleBack = () => {
         if (router.canGoBack()) {

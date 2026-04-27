@@ -10,6 +10,7 @@ import {hostApi} from "@/src/api/host";
 import {toSaveGameDraft} from "@/src/game/mappers";
 import {tmpId} from "@/src/utils/tmpId";
 import {UICategory, UIQuestion, UIRound, UITeam} from "@/src/host/game/components/tabs/editor/types";
+import { mixpanel } from "@/src/analytics/mixpanel";
 
 export function useGameEditor(gameIdParam: string) {
     const router = useRouter();
@@ -108,12 +109,20 @@ export function useGameEditor(gameIdParam: string) {
             if (!draft.title.trim()) return;
             if (!draft.date_of_event.trim()) return;
 
-            const res = await hostApi.createGame({
-                title: draft.title.trim(),
-                date_of_event: draft.date_of_event.trim(),
-            });
-
-            router.replace(`/game/${res.game.id}`);
+            void mixpanel.track("Host Game Create Submitted");
+            try {
+                const res = await hostApi.createGame({
+                    title: draft.title.trim(),
+                    date_of_event: draft.date_of_event.trim(),
+                });
+                void mixpanel.track("Host Game Create Succeeded", { game_id: res.game?.id });
+                router.replace(`/game/${res.game.id}`);
+            } catch (e: any) {
+                void mixpanel.track("Host Game Create Failed", {
+                    error_message: e?.message ?? String(e),
+                    status: e?.status,
+                });
+            }
             return;
         }
 
@@ -158,14 +167,29 @@ export function useGameEditor(gameIdParam: string) {
             deleted_category_ids: deletedCategoryIds.length ? deletedCategoryIds : undefined,
         };
 
-        const res = await hostApi.saveGame(body);
-        setLoaded(res.game);
-        setDraft(toSaveGameDraft(res.game));
+        void mixpanel.track("Host Game Saved Submitted", {
+            game_id: loaded.id,
+            rounds_count: (draft.rounds as any[])?.length ?? 0,
+            teams_count: (draft.teams as any[])?.length ?? 0,
+        });
+        try {
+            const res = await hostApi.saveGame(body);
+            void mixpanel.track("Host Game Saved Succeeded", { game_id: res.game?.id, version: res.game?.version });
 
-        setDeletedRoundIds([]);
-        setDeletedQuestionIds([]);
-        setDeletedTeamIds([]);
-        setDeletedCategoryIds([]);
+            setLoaded(res.game);
+            setDraft(toSaveGameDraft(res.game));
+
+            setDeletedRoundIds([]);
+            setDeletedQuestionIds([]);
+            setDeletedTeamIds([]);
+            setDeletedCategoryIds([]);
+        } catch (e: any) {
+            void mixpanel.track("Host Game Saved Failed", {
+                game_id: loaded.id,
+                error_message: e?.message ?? String(e),
+                status: e?.status,
+            });
+        }
     }
 
     // ---- Categories ----

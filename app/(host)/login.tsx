@@ -7,6 +7,13 @@ import { Button } from "@/src/ui/Button";
 import { Text } from "@/src/ui/Text";
 import {api} from "@/src/api/client";
 import {hostApi} from "@/src/api/host";
+import { mixpanel } from "@/src/analytics/mixpanel";
+
+function emailDomain(email: string) {
+    const at = email.indexOf("@");
+    if (at === -1) return undefined;
+    return email.slice(at + 1).toLowerCase();
+}
 
 export default function LoginScreen() {
     const router = useRouter();
@@ -44,11 +51,29 @@ export default function LoginScreen() {
                         title="Login"
                         variant="primary"
                         onPress={async () => {
+                            void mixpanel.track("Host Login Submitted", {
+                                email_domain: emailDomain(email),
+                            });
                             try {
-                                await hostApi.login({ email, password });
+                                const res = await hostApi.login({ email, password });
+                                void mixpanel.track("Host Login Succeeded", {
+                                    host_id: res.user?.id,
+                                    role: res.user?.role,
+                                });
+                                await mixpanel.identify(String(res.user?.id), {
+                                    $email: email,
+                                    $name: email,
+                                    role: res.user?.role,
+                                    email_domain: emailDomain(res.user?.email ?? email),
+                                });
                                 router.push("/setup");
                             } catch (e: any) {
                                 console.log(e);
+                                void mixpanel.track("Host Login Failed", {
+                                    email_domain: emailDomain(email),
+                                    error_message: e?.message ?? String(e),
+                                    status: e?.status,
+                                });
                             }
                         }}
                     />
