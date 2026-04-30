@@ -7,6 +7,7 @@ import { colors } from "@/src/theme/colors";
 import { UITeam, UICategory } from "@/src/host/game/components/tabs/editor/types";
 import { Button } from "@/src/ui/Button";
 import {Ionicons} from "@expo/vector-icons";
+import { mixpanel } from "@/src/analytics/mixpanel";
 
 export function TeamsSection({
                                  teams,
@@ -79,7 +80,14 @@ export function TeamsSection({
                             return (
                                 <TouchableOpacity
                                     key={c.id}
-                                    onPress={() => setSelectedCatId(c.id!)}
+                                    onPress={() => {
+                                        void mixpanel.track("Host Editor Team Category Selected", {
+                                            category_id: c.id ?? null,
+                                            previous_category_id: selectedCatId,
+                                            is_editing: Boolean(editingTeam),
+                                        });
+                                        setSelectedCatId(c.id!);
+                                    }}
                                     style={[styles.catChip, isActive && styles.catChipActive]}
                                 >
                                     <Text style={{

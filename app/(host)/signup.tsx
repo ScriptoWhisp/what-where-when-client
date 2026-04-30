@@ -48,7 +48,15 @@ export default function SignupScreen() {
                         onChangeText={setPw}
                         placeholder="Create a password"
                         secureTextEntry={!showPw}
-                        onRightIconPress={() => setShowPw((s) => !s)}
+                        onRightIconPress={() => {
+                            setShowPw((s) => {
+                                void mixpanel.track("Host Signup Show Password Toggled", {
+                                    field: "password",
+                                    visible: !s,
+                                });
+                                return !s;
+                            });
+                        }}
                     />
 
                     <TextField
@@ -56,21 +64,51 @@ export default function SignupScreen() {
                         onChangeText={setPw2}
                         placeholder="Confirm password"
                         secureTextEntry={!showPw2}
-                        onRightIconPress={() => setShowPw2((s) => !s)}
+                        onRightIconPress={() => {
+                            setShowPw2((s) => {
+                                void mixpanel.track("Host Signup Show Password Toggled", {
+                                    field: "confirm_password",
+                                    visible: !s,
+                                });
+                                return !s;
+                            });
+                        }}
                     />
                 </View>
 
                 <View style={{ flexDirection: "row", gap: 10, alignItems: "center"}}>
-                    <Checkbox checked={agree} onChange={setAgree} />
+                    <Checkbox
+                        checked={agree}
+                        onChange={(v) => {
+                            void mixpanel.track("Host Signup Terms Toggled", {
+                                agreed: v,
+                            });
+                            setAgree(v);
+                        }}
+                    />
                     <Text variant="bodyS" style={{ color: "#71727A", flex: 1 }}>
                         I&apos;ve read and agree with the{" "}
-                        <Link href="/">
+                        <Link
+                            href="/"
+                            onPress={() => {
+                                void mixpanel.track("Host Signup Terms Link Clicked", {
+                                    link: "terms_and_conditions",
+                                });
+                            }}
+                        >
                             <Text variant="bodyS" style={{ color: "#006FFD" }}>
                                 Terms and Conditions
                             </Text>
                         </Link>{" "}
                         and the{" "}
-                        <Link href="/">
+                        <Link
+                            href="/"
+                            onPress={() => {
+                                void mixpanel.track("Host Signup Terms Link Clicked", {
+                                    link: "privacy_policy",
+                                });
+                            }}
+                        >
                             <Text variant="bodyS" style={{ color: "#006FFD" }}>
                                 Privacy Policy
                             </Text>
@@ -84,15 +122,20 @@ export default function SignupScreen() {
                     variant="primary"
                     disabled={!agree || !email || !pw || pw !== pw2}
                     onPress={async () => {
+                        const t0 = Date.now();
                         void mixpanel.track("Host Signup Submitted", {
                             email_domain: emailDomain(email),
                             agreed_terms: agree,
+                            name_filled: Boolean(name?.trim()),
+                            password_length: pw?.length ?? 0,
+                            passwords_match: pw === pw2,
                         });
                         try {
                             const res = await hostApi.register({ email, password: pw });
                             void mixpanel.track("Host Signup Succeeded", {
                                 host_id: res.user?.id,
                                 role: res.user?.role,
+                                response_time_ms: Date.now() - t0,
                             });
                             await mixpanel.identify(String(res.user?.id), {
                                 $email: email,
@@ -100,12 +143,18 @@ export default function SignupScreen() {
                                 role: res.user?.role,
                                 email_domain: emailDomain(res.user?.email ?? email),
                             });
+                            mixpanel.setSuperProps({
+                                role: "host",
+                                host_id: res.user?.id,
+                                session_present: true,
+                            });
                             router.push("/setup");
                         } catch (e: any) {
                             void mixpanel.track("Host Signup Failed", {
                                 email_domain: emailDomain(email),
                                 error_message: e?.message ?? String(e),
                                 status: e?.status,
+                                response_time_ms: Date.now() - t0,
                             });
                         }
                     }}

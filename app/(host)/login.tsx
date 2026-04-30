@@ -36,10 +36,24 @@ export default function LoginScreen() {
                         onChangeText={setPassword}
                         placeholder="Password"
                         secureTextEntry={!showPw}
-                        onRightIconPress={() => setShowPw((s) => !s)}
+                        onRightIconPress={() => {
+                            setShowPw((s) => {
+                                void mixpanel.track("Host Login Show Password Toggled", {
+                                    visible: !s,
+                                });
+                                return !s;
+                            });
+                        }}
                     />
 
-                    <Link href="/">
+                    <Link
+                        href="/"
+                        onPress={() => {
+                            void mixpanel.track("Host Login Forgot Password Clicked", {
+                                email_domain: emailDomain(email),
+                            });
+                        }}
+                    >
                         <Text variant="bodyS" style={{ color: "#006FFD" }}>
                             Forgot password?
                         </Text>
@@ -54,17 +68,24 @@ export default function LoginScreen() {
                             void mixpanel.track("Host Login Submitted", {
                                 email_domain: emailDomain(email),
                             });
+                            const t0 = Date.now();
                             try {
                                 const res = await hostApi.login({ email, password });
                                 void mixpanel.track("Host Login Succeeded", {
                                     host_id: res.user?.id,
                                     role: res.user?.role,
+                                    response_time_ms: Date.now() - t0,
                                 });
                                 await mixpanel.identify(String(res.user?.id), {
                                     $email: email,
                                     $name: email,
                                     role: res.user?.role,
                                     email_domain: emailDomain(res.user?.email ?? email),
+                                });
+                                mixpanel.setSuperProps({
+                                    role: "host",
+                                    host_id: res.user?.id,
+                                    session_present: true,
                                 });
                                 router.push("/setup");
                             } catch (e: any) {
@@ -73,6 +94,7 @@ export default function LoginScreen() {
                                     email_domain: emailDomain(email),
                                     error_message: e?.message ?? String(e),
                                     status: e?.status,
+                                    response_time_ms: Date.now() - t0,
                                 });
                             }
                         }}
@@ -81,7 +103,12 @@ export default function LoginScreen() {
                     <View style={{ alignItems: "center" }}>
                         <Text variant="bodyS" style={{ color: "#71727A" }}>
                             Not a member?{" "}
-                            <Link href="/signup">
+                            <Link
+                                href="/signup"
+                                onPress={() => {
+                                    void mixpanel.track("Host Login Register Link Clicked");
+                                }}
+                            >
                                 <Text variant="bodyS" style={{ color: "#006FFD" }}>
                                     Register now
                                 </Text>

@@ -18,6 +18,9 @@ export function usePlayerGame(gameId: string, teamId: string, teamName: string) 
     const participantIdRef = useRef<number | null>(null);
     const identifiedRef = useRef(false);
     const lastSubmitRef = useRef<{ submittedAtIso: string; questionId: number } | null>(null);
+    const prevPhaseRef = useRef<GamePhase | null>(null);
+    const prevStatusRef = useRef<GameStatus | null>(null);
+    const prevActiveQuestionIdRef = useRef<number | null>(null);
 
     const [status, setStatus] = useState('Подключение...');
     const [participantId, setParticipantId] = useState<number | null>(null);
@@ -42,7 +45,51 @@ export function usePlayerGame(gameId: string, teamId: string, teamName: string) 
     const [history, setHistory] = useState<AnswerDomain[]>([]);
     const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
 
+    const trackStateTransitions = useCallback((data: GameState) => {
+        const prevPhase = prevPhaseRef.current;
+        const prevStatus = prevStatusRef.current;
+        const prevQ = prevActiveQuestionIdRef.current;
+
+        if (prevPhase !== null && data.phase && prevPhase !== data.phase) {
+            void mixpanel.track("Player Game Phase Observed", {
+                game_id: Number(gameId),
+                team_id: Number(teamId),
+                from: String(prevPhase),
+                to: String(data.phase),
+                active_question_id: data.activeQuestionId ?? null,
+                active_question_number: data.activeQuestionNumber ?? null,
+                seconds: data.seconds,
+            });
+        }
+        if (prevStatus !== null && data.status && prevStatus !== data.status) {
+            void mixpanel.track("Player Game Status Observed", {
+                game_id: Number(gameId),
+                team_id: Number(teamId),
+                from: String(prevStatus),
+                to: String(data.status),
+            });
+        }
+        if (
+            prevQ !== null &&
+            data.activeQuestionId &&
+            prevQ !== data.activeQuestionId
+        ) {
+            void mixpanel.track("Player Game Active Question Observed", {
+                game_id: Number(gameId),
+                team_id: Number(teamId),
+                from_question_id: prevQ,
+                to_question_id: data.activeQuestionId,
+                to_question_number: data.activeQuestionNumber ?? null,
+            });
+        }
+
+        prevPhaseRef.current = data.phase ?? prevPhase;
+        prevStatusRef.current = data.status ?? prevStatus;
+        prevActiveQuestionIdRef.current = data.activeQuestionId ?? prevQ;
+    }, [gameId, teamId]);
+
     const updateGameState = useCallback((data: GameState) => {
+        trackStateTransitions(data);
         setGameState(prev => ({
             ...prev,
             phase: data.phase,
@@ -52,7 +99,7 @@ export function usePlayerGame(gameId: string, teamId: string, teamName: string) 
             gameStarted: data.status === GameStatuses.LIVE || data.phase !== GamePhase.IDLE,
             gameStatus: data.status ?? prev.gameStatus
         }));
-    }, []);
+    }, [trackStateTransitions]);
 
     const syncHistory = useCallback(() => {
         const id = participantIdRef.current;
@@ -111,6 +158,17 @@ export function usePlayerGame(gameId: string, teamId: string, teamName: string) 
         socket.on(GameBroadcastEvent.TimerUpdate, (state: GameState) => updateGameState(state));
 
         socket.on(GameBroadcastEvent.StatusChanged, (data: { status: GameStatus }) => {
+            const prev = prevStatusRef.current;
+            if (prev !== data.status) {
+                void mixpanel.track("Player Game Status Observed", {
+                    game_id: Number(gameId),
+                    team_id: Number(teamId),
+                    from: prev ? String(prev) : null,
+                    to: String(data.status),
+                    source: "status_changed",
+                });
+                prevStatusRef.current = data.status;
+            }
             setGameState(prev => ({
                 ...prev,
                 gameStarted: data.status === GameStatuses.LIVE || prev.gameStarted,
@@ -118,8 +176,22 @@ export function usePlayerGame(gameId: string, teamId: string, teamName: string) 
             }));
         });
 
-        socket.on(PlayerResponseEvent.HistoryUpdate, setHistory);
-        socket.on(GameBroadcastEvent.LeaderboardUpdate, setLeaderboard);
+        socket.on(PlayerResponseEvent.HistoryUpdate, (h: AnswerDomain[]) => {
+            setHistory(h);
+            void mixpanel.track("Player History Updated", {
+                game_id: Number(gameId),
+                team_id: Number(teamId),
+                count: Array.isArray(h) ? h.length : 0,
+            });
+        });
+        socket.on(GameBroadcastEvent.LeaderboardUpdate, (l: LeaderboardEntry[]) => {
+            setLeaderboard(l);
+            void mixpanel.track("Player Leaderboard Updated", {
+                game_id: Number(gameId),
+                team_id: Number(teamId),
+                count: Array.isArray(l) ? l.length : 0,
+            });
+        });
 
         socket.on(PlayerResponseEvent.AnswerReceived, () => {
             setLastAnswerStatus('success');

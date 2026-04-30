@@ -8,6 +8,7 @@ import { LeaderboardEntry } from '@/src/dto/game.dto';
 import { hostApi } from '@/src/api/host';
 import type { ApiError } from '@/src/api/client';
 import { saveGameXlsx } from '@/src/host/game/utils/saveGameExport';
+import { mixpanel } from "@/src/analytics/mixpanel";
 
 interface HostLeaderboardProps {
     leaderboard: LeaderboardEntry[];
@@ -48,16 +49,35 @@ export const HostLeaderboard = ({ leaderboard, gameId }: HostLeaderboardProps) =
     }, [leaderboard]);
 
     const handleExportGame = async () => {
+        const t0 = Date.now();
         setExporting(true);
+        void mixpanel.track("Host Game Export Started", {
+            game_id: gameId,
+            format: "xlsx",
+            teams_count: leaderboard.length,
+        });
         try {
             const buffer = await hostApi.exportGameXlsx(gameId);
             await saveGameXlsx(gameId, buffer);
+            void mixpanel.track("Host Game Export Succeeded", {
+                game_id: gameId,
+                format: "xlsx",
+                size_bytes: buffer.byteLength,
+                response_time_ms: Date.now() - t0,
+            });
         } catch (e) {
             const err = e as ApiError;
             const msg =
                 typeof err?.message === "string"
                     ? err.message
                     : "Не удалось выгрузить файл";
+            void mixpanel.track("Host Game Export Failed", {
+                game_id: gameId,
+                format: "xlsx",
+                error_message: msg,
+                status: (err as any)?.status,
+                response_time_ms: Date.now() - t0,
+            });
             Alert.alert("Ошибка экспорта", msg);
         } finally {
             setExporting(false);

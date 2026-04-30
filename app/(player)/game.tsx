@@ -30,6 +30,14 @@ export default function GameScreen() {
     const [hasGameStarted, setHasGameStarted] = useState(false);
 
     React.useEffect(() => {
+        void mixpanel.track("Player Game Mounted", {
+            game_id: Number(gameId),
+            team_id: Number(teamId),
+            team_name: teamName as string | undefined,
+        });
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+    React.useEffect(() => {
         if (Platform.OS === 'web' && typeof window !== 'undefined') {
             const initialHeight = window.innerHeight;
             const handleResize = () => {
@@ -172,7 +180,16 @@ export default function GameScreen() {
                                 phaseText={getPhaseText()}
                                 timeLeft={timer}
                                 totalTime={phaseTotalTime}
-                                onPress={() => setActiveTab('play')}
+                                onPress={() => {
+                                    void mixpanel.track("Player Mini Widget Pressed", {
+                                        game_id: Number(gameId),
+                                        team_id: Number(teamId),
+                                        phase: String(phase),
+                                        time_left_s: timer,
+                                        from_tab: activeTab,
+                                    });
+                                    setActiveTab('play');
+                                }}
                             />
                         )}
 

@@ -6,6 +6,7 @@ import { Text } from '@/src/ui/Text';
 import { colors } from '@/src/theme/colors';
 import { AnswerDomain } from "@/src/dto/game.dto";
 import { AnswerStatus } from "@/src/dto/common.dto";
+import { mixpanel } from "@/src/analytics/mixpanel";
 
 interface Props {
     rounds: any[];
@@ -58,7 +59,17 @@ export const AnswersDashboard = ({ rounds, answers, onJudge, activeQuestionId, t
                                                 return (
                                                     <TouchableOpacity
                                                         key={q.id || q._tmpId}
-                                                        onPress={() => setSelectedQId(q.id)}
+                                                        onPress={() => {
+                                                            void mixpanel.track("Host Answers Question Selected", {
+                                                                question_id: q.id ?? null,
+                                                                question_number: q.question_number,
+                                                                round_id: round.id ?? null,
+                                                                round_number: round.round_number,
+                                                                from_question_id: selectedQId ?? null,
+                                                                is_active: q.id === activeQuestionId,
+                                                            });
+                                                            setSelectedQId(q.id);
+                                                        }}
                                                         style={[
                                                             styles.qCircle,
                                                             { borderColor: outlineColor },

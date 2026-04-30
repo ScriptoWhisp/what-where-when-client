@@ -3,6 +3,7 @@ import { View } from "react-native";
 import { Text } from "@/src/ui/Text";
 import { NumberInput } from "@/src/ui/NumberInput";
 import { SwitchListItem } from "@/src/ui/SwitchListItem";
+import { mixpanel } from "@/src/analytics/mixpanel";
 
 export function SettingsSections({
                                      settings,
@@ -11,6 +12,15 @@ export function SettingsSections({
     settings: any;
     onChange: (next: any) => void;
 }) {
+    const trackChange = (key: string, prev: any, next: any) => {
+        void mixpanel.track("Host Editor Setting Changed", {
+            setting_key: key,
+            value: next,
+            previous_value: prev,
+            value_type: typeof next,
+        });
+    };
+
     return (
         <View style={{ gap: 48 }}>
 
@@ -24,7 +34,10 @@ export function SettingsSections({
                             value={settings.time_to_think_sec}
                             min={0}
                             max={999}
-                            onChange={(v) => onChange({ ...settings, time_to_think_sec: v })}
+                            onChange={(v) => {
+                                trackChange("time_to_think_sec", settings.time_to_think_sec, v);
+                                onChange({ ...settings, time_to_think_sec: v });
+                            }}
                         />
                     </View>
 
@@ -34,7 +47,10 @@ export function SettingsSections({
                             value={settings.time_to_answer_sec}
                             min={0}
                             max={999}
-                            onChange={(v) => onChange({ ...settings, time_to_answer_sec: v })}
+                            onChange={(v) => {
+                                trackChange("time_to_answer_sec", settings.time_to_answer_sec, v);
+                                onChange({ ...settings, time_to_answer_sec: v });
+                            }}
                         />
                     </View>
 
@@ -44,7 +60,10 @@ export function SettingsSections({
                             value={settings.time_to_dispute_end_min}
                             min={0}
                             max={999}
-                            onChange={(v) => onChange({ ...settings, time_to_dispute_end_min: v })}
+                            onChange={(v) => {
+                                trackChange("time_to_dispute_end_min", settings.time_to_dispute_end_min, v);
+                                onChange({ ...settings, time_to_dispute_end_min: v });
+                            }}
                         />
                     </View>
                 </View>
@@ -59,7 +78,10 @@ export function SettingsSections({
                             title="Показывать таблицу лидеров"
                             description="Команды смогут видеть таблицу результатов во время игры"
                             value={settings.show_leaderboard}
-                            onValueChange={(v) => onChange({ ...settings, show_leaderboard: v })}
+                            onValueChange={(v) => {
+                                trackChange("show_leaderboard", settings.show_leaderboard, v);
+                                onChange({ ...settings, show_leaderboard: v });
+                            }}
                         />
                     </View>
 
@@ -68,7 +90,10 @@ export function SettingsSections({
                             title="Показывать вопросы"
                             description="Текст вопроса будет отображаться на экранах участников"
                             value={settings.show_questions}
-                            onValueChange={(v) => onChange({ ...settings, show_questions: v })}
+                            onValueChange={(v) => {
+                                trackChange("show_questions", settings.show_questions, v);
+                                onChange({ ...settings, show_questions: v });
+                            }}
                         />
                     </View>
 
@@ -77,7 +102,10 @@ export function SettingsSections({
                             title="Показывать ответы"
                             description="Правильные ответы будут показаны участникам после завершения раунда"
                             value={settings.show_answers}
-                            onValueChange={(v) => onChange({ ...settings, show_answers: v })}
+                            onValueChange={(v) => {
+                                trackChange("show_answers", settings.show_answers, v);
+                                onChange({ ...settings, show_answers: v });
+                            }}
                         />
                     </View>
 
@@ -86,7 +114,10 @@ export function SettingsSections({
                             title="Разрешить апелляции"
                             description="Команды смогут оспаривать результаты и подавать апелляции на свои ответы"
                             value={settings.can_appeal}
-                            onValueChange={(v) => onChange({ ...settings, can_appeal: v })}
+                            onValueChange={(v) => {
+                                trackChange("can_appeal", settings.can_appeal, v);
+                                onChange({ ...settings, can_appeal: v });
+                            }}
                         />
                     </View>
                 </View>

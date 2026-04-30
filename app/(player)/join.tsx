@@ -31,35 +31,54 @@ export default function JoinScreen() {
     const router = useRouter();
     const inputRefs = useRef<InputRef[]>([]);
     const enteredOnceRef = useRef(false);
+    const attemptsRef = useRef(0);
+    const failedAttemptsRef = useRef(0);
+
+    React.useEffect(() => {
+        void mixpanel.track("Player Join Mounted");
+    }, []);
 
     const handleJoin = async () => {
         const code = digits.join('');
         if (code.length < 4) return;
 
+        attemptsRef.current += 1;
         const t0 = Date.now();
         setLoading(true);
         setErrorMessage(null);
         Keyboard.dismiss();
 
         try {
-            void mixpanel.track("Player Join Code Submitted", { code, result: "pending" });
+            void mixpanel.track("Player Join Code Submitted", {
+                code,
+                result: "pending",
+                attempt: attemptsRef.current,
+                previous_failed_attempts: failedAttemptsRef.current,
+            });
             const gameData = await checkGameByCode(code);
             void mixpanel.track("Player Join Code Submitted", {
                 code,
                 result: "success",
                 response_time_ms: Date.now() - t0,
+                attempt: attemptsRef.current,
+                previous_failed_attempts: failedAttemptsRef.current,
+                teams_count: Array.isArray(gameData?.teams) ? gameData.teams.length : undefined,
+                game_id: (gameData as any)?.gameId,
             });
             router.push({
                 pathname: '/(player)/select-team',
                 params: { gameData: JSON.stringify(gameData), code }
             });
         } catch (e: any) {
+            failedAttemptsRef.current += 1;
             setErrorMessage(e.message || t('player.join.errors.notFound'));
             void mixpanel.track("Player Join Code Submitted", {
                 code,
                 result: "fail",
                 error_message: e?.message ?? String(e),
                 response_time_ms: Date.now() - t0,
+                attempt: attemptsRef.current,
+                failed_attempts: failedAttemptsRef.current,
             });
             setDigits(['', '', '', '']);
             setFocusedIndex(null);
@@ -167,7 +186,14 @@ export default function JoinScreen() {
             <Box p={6} gap={3} width="100%" maxWidth={450} style={{ alignSelf: 'center' }}>
                 <Button
                     title={t('common.back')}
-                    onPress={() => router.back()}
+                    onPress={() => {
+                        void mixpanel.track("Player Join Back Clicked", {
+                            digits_entered: digits.filter(Boolean).length,
+                            attempts: attemptsRef.current,
+                            failed_attempts: failedAttemptsRef.current,
+                        });
+                        router.back();
+                    }}
                     variant="tertiary"
                 />
                 <Button

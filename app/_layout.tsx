@@ -12,6 +12,7 @@ import {Platform, useColorScheme} from 'react-native';
 import 'react-native-reanimated';
 import {Ionicons} from "@expo/vector-icons";
 import { mixpanel } from "@/src/analytics/mixpanel";
+import { getStoredSession } from "@/src/auth/session";
 
 export {
   ErrorBoundary,
@@ -83,7 +84,52 @@ export default function RootLayout() {
 
   // Init analytics once fonts are ready (safe point for app bootstrap).
   useEffect(() => {
-    void mixpanel.init();
+    let cancelled = false;
+    (async () => {
+      const t0 = Date.now();
+      await mixpanel.init();
+      if (cancelled) return;
+
+      let hasSession = false;
+      let hostId: number | string | undefined;
+      let hostRole: string | undefined;
+      let hostEmail: string | undefined;
+      try {
+        const stored = await getStoredSession();
+        hasSession = Boolean(stored?.user?.id);
+        hostId = stored?.user?.id;
+        hostRole = stored?.user?.role;
+        hostEmail = stored?.user?.email;
+      } catch {}
+
+      if (hasSession && hostId !== undefined) {
+        mixpanel.setSuperProps({
+          role: "host",
+          host_id: hostId,
+          session_present: true,
+        });
+        await mixpanel.identify(String(hostId), {
+          $email: hostEmail,
+          role: hostRole,
+        });
+        void mixpanel.track("Session Restored", {
+          host_id: hostId,
+          role: hostRole,
+        });
+      } else {
+        mixpanel.setSuperProps({ session_present: false });
+      }
+
+      void mixpanel.track("App Opened", {
+        has_session: hasSession,
+        init_time_ms: Date.now() - t0,
+        distinct_id: mixpanel.getDistinctId(),
+      });
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return <RootLayoutNav />;

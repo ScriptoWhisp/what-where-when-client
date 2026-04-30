@@ -9,6 +9,7 @@ import { UIRound } from '@/src/host/game/components/tabs/editor/types';
 import { GamePhase, GameStatuses, AnswerStatus } from "@/src/dto/common.dto";
 import { TimerBar } from '@/src/ui/TimerBar';
 import {GameState, AnswerDomain, ParticipantDomain } from "@/src/dto/game.dto";
+import { mixpanel } from "@/src/analytics/mixpanel";
 
 interface ControlSidebarProps {
     isNew: boolean;
@@ -154,7 +155,16 @@ export const ControlSidebar = ({
                             <Text variant="h4">{passcode}</Text>
                             <Text style={{ fontSize: 10, color: colors.neutralDark.light }}>Код игры</Text>
                         </Box>
-                        <TouchableOpacity><Feather name="copy" style={{fontSize: 20, color: colors.highlight.darkest, marginRight: 2}} /></TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={() => {
+                                void mixpanel.track("Host Code Copy Clicked", {
+                                    has_passcode: Boolean(passcode),
+                                    game_status: String(gameState.status),
+                                });
+                            }}
+                        >
+                            <Feather name="copy" style={{fontSize: 20, color: colors.highlight.darkest, marginRight: 2}} />
+                        </TouchableOpacity>
                     </Box>
 
                     <Box row align="center" justify="space-between" style={styles.numericPill}>
@@ -227,15 +237,55 @@ export const ControlSidebar = ({
                             <TimerBar timeLeft={gameState.seconds} totalTime={currentQuestion?.time_to_think_sec || 60} height={4} />
 
                             <Box row justify="space-between" style={{ gap: 6 }}>
-                                <TouchableOpacity style={styles.timeBtn} onPress={() => onAdjustTime?.(-10)}>
+                                <TouchableOpacity
+                                    style={styles.timeBtn}
+                                    onPress={() => {
+                                        void mixpanel.track("Host Adjust Time Clicked", {
+                                            direction: "decrease",
+                                            delta_s: -10,
+                                            phase: String(gameState.phase),
+                                            time_left_s: gameState.seconds,
+                                            active_question_id: gameState.activeQuestionId ?? null,
+                                        });
+                                        onAdjustTime?.(-10);
+                                    }}
+                                >
                                     <Text style={styles.timeBtnText}>-10 сек</Text>
                                 </TouchableOpacity>
 
-                                <TouchableOpacity style={styles.playBtn} onPress={handleStartPress}>
+                                <TouchableOpacity
+                                    style={styles.playBtn}
+                                    onPress={() => {
+                                        void mixpanel.track("Host Timer Toggle Clicked", {
+                                            current_action: isPreparation
+                                                ? "start_question"
+                                                : isPaused
+                                                    ? "resume_timer"
+                                                    : "pause_timer",
+                                            phase: String(gameState.phase),
+                                            is_paused: Boolean(isPaused),
+                                            time_left_s: gameState.seconds,
+                                            active_question_id: gameState.activeQuestionId ?? null,
+                                        });
+                                        handleStartPress();
+                                    }}
+                                >
                                     <Feather name={isTimerTicking ? "pause" : "play"} size={16} color={colors.highlight.darkest} />
                                 </TouchableOpacity>
 
-                                <TouchableOpacity style={styles.timeBtn} onPress={() => onAdjustTime?.(10)}>
+                                <TouchableOpacity
+                                    style={styles.timeBtn}
+                                    onPress={() => {
+                                        void mixpanel.track("Host Adjust Time Clicked", {
+                                            direction: "increase",
+                                            delta_s: 10,
+                                            phase: String(gameState.phase),
+                                            time_left_s: gameState.seconds,
+                                            active_question_id: gameState.activeQuestionId ?? null,
+                                        });
+                                        onAdjustTime?.(10);
+                                    }}
+                                >
                                     <Text style={styles.timeBtnText}>+10 сек</Text>
                                 </TouchableOpacity>
                             </Box>

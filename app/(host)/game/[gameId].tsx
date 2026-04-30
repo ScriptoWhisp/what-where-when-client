@@ -60,16 +60,65 @@ export default function GameAdminScreen() {
     const lastTabRef = React.useRef<string | null>(null);
 
     React.useEffect(() => {
+        const numericId = gameId && gameId !== "new" ? Number(gameId) : undefined;
+        mixpanel.setSuperProps({
+            role: "host",
+            host_screen: editor.isNew ? "create_game" : "game_admin",
+            game_id: numericId,
+            is_new: editor.isNew,
+        });
+        return () => {
+            mixpanel.setSuperProps({
+                host_screen: undefined,
+                game_id: undefined,
+                is_new: undefined,
+            });
+        };
+    }, [gameId, editor.isNew]);
+
+    React.useEffect(() => {
+        void mixpanel.track("Host Game Mounted", {
+            game_id: gameId && gameId !== "new" ? Number(gameId) : undefined,
+            is_new: editor.isNew,
+        });
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+    React.useEffect(() => {
+        if (editor.loaded?.id) {
+            void mixpanel.track("Host Game Loaded", {
+                game_id: editor.loaded.id,
+                version: editor.loaded.version,
+                rounds_count: editor.rounds.length,
+                questions_count: editor.rounds.reduce(
+                    (acc, r) => acc + (r.questions?.length ?? 0),
+                    0,
+                ),
+                teams_count: (editor.draft.teams as any[])?.length ?? 0,
+                categories_count: (editor.draft.categories as any[])?.length ?? 0,
+                status: (editor.loaded as any)?.status,
+            });
+        }
+    }, [editor.loaded?.id, editor.loaded?.version]);
+
+    React.useEffect(() => {
         if (lastTabRef.current === activeTab) return;
+        const prev = lastTabRef.current;
         lastTabRef.current = activeTab;
         void mixpanel.track("Host Tab Viewed", {
             game_id: gameId && gameId !== "new" ? Number(gameId) : undefined,
             tab: activeTab,
+            tab_from: prev ?? null,
             is_new: editor.isNew,
         });
     }, [activeTab, editor.isNew, gameId]);
 
     const handleBack = () => {
+        void mixpanel.track("Host Game Back Clicked", {
+            game_id: gameId && gameId !== "new" ? Number(gameId) : undefined,
+            is_new: editor.isNew,
+            active_tab: activeTab,
+            game_status: String(gameState.status),
+        });
         if (router.canGoBack()) {
             router.back();
         } else {
@@ -81,6 +130,13 @@ export default function GameAdminScreen() {
         if (!gameState.activeQuestionId) return;
         const allQuestions = editor.rounds.flatMap(r => r.questions);
         const currentIndex = allQuestions.findIndex(q => q.id === gameState.activeQuestionId);
+        void mixpanel.track("Host Prev Question Clicked", {
+            game_id: gameId && gameId !== "new" ? Number(gameId) : undefined,
+            active_question_id: gameState.activeQuestionId,
+            current_index: currentIndex,
+            total_questions: allQuestions.length,
+            has_prev: currentIndex > 0,
+        });
         if (currentIndex > 0) {
             const prevId = allQuestions[currentIndex - 1].id;
             if (prevId !== undefined) prepareQuestion(prevId);
