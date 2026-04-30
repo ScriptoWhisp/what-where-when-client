@@ -156,9 +156,43 @@ Initialization point: `app/_layout.tsx` → `mixpanel.init()`.
 | `Player History Updated` | `history_update` received | `count` |
 | `Player Leaderboard Updated` | `leaderboard_update` received | `count` |
 | `Player Mini Widget Pressed` | Tap on the mini widget (collapsed timer) | `game_id`, `team_id`, `phase`, `time_left_s`, `from_tab` |
-| `Player Game Finished Viewed` | "Game finished" screen rendered | `history_count` |
-| `Player Feedback Clicked` | Feedback button on the finished screen | `source` |
+| `Player Game Finished Viewed` | `gameStatus === FINISHED` observed in `PlayTab` | `participant_id`, `history_count` |
+| `Player Results Redirect` | Auto-redirect from `/game` to `/game-results` | `game_id`, `team_id`, `participant_id`, `reason` ∈ `game_finished` / `join_blocked_finished`, `has_stored_participant` |
+| `Player Feedback Clicked` | "Give feedback" button on the results screen | `source` ∈ `game_results`, `game_id`, `participant_id`, `teams_count`, `my_score` |
 | `Player Socket Error` | Socket `error` event | `game_id`, `team_id`, `error_message` |
+
+## Player — Game results screen
+
+| Event | When | Properties |
+|---|---|---|
+| `Player Game Results Mounted` | `/game-results` screen opened | `game_id`, `participant_id`, `has_participant_id` |
+| `Player Game Results Loaded` | Leaderboard fetch succeeded | `game_id`, `teams_count`, `response_time_ms` |
+| `Player Game Results Load Failed` | Leaderboard fetch failed (or no `gameId`) | `game_id`, `reason`, `error_message`, `response_time_ms` |
+| `Player Game Results My Team` | Current participant resolved on the leaderboard | `game_id`, `participant_id`, `my_score`, `my_rating`, `category_id`, `teams_in_category`, `my_rank` |
+| `Player Game Results Back Clicked` | "Back" button at the bottom of the screen | `teams_count`, `had_my_team`, `feedback_visible` |
+
+## Player — Feedback flow
+
+| Event | When | Properties |
+|---|---|---|
+| `Player Feedback Mounted` | Feedback screen opened | `from_home`, `game_id`, `participant_id`, `has_game_context` |
+| `Player Feedback Form Loaded` | `GET /player/feedback-form` succeeded and parsed | `sections_count`, `chips_count`, `response_time_ms` |
+| `Player Feedback Form Load Failed` | Fetch error or parse failure | `reason` ∈ `parse_failed` / `fetch_failed`, `error_message`, `response_time_ms` |
+| `Player Feedback Rating Selected` | Star tap (1–5) | `rating`, `previous_rating` |
+| `Player Feedback Chip Toggled` | Chip in a dynamic section toggled | `section_key`, `chip_key`, `selected`, `section_total_after` |
+| `Player Feedback Comment Started` | First non-empty character typed in the comment | — |
+| `Player Feedback Submit Clicked` | "Submit" tap (passes validation pre-submit) | `rating`, `sections_with_selection`, `total_chips_selected`, `comment_length`, `from_home`, `has_game_context` |
+| `Player Feedback Submit Blocked` | Validation prevents submit | `reason` ∈ `rating_required` / `missing_game_context` |
+| `Player Feedback Submitted` | `POST /player/feedback` succeeded | `rating`, `sections_with_selection`, `total_chips_selected`, `comment_length`, `from_home`, `has_game_context`, `response_time_ms` |
+| `Player Feedback Submit Failed` | `POST /player/feedback` failed | `error_message`, `from_home`, `has_game_context`, `response_time_ms` |
+| `Player Feedback Skipped` | Primary button pressed without any input (Skip / Return Home) | `from_home`, `has_game_context` |
+
+## Player — Thank-you screen
+
+| Event | When | Properties |
+|---|---|---|
+| `Player Thank You Mounted` | `/thank-you` screen opened | — |
+| `Player Thank You Return Home Clicked` | "Return to Home" button | — |
 
 ## Sockets (generic)
 
@@ -186,9 +220,14 @@ Initialization point: `app/_layout.tsx` → `mixpanel.init()`.
 - `src/host/game/components/tabs/editor/ui/Teams.tsx` — Team Category Selected.
 - `app/(player)/join.tsx` — Mounted/Back, attempts, Code Entered/Submitted.
 - `app/(player)/select-team.tsx` — Mounted/Back/TakenPressed/Selected.
-- `app/(player)/game.tsx` — Mounted, Mini Widget Pressed, Tab Changed.
+- `app/(player)/game.tsx` — Mounted, Mini Widget Pressed, Tab Changed, Results Redirect.
 - `src/player/hooks/usePlayerGame.ts` — Phase/Status/Question Observed, History/Leaderboard Updated, Answer Submitted/Ack, Socket Error/Connected/Disconnected, identify/alias.
-- `src/player/components/tabs/PlayTab.tsx` — Input Focused, Submit Clicked (resubmit), Finished Viewed, Feedback Clicked.
+- `src/player/components/tabs/PlayTab.tsx` — Input Focused, Submit Clicked (resubmit), Finished Viewed.
+- `src/player/game-results/GameResultsScreen.tsx` — Game Results Mounted, My Team, Feedback Clicked.
+- `src/player/game-results/GameResultsViews.tsx` — Game Results Back Clicked.
+- `src/player/game-results/hooks/useGameResultsLeaderboard.ts` — Game Results Loaded / Load Failed.
+- `app/(player)/feedback.tsx` — Feedback Mounted/Form Loaded/Load Failed, Rating Selected, Chip Toggled, Comment Started, Submit Clicked/Blocked/Submitted/Failed/Skipped.
+- `app/(player)/thank-you.tsx` — Thank You Mounted / Return Home Clicked.
 - `src/hooks/useSocket.ts` — Socket Connected/Connect Error/Disconnected.
 
 ---

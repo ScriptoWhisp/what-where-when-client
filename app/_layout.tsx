@@ -45,7 +45,7 @@ if (Platform.OS === 'web') {
       }
       @font-face {
         font-family: 'Ionicons';
-        src: url('/assets/node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Ionicons.ttf') format('truetype');
+        src: url('https://unpkg.com/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Ionicons.ttf') format('truetype');
       }
     `;
     document.head.appendChild(style);
@@ -167,6 +167,9 @@ function screenNameFromPathname(pathname: string) {
   if (pathname === "/join") return "PlayerJoin";
   if (pathname === "/select-team") return "PlayerSelectTeam";
   if (pathname === "/game") return "PlayerGame";
+  if (pathname === "/game-results") return "PlayerGameResults";
+  if (pathname === "/feedback") return "PlayerFeedback";
+  if (pathname === "/thank-you") return "PlayerThankYou";
   if (pathname === "/login") return "HostLogin";
   if (pathname === "/signup") return "HostSignup";
   if (pathname === "/setup") return "HostSetup";

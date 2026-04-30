@@ -1,7 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Stack, useRouter } from 'expo-router';
-import { Linking } from 'react-native';
 import { Box } from '@/src/ui/Box';
 import { Button } from '@/src/ui/Button';
 import { Text } from '@/src/ui/Text';
@@ -56,7 +55,10 @@ export default function Index() {
                         variant="secondary"
                         onPress={() => {
                             void mixpanel.track("Home CTA Clicked", { cta: "feedback" });
-                            void Linking.openURL('https://docs.google.com/forms/d/e/1FAIpQLSei713QAvW06XJrjDr89hVMFkevLimHf8r_X18EW4VUmYuLiw/viewform');
+                            router.push({
+                                pathname: '/(player)/feedback' as any,
+                                params: { fromHome: '1' },
+                            });
                         }}
                     />
                 </Box>
