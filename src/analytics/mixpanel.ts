@@ -170,12 +170,6 @@ export const mixpanel = {
                 record_sessions_percent: 0,
             });
             _browserInited = true;
-
-            // Make sure the anonymous profile is attached to the same stored distinct_id.
-            // This improves visibility of Profiles (Users) even before explicit login.
-            if (_distinctId) {
-                _browser.identify(_distinctId);
-            }
         }
 
         log("init", { hasToken: Boolean(_token), apiHost: _apiHost, browser: Boolean(_browserInited) });
@@ -255,7 +249,7 @@ export const mixpanel = {
 
         const distinctId = await ensureDistinctId();
         if (Platform.OS === "web" && _browserInited && _browser) {
-            _browser.track(event, withoutUndefined({ ...commonProps(), ...props, distinct_id: distinctId }));
+            _browser.track(event, withoutUndefined({ ...commonProps(), ...props }));
             log("track(browser)", event, props);
             return;
         }
