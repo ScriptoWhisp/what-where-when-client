@@ -80,10 +80,9 @@ export default function RootLayout() {
     }
   }, [loaded]);
 
-  if (!loaded) return null;
-
-  // Init analytics once fonts are ready (safe point for app bootstrap).
   useEffect(() => {
+    if (!loaded) return;
+
     let cancelled = false;
     (async () => {
       const t0 = Date.now();
@@ -130,7 +129,9 @@ export default function RootLayout() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [loaded]);
+
+  if (!loaded) return null;
 
   return <RootLayoutNav />;
 }

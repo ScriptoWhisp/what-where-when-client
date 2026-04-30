@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { View } from "react-native";
-import { useRouter, Link } from "expo-router";
+import { useRouter } from "expo-router";
 import { AuthShell } from "@/src/ui/AuthShell";
 import { TextField } from "@/src/ui/TextField";
 import { Button } from "@/src/ui/Button";
 import { Text } from "@/src/ui/Text";
 import { Checkbox } from "@/src/ui/Checkbox";
-import {hostApi} from "@/src/api/host";
+import { hostApi } from "@/src/api/host";
 import { mixpanel } from "@/src/analytics/mixpanel";
 
 function emailDomain(email: string) {
@@ -26,6 +26,53 @@ export default function SignupScreen() {
 
     const [showPw, setShowPw] = useState(false);
     const [showPw2, setShowPw2] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const handleSignup = async () => {
+        if (loading) return;
+        setLoading(true);
+        setError(null);
+        const t0 = Date.now();
+        void mixpanel.track("Host Signup Submitted", {
+            email_domain: emailDomain(email),
+            agreed_terms: agree,
+            name_filled: Boolean(name?.trim()),
+            password_length: pw?.length ?? 0,
+            passwords_match: pw === pw2,
+        });
+        try {
+            const res = await hostApi.register({ email, password: pw });
+            void mixpanel.track("Host Signup Succeeded", {
+                host_id: res.user?.id,
+                role: res.user?.role,
+                response_time_ms: Date.now() - t0,
+            });
+            await mixpanel.identify(String(res.user?.id), {
+                $email: email,
+                $name: email,
+                role: res.user?.role,
+                email_domain: emailDomain(res.user?.email ?? email),
+            });
+            mixpanel.setSuperProps({
+                role: "host",
+                host_id: res.user?.id,
+                session_present: true,
+            });
+            router.push("/setup");
+        } catch (e: any) {
+            const message = e?.message ?? "Registration failed. Please try again.";
+            setError(message);
+            void mixpanel.track("Host Signup Failed", {
+                email_domain: emailDomain(email),
+                error_message: message,
+                status: e?.status,
+                response_time_ms: Date.now() - t0,
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <AuthShell>
@@ -40,12 +87,17 @@ export default function SignupScreen() {
                 <View style={{ gap: 16 }}>
                     <TextField label={"Name"} value={name} onChangeText={setName} placeholder="Name" />
 
-                    <TextField label={"Email Address"} value={email} onChangeText={setEmail} placeholder="name@email.com" />
+                    <TextField
+                        label={"Email Address"}
+                        value={email}
+                        onChangeText={(v) => { setError(null); setEmail(v); }}
+                        placeholder="name@email.com"
+                    />
 
                     <TextField
                         label={"Password"}
                         value={pw}
-                        onChangeText={setPw}
+                        onChangeText={(v) => { setError(null); setPw(v); }}
                         placeholder="Create a password"
                         secureTextEntry={!showPw}
                         onRightIconPress={() => {
@@ -61,7 +113,7 @@ export default function SignupScreen() {
 
                     <TextField
                         value={pw2}
-                        onChangeText={setPw2}
+                        onChangeText={(v) => { setError(null); setPw2(v); }}
                         placeholder="Confirm password"
                         secureTextEntry={!showPw2}
                         onRightIconPress={() => {
@@ -74,9 +126,15 @@ export default function SignupScreen() {
                             });
                         }}
                     />
+
+                    {error && (
+                        <Text variant="bodyS" style={{ color: "#EF4444" }}>
+                            {error}
+                        </Text>
+                    )}
                 </View>
 
-                <View style={{ flexDirection: "row", gap: 10, alignItems: "center"}}>
+                <View style={{ flexDirection: "row", gap: 10, alignItems: "center" }}>
                     <Checkbox
                         checked={agree}
                         onChange={(v) => {
@@ -88,76 +146,22 @@ export default function SignupScreen() {
                     />
                     <Text variant="bodyS" style={{ color: "#71727A", flex: 1 }}>
                         I&apos;ve read and agree with the{" "}
-                        <Link
-                            href="/"
-                            onPress={() => {
-                                void mixpanel.track("Host Signup Terms Link Clicked", {
-                                    link: "terms_and_conditions",
-                                });
-                            }}
-                        >
-                            <Text variant="bodyS" style={{ color: "#006FFD" }}>
-                                Terms and Conditions
-                            </Text>
-                        </Link>{" "}
+                        <Text variant="bodyS" style={{ color: "#71727A" }}>
+                            Terms and Conditions
+                        </Text>{" "}
                         and the{" "}
-                        <Link
-                            href="/"
-                            onPress={() => {
-                                void mixpanel.track("Host Signup Terms Link Clicked", {
-                                    link: "privacy_policy",
-                                });
-                            }}
-                        >
-                            <Text variant="bodyS" style={{ color: "#006FFD" }}>
-                                Privacy Policy
-                            </Text>
-                        </Link>
+                        <Text variant="bodyS" style={{ color: "#71727A" }}>
+                            Privacy Policy
+                        </Text>
                         .
                     </Text>
                 </View>
 
                 <Button
-                    title="Login"
+                    title={loading ? "Signing up..." : "Sign up"}
                     variant="primary"
-                    disabled={!agree || !email || !pw || pw !== pw2}
-                    onPress={async () => {
-                        const t0 = Date.now();
-                        void mixpanel.track("Host Signup Submitted", {
-                            email_domain: emailDomain(email),
-                            agreed_terms: agree,
-                            name_filled: Boolean(name?.trim()),
-                            password_length: pw?.length ?? 0,
-                            passwords_match: pw === pw2,
-                        });
-                        try {
-                            const res = await hostApi.register({ email, password: pw });
-                            void mixpanel.track("Host Signup Succeeded", {
-                                host_id: res.user?.id,
-                                role: res.user?.role,
-                                response_time_ms: Date.now() - t0,
-                            });
-                            await mixpanel.identify(String(res.user?.id), {
-                                $email: email,
-                                $name: email,
-                                role: res.user?.role,
-                                email_domain: emailDomain(res.user?.email ?? email),
-                            });
-                            mixpanel.setSuperProps({
-                                role: "host",
-                                host_id: res.user?.id,
-                                session_present: true,
-                            });
-                            router.push("/setup");
-                        } catch (e: any) {
-                            void mixpanel.track("Host Signup Failed", {
-                                email_domain: emailDomain(email),
-                                error_message: e?.message ?? String(e),
-                                status: e?.status,
-                                response_time_ms: Date.now() - t0,
-                            });
-                        }
-                    }}
+                    disabled={loading || !agree || !email || !pw || pw !== pw2}
+                    onPress={handleSignup}
                 />
             </View>
         </AuthShell>

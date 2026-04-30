@@ -25,7 +25,6 @@ export function toSaveGameDraft(
             name: t.name,
             team_code: t.team_code,
             category_id: t.category_id,
-            created_at: t.created_at,
         })),
 
         rounds: game.rounds.map((r) => ({

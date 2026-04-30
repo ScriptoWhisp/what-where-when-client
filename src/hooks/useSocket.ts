@@ -42,6 +42,7 @@ export function useSocket(namespace: string) {
         connect();
 
         return () => {
+            isConnecting.current = false;
             if (socketInstance) {
                 socketInstance.disconnect();
                 void mixpanel.track("Socket Disconnected", { namespace });

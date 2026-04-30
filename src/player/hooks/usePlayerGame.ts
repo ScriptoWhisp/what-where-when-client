@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { getSocketUrl } from '@/src/api/player';
+import { getAccessToken } from '@/src/auth/session';
 import {
     GamePhase,
     GameStatuses,
@@ -114,8 +115,15 @@ export function usePlayerGame(gameId: string, teamId: string, teamName: string) 
 
     useEffect(() => {
         const url = `${getSocketUrl()}/game`;
-        const socket = io(url, { transports: ['websocket'] });
-        socketRef.current = socket;
+        let socket: Socket;
+
+        const connect = async () => {
+            const token = await getAccessToken();
+            socket = io(url, {
+                transports: ['websocket'],
+                ...(token ? { auth: { token } } : {}),
+            });
+            socketRef.current = socket;
 
         socket.on('connect', () => {
             setStatus(`Команда: ${teamName}`);
@@ -224,10 +232,15 @@ export function usePlayerGame(gameId: string, teamId: string, teamName: string) 
             setStatus('Связь потеряна...');
             void mixpanel.track("Socket Disconnected", { namespace: "game", role: "player" });
         });
+        }; // end connect()
+
+        void connect();
 
         return () => {
-            socket.disconnect();
-            socketRef.current = null;
+            if (socketRef.current) {
+                socketRef.current.disconnect();
+                socketRef.current = null;
+            }
         };
     }, [gameId, teamId, teamName, syncHistory, updateGameState]);
 

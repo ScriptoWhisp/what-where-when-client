@@ -4,13 +4,14 @@ import { Text } from "@/src/ui/Text";
 import { NumberInput } from "@/src/ui/NumberInput";
 import { SwitchListItem } from "@/src/ui/SwitchListItem";
 import { mixpanel } from "@/src/analytics/mixpanel";
+import type { GameSettings } from "@/src/dto/game.dto";
 
 export function SettingsSections({
                                      settings,
                                      onChange,
                                  }: {
-    settings: any;
-    onChange: (next: any) => void;
+    settings: GameSettings;
+    onChange: (next: GameSettings) => void;
 }) {
     const trackChange = (key: string, prev: any, next: any) => {
         void mixpanel.track("Host Editor Setting Changed", {

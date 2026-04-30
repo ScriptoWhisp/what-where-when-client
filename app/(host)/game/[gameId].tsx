@@ -151,10 +151,7 @@ export default function GameAdminScreen() {
         );
     }
 
-    const canFinishGame = (
-        gameState.status === GameStatuses.LIVE
-        && gameState.status != GameStatuses.FINISHED
-    );
+    const canFinishGame = gameState.status === GameStatuses.LIVE;
 
     return (
         <Box style={styles.screen}>

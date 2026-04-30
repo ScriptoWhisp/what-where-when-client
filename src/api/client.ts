@@ -4,16 +4,19 @@ const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:3000";
 
 export type ApiError = { status: number; message: string; body?: any };
 
-async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+async function buildHeaders(extra?: HeadersInit): Promise<HeadersInit> {
     const token = await getAccessToken();
+    return {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(extra ?? {}),
+    };
+}
 
+async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     const res = await fetch(`${BASE_URL}${path}`, {
         ...options,
-        headers: {
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            ...(options.headers || {}),
-        },
+        headers: await buildHeaders(options.headers),
     });
 
     const text = await res.text();
@@ -34,15 +37,9 @@ async function requestBinary(
     path: string,
     options: RequestInit = {},
 ): Promise<ArrayBuffer> {
-    const token = await getAccessToken();
-
     const res = await fetch(`${BASE_URL}${path}`, {
         ...options,
-        headers: {
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            ...(options.headers || {}),
-        },
+        headers: await buildHeaders(options.headers),
     });
 
     if (!res.ok) {

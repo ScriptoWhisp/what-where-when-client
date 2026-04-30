@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "expo-router";
 import type {
     HostGameDetails,
@@ -43,10 +43,12 @@ export function useGameEditor(gameIdParam: string) {
     const [deletedTeamIds, setDeletedTeamIds] = useState<number[]>([]);
     const [deletedCategoryIds, setDeletedCategoryIds] = useState<number[]>([]);
 
+    const [saveError, setSaveError] = useState<string | null>(null);
+
     const [selectedRoundKey, setSelectedRoundKey] = useState<string | null>(null);
     const [selectedQuestionKey, setSelectedQuestionKey] = useState<string | null>(null);
 
-    async function load() {
+    const load = useCallback(async () => {
         if (isNew || numericGameId == null || Number.isNaN(numericGameId)) return;
 
         const t0 = Date.now();
@@ -81,12 +83,11 @@ export function useGameEditor(gameIdParam: string) {
         } finally {
             setLoading(false);
         }
-    }
+    }, [isNew, numericGameId]);
 
     useEffect(() => {
-        load();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [gameIdParam]);
+        void load();
+    }, [load]);
 
     const rounds = (draft.rounds as UIRound[]) ?? [];
 
@@ -204,6 +205,7 @@ export function useGameEditor(gameIdParam: string) {
             deleted_teams_count: deletedTeamIds.length,
             deleted_categories_count: deletedCategoryIds.length,
         });
+        setSaveError(null);
         const t0 = Date.now();
         try {
             const res = await hostApi.saveGame(body);
@@ -221,9 +223,11 @@ export function useGameEditor(gameIdParam: string) {
             setDeletedTeamIds([]);
             setDeletedCategoryIds([]);
         } catch (e: any) {
+            const message = e?.message ?? "Failed to save. Please try again.";
+            setSaveError(message);
             void mixpanel.track("Host Game Saved Failed", {
                 game_id: loaded.id,
-                error_message: e?.message ?? String(e),
+                error_message: message,
                 status: e?.status,
                 response_time_ms: Date.now() - t0,
             });
@@ -489,6 +493,17 @@ export function useGameEditor(gameIdParam: string) {
         });
     }
 
+    function updateSelectedRoundName(name: string) {
+        if (!selectedRound) return;
+        const rk = roundKey(selectedRound);
+        setDraft((d) => ({
+            ...d,
+            rounds: (d.rounds as UIRound[]).map((r) =>
+                roundKey(r) === rk ? { ...r, name } : r
+            ),
+        }));
+    }
+
     function selectQuestion(k: string) {
         setSelectedQuestionKey(k);
         const target = (selectedRound?.questions as UIQuestion[] | undefined)?.find(
@@ -509,6 +524,7 @@ export function useGameEditor(gameIdParam: string) {
         loading,
         loaded,
         draft,
+        saveError,
 
         selectedRoundKey,
         selectedQuestionKey,

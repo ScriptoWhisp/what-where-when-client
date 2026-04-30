@@ -1,11 +1,11 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Stack, useRouter } from 'expo-router';
+import { Linking } from 'react-native';
 import { Box } from '@/src/ui/Box';
 import { Button } from '@/src/ui/Button';
 import { Text } from '@/src/ui/Text';
 import { colors } from '@/src/theme/colors';
-import Feather from "@expo/vector-icons/Feather";
 import { mixpanel } from "@/src/analytics/mixpanel";
 
 export default function Index() {
@@ -56,7 +56,7 @@ export default function Index() {
                         variant="secondary"
                         onPress={() => {
                             void mixpanel.track("Home CTA Clicked", { cta: "feedback" });
-                            router.push('https://docs.google.com/forms/d/e/1FAIpQLSei713QAvW06XJrjDr89hVMFkevLimHf8r_X18EW4VUmYuLiw/viewform');
+                            void Linking.openURL('https://docs.google.com/forms/d/e/1FAIpQLSei713QAvW06XJrjDr89hVMFkevLimHf8r_X18EW4VUmYuLiw/viewform');
                         }}
                     />
                 </Box>

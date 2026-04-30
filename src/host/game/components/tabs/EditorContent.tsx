@@ -7,9 +7,11 @@ import { TeamsSection } from "@/src/host/game/components/tabs/editor/ui/Teams";
 import { QuestionsSection } from "@/src/host/game/components/tabs/editor/ui/Questions";
 import { Button } from "@/src/ui/Button";
 import { Box } from "@/src/ui/Box";
+import { Text } from "@/src/ui/Text";
+import { useGameEditor } from "@/src/host/game/components/tabs/editor/state";
 
-interface EditorContentProps {
-    editor: any;
+type EditorContentProps = {
+    editor: ReturnType<typeof useGameEditor>;
 }
 
 export const EditorContent = ({ editor }: EditorContentProps) => {
@@ -36,7 +38,7 @@ export const EditorContent = ({ editor }: EditorContentProps) => {
 
                 <SettingsSections
                     settings={editor.draft.settings}
-                    onChange={(next) => editor.setDraft((d: any) => ({ ...d, settings: next }))}
+                    onChange={(next) => editor.setDraft((d) => ({ ...d, settings: next }))}
                 />
 
                 <CategoriesSection
@@ -73,6 +75,13 @@ export const EditorContent = ({ editor }: EditorContentProps) => {
             </ScrollView>
 
             <View style={styles.floatingButtonContainer}>
+                {editor.saveError && (
+                    <View style={{ marginBottom: 8, maxWidth: 300 }}>
+                        <Text variant="bodyS" style={{ color: "#EF4444", textAlign: "center" }}>
+                            {editor.saveError}
+                        </Text>
+                    </View>
+                )}
                 <View style={{ width: 300 }}>
                     <Button
                         title={editor.isNew ? "Создать игру" : "Сохранить все изменения"}

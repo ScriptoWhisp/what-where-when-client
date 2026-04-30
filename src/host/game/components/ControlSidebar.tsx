@@ -32,7 +32,7 @@ interface ControlSidebarProps {
 }
 
 export const ControlSidebar = ({
-                                   isNew, rounds, answers, gameName, passcode = '2345', participants = [],
+                                   isNew, rounds, answers, gameName, passcode, participants = [],
                                    gameState, onStartGame, onPrepareQuestion, onStartQuestion,
                                    onNextQuestion, onPrevQuestion, onStartTimer, onStopTimer,
                                    onStopQuestion, onFinishGame, onAdjustTime
@@ -106,12 +106,6 @@ export const ControlSidebar = ({
         nextBtnVariant = "primary";
     }
 
-    console.log('Sidebar Debug:', {
-        isPaused: gameState.isPaused,
-        phase: gameState.phase,
-        isTimerTicking
-    });
-
     return (
         <Box style={styles.sidebar}>
 
@@ -152,7 +146,7 @@ export const ControlSidebar = ({
 
                     <Box style={styles.codeBlock} row align="center" justify="space-between">
                         <Box style={{ gap: 2 }}>
-                            <Text variant="h4">{passcode}</Text>
+                            <Text variant="h4">{passcode ?? '—'}</Text>
                             <Text style={{ fontSize: 10, color: colors.neutralDark.light }}>Код игры</Text>
                         </Box>
                         <TouchableOpacity

@@ -50,14 +50,12 @@ export default function JoinScreen() {
 
         try {
             void mixpanel.track("Player Join Code Submitted", {
-                code,
                 result: "pending",
                 attempt: attemptsRef.current,
                 previous_failed_attempts: failedAttemptsRef.current,
             });
             const gameData = await checkGameByCode(code);
             void mixpanel.track("Player Join Code Submitted", {
-                code,
                 result: "success",
                 response_time_ms: Date.now() - t0,
                 attempt: attemptsRef.current,

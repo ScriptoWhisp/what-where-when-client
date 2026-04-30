@@ -141,10 +141,7 @@ function commonProps(): TrackProps {
 
 export const mixpanel = {
     async init(opts: InitOptions = {}) {
-        _token =
-            opts.token ??
-            process.env.EXPO_PUBLIC_MIXPANEL_TOKEN ??
-            "9c554149463ace8cbca668e98d08721f";
+        _token = opts.token ?? process.env.EXPO_PUBLIC_MIXPANEL_TOKEN ?? null;
         // Expo env can include quotes depending on loader; make token robust.
         _token = _token?.trim().replace(/^"(.*)"$/, "$1").replace(/^'(.*)'$/, "$1") ?? null;
         _apiHost = opts.apiHost ?? "https://api-eu.mixpanel.com";
@@ -169,8 +166,8 @@ export const mixpanel = {
                 debug: __DEV__,
                 track_pageview: true,
                 persistence: "localStorage",
-                autocapture: true,
-                record_sessions_percent: 100,
+                autocapture: false,
+                record_sessions_percent: 0,
             });
             _browserInited = true;
 
