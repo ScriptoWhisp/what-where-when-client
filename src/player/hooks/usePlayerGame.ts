@@ -180,13 +180,17 @@ export function usePlayerGame(gameId: string, teamId: string, teamName: string) 
 
                 if (!identifiedRef.current) {
                     identifiedRef.current = true;
-                    void mixpanel.alias(String(data.participantId));
-                    void mixpanel.identify(String(data.participantId), {
+                    mixpanel.setSuperProps({
+                        participant_id: data.participantId,
+                        participant_id_str: String(data.participantId),
+                    });
+                    void mixpanel.setPeople({
                         $name: teamName,
                         role: "player",
                         game_id: Number(gameId),
                         team_id: Number(teamId),
                         team_name: teamName,
+                        participant_id: data.participantId,
                     });
                 }
             }

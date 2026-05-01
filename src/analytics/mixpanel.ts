@@ -35,6 +35,12 @@ let _lastAlias: { from: string; to: string } | null = null;
 let _browser: any | null = null;
 let _browserInited = false;
 
+
+const TRACK_BATCH_MAX = 20;
+const TRACK_FLUSH_AFTER_MS = 1500;
+let _trackQueue: any[] = [];
+let _trackFlushTimer: ReturnType<typeof setTimeout> | null = null;
+
 function log(...args: any[]) {
     if (_debug) {
         // eslint-disable-next-line no-console
@@ -60,6 +66,14 @@ function getLocale(): string | undefined {
 }
 
 function randomId(): string {
+    const c = (globalThis as any)?.crypto;
+    if (c && typeof c.randomUUID === "function") {
+        try {
+            return c.randomUUID();
+        } catch {
+            // fall through to non-crypto fallback
+        }
+    }
     return `${nowMs().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
 }
 
@@ -116,16 +130,32 @@ async function postForm(path: string, payload: any): Promise<void> {
     body.set("data", base64Encode(JSON.stringify(payload)));
 
     const url = `${_apiHost}${path}`;
-    const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: body.toString(),
-    });
+    try {
+        const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+        const timeout = controller
+            ? setTimeout(() => controller.abort(), 10_000)
+            : null;
 
-    // Mixpanel returns "1" or "0" as text by default.
-    const text = await res.text().catch(() => "");
-    if (!res.ok || (text && text.trim() !== "1")) {
-        log("request_failed", { path, status: res.status, text });
+        const res = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: body.toString(),
+            ...(controller ? { signal: controller.signal } : {}),
+        });
+
+        if (timeout) clearTimeout(timeout);
+
+        // Mixpanel returns "1" or "0" as text by default.
+        const text = await res.text().catch(() => "");
+        if (!res.ok || (text && text.trim() !== "1")) {
+            log("request_failed", { path, status: res.status, text });
+        }
+    } catch (e: any) {
+        log("request_error", {
+            path,
+            message: e?.message ?? String(e),
+            name: e?.name,
+        });
     }
 }
 
@@ -239,7 +269,6 @@ export const mixpanel = {
                 ...props,
             }),
         };
-        // /engage expects an array of profile updates.
         await postForm("/engage", [payload]);
         log("people_set", Object.keys(props));
     },
@@ -266,8 +295,27 @@ export const mixpanel = {
             },
         ];
 
-        await postForm("/track", payload);
-        log("track", event, props);
+        _trackQueue.push(...payload);
+        if (_trackQueue.length >= TRACK_BATCH_MAX) {
+            if (_trackFlushTimer) {
+                clearTimeout(_trackFlushTimer);
+                _trackFlushTimer = null;
+            }
+            const batch = _trackQueue.splice(0, _trackQueue.length);
+            await postForm("/track", batch);
+            log("track(batch_flush_max)", event, { queued: 0, sent: batch.length });
+            return;
+        }
+
+        if (!_trackFlushTimer) {
+            _trackFlushTimer = setTimeout(() => {
+                const batch = _trackQueue.splice(0, _trackQueue.length);
+                _trackFlushTimer = null;
+                void postForm("/track", batch);
+                log("track(batch_flush_timer)", { sent: batch.length });
+            }, TRACK_FLUSH_AFTER_MS);
+        }
+        log("track(queued)", event, { queued: _trackQueue.length });
     },
 
     async screen(screenName: string, props: TrackProps = {}) {
