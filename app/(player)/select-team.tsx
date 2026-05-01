@@ -16,6 +16,7 @@ import { RadioButton } from '@/src/ui/RadioButton';
 import { colors } from '@/src/theme/colors';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {Tag} from "@/src/ui/Tag";
+import { mixpanel } from "@/src/analytics/mixpanel";
 
 export default function SelectTeamScreen() {
     const { t } = useTranslation();
@@ -30,13 +31,41 @@ export default function SelectTeamScreen() {
 
     const allTeams = game?.teams || [];
 
+    React.useEffect(() => {
+        void mixpanel.track("Player Select Team Mounted", {
+            game_id: game?.gameId,
+            code: code as string | undefined,
+            teams_count: Array.isArray(game?.teams) ? game.teams.length : 0,
+            available_teams_count: Array.isArray(game?.teams)
+                ? game.teams.filter((t: any) => t.isAvailable).length
+                : 0,
+        });
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
     const handleSelect = (team: any) => {
-        if (!team.isAvailable) return;
+        if (!team.isAvailable) {
+            void mixpanel.track("Player Team Taken Pressed", {
+                game_id: game?.gameId,
+                team_id: team?.teamId,
+                team_name: team?.name,
+            });
+            return;
+        }
         setSelectedTeam(team);
+        void mixpanel.track("Player Team Selected", {
+            game_id: game?.gameId,
+            team_id: team?.teamId,
+            team_name: team?.name,
+            is_available: Boolean(team?.isAvailable),
+        });
     };
 
     const handleContinue = () => {
         if (!selectedTeam) return;
+        void mixpanel.track("Player Entered Game", {
+            game_id: game?.gameId,
+            team_id: selectedTeam?.teamId,
+        });
         router.replace({
             pathname: '/(player)/game',
             params: {
@@ -161,7 +190,17 @@ export default function SelectTeamScreen() {
                     </ScrollView>
 
                     <Box pt={6} pb={Platform.OS === 'ios' ? 4 : 0} gap={3}>
-                        <Button title={t('common.back')} variant="tertiary" onPress={() => router.back()} />
+                        <Button
+                            title={t('common.back')}
+                            variant="tertiary"
+                            onPress={() => {
+                                void mixpanel.track("Player Select Team Back Clicked", {
+                                    game_id: game?.gameId,
+                                    had_selection: Boolean(selectedTeam),
+                                });
+                                router.back();
+                            }}
+                        />
                         <Button title={t('common.continue')} variant="primary" onPress={handleContinue} disabled={!selectedTeam} />
                     </Box>
                 </Box>

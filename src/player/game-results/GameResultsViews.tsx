@@ -18,6 +18,7 @@ import {
     textEmptyTitle,
 } from '@/src/player/game-results/gameResultsStyles';
 import {router} from "expo-router";
+import { mixpanel } from '@/src/analytics/mixpanel';
 
 export function GameResultsLoadingView() {
     const { t } = useTranslation();
@@ -127,7 +128,18 @@ export function GameResultsFilledView({
         </ScrollView>
 
         <Box pt={6} pb={Platform.OS === 'ios' ? 4 : 0} gap={3} px={6}>
-            <Button title={t('common.back')} variant="tertiary" onPress={() => router.back()} />
+            <Button
+                title={t('common.back')}
+                variant="tertiary"
+                onPress={() => {
+                    void mixpanel.track("Player Game Results Back Clicked", {
+                        teams_count: rankedData.length,
+                        had_my_team: Boolean(myTeam),
+                        feedback_visible: showFeedback,
+                    });
+                    router.back();
+                }}
+            />
             {showFeedback ? (
                 <Button
                     title={t('resultsScreen.giveFeedback')}

@@ -16,6 +16,7 @@ import { usePlayerGame, readStoredParticipantId } from '@/src/player/hooks/usePl
 import { GamePhase, GameStatuses } from '@/src/dto/common.dto';
 import { Keyboard, KeyboardAvoidingView, Platform } from "react-native";
 import { LeaderboardTab } from "@/src/player/components/tabs/LeaderboardTab";
+import { mixpanel } from "@/src/analytics/mixpanel";
 
 export default function GameScreen() {
     const { t } = useTranslation();
@@ -23,9 +24,18 @@ export default function GameScreen() {
     const { gameId, teamId, teamName } = useLocalSearchParams();
 
     const [activeTab, setActiveTab] = useState<TabType>('play');
+    const prevTabRef = React.useRef<TabType>('play');
     const [isKeyboardVisible, setKeyboardVisible] = useState(false);
 
     const [hasGameStarted, setHasGameStarted] = useState(false);
+
+    React.useEffect(() => {
+        void mixpanel.track("Player Game Mounted", {
+            game_id: Number(gameId),
+            team_id: Number(teamId),
+            team_name: teamName as string | undefined,
+        });
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     React.useEffect(() => {
         if (Platform.OS === 'web' && typeof window !== 'undefined') {
@@ -83,8 +93,14 @@ export default function GameScreen() {
 
         if (gameStatus === GameStatuses.FINISHED && participantId != null) {
             didRedirectToResultsRef.current = true;
+            void mixpanel.track("Player Results Redirect", {
+                game_id: Number(gameId),
+                team_id: Number(teamId),
+                participant_id: participantId,
+                reason: "game_finished",
+            });
             router.replace({
-                pathname: '/(player)/game-results',
+                pathname: '/(player)/game-results' as any,
                 params: {
                     gameId: gid,
                     teamId: tid,
@@ -98,8 +114,15 @@ export default function GameScreen() {
         if (finishedJoinBlocked) {
             didRedirectToResultsRef.current = true;
             const stored = readStoredParticipantId(gid, tid);
+            void mixpanel.track("Player Results Redirect", {
+                game_id: Number(gameId),
+                team_id: Number(teamId),
+                participant_id: stored ?? null,
+                reason: "join_blocked_finished",
+                has_stored_participant: stored != null,
+            });
             router.replace({
-                pathname: '/(player)/game-results',
+                pathname: '/(player)/game-results' as any,
                 params: {
                     gameId: gid,
                     teamId: tid,
@@ -119,6 +142,21 @@ export default function GameScreen() {
             setHasGameStarted(true);
         }
     }, [gameStarted]);
+
+    React.useEffect(() => {
+        const prev = prevTabRef.current;
+        if (prev !== activeTab) {
+            prevTabRef.current = activeTab;
+            void mixpanel.track("Player Tab Changed", {
+                game_id: Number(gameId),
+                team_id: Number(teamId),
+                tab_from: prev,
+                tab_to: activeTab,
+                game_phase: String(phase),
+                game_status: gameStatus ? String(gameStatus) : undefined,
+            });
+        }
+    }, [activeTab, gameId, gameStatus, phase, teamId]);
 
     const [phaseTotalTime, setPhaseTotalTime] = useState(timer > 0 ? timer : 1);
     const [prevPhase, setPrevPhase] = useState(phase);
@@ -206,7 +244,16 @@ export default function GameScreen() {
                                 phaseText={getPhaseText()}
                                 timeLeft={timer}
                                 totalTime={phaseTotalTime}
-                                onPress={() => setActiveTab('play')}
+                                onPress={() => {
+                                    void mixpanel.track("Player Mini Widget Pressed", {
+                                        game_id: Number(gameId),
+                                        team_id: Number(teamId),
+                                        phase: String(phase),
+                                        time_left_s: timer,
+                                        from_tab: activeTab,
+                                    });
+                                    setActiveTab('play');
+                                }}
                             />
                         )}
 

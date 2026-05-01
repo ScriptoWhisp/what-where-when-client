@@ -6,8 +6,6 @@ import type {
     SubmitPlayerFeedbackResponse,
 } from '@/src/dto/player-feedback.dto';
 
-// Для Android эмулятора используем 10.0.2.2, для iOS/Web - localhost или твой IP
-// Лучше вынести в конфиг, но для MVP так:
 const DEV_URL = Platform.OS === 'android' ? 'http://10.0.2.2:3000' : 'http://localhost:3000';
 const API_URL = process.env.EXPO_PUBLIC_API_URL || DEV_URL;
 

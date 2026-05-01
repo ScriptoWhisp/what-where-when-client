@@ -22,6 +22,7 @@ import { FeedbackDynamicSections } from '@/src/player/feedback/FeedbackDynamicSe
 import { parseFeedbackScreen } from '@/src/player/feedback/parseFeedbackScreen';
 import i18n from '@/src/i18n';
 import {GameHeader} from "@/src/player/components/GameHeader";
+import { mixpanel } from "@/src/analytics/mixpanel";
 
 function toggleChipInSection(
     prev: Record<string, string[]>,
@@ -56,11 +57,22 @@ export default function PlayerFeedbackScreen() {
     const [formLoading, setFormLoading] = useState(true);
     const [formError, setFormError] = useState<string | null>(null);
     const [formScreen, setFormScreen] = useState<FeedbackScreen | null>(null);
+    const commentEditStartedRef = React.useRef(false);
+
+    useEffect(() => {
+        void mixpanel.track("Player Feedback Mounted", {
+            from_home: isStandaloneFromHome,
+            game_id: Number.isFinite(gid) ? gid : null,
+            participant_id: Number.isFinite(pid) ? pid : null,
+            has_game_context: !isStandaloneFromHome && Number.isFinite(gid) && Number.isFinite(pid),
+        });
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     useEffect(() => {
         let cancelled = false;
         setFormLoading(true);
         setFormError(null);
+        const t0 = Date.now();
         void (async () => {
             try {
                 const raw = await fetchPlayerFeedbackForm();
@@ -68,13 +80,30 @@ export default function PlayerFeedbackScreen() {
                     const parsed = parseFeedbackScreen(raw);
                     if (parsed) {
                         setFormScreen(parsed);
+                        void mixpanel.track("Player Feedback Form Loaded", {
+                            sections_count: parsed.sections.length,
+                            chips_count: parsed.sections.reduce(
+                                (acc, s) => acc + (s.chips?.length ?? 0),
+                                0,
+                            ),
+                            response_time_ms: Date.now() - t0,
+                        });
                     } else {
                         setFormError(t('feedback.formLoadError'));
+                        void mixpanel.track("Player Feedback Form Load Failed", {
+                            reason: "parse_failed",
+                            response_time_ms: Date.now() - t0,
+                        });
                     }
                 }
-            } catch {
+            } catch (e: any) {
                 if (!cancelled) {
                     setFormError(t('feedback.formLoadError'));
+                    void mixpanel.track("Player Feedback Form Load Failed", {
+                        reason: "fetch_failed",
+                        error_message: e?.message ?? String(e),
+                        response_time_ms: Date.now() - t0,
+                    });
                 }
             } finally {
                 if (!cancelled) {
@@ -90,7 +119,33 @@ export default function PlayerFeedbackScreen() {
     const sections = formScreen?.sections ?? [];
 
     const onToggleChip = useCallback((sectionKey: string, chipKey: string) => {
-        setSelectedBySection((p) => toggleChipInSection(p, sectionKey, chipKey));
+        setSelectedBySection((prev) => {
+            const list = prev[sectionKey] ?? [];
+            const isSelected = !list.includes(chipKey);
+            void mixpanel.track("Player Feedback Chip Toggled", {
+                section_key: sectionKey,
+                chip_key: chipKey,
+                selected: isSelected,
+                section_total_after: isSelected ? list.length + 1 : list.length - 1,
+            });
+            return toggleChipInSection(prev, sectionKey, chipKey);
+        });
+    }, []);
+
+    const handleStarPress = useCallback((star: number) => {
+        void mixpanel.track("Player Feedback Rating Selected", {
+            rating: star,
+            previous_rating: rating,
+        });
+        setRating(star);
+    }, [rating]);
+
+    const handleCommentChange = useCallback((next: string) => {
+        if (!commentEditStartedRef.current && next.length > 0) {
+            commentEditStartedRef.current = true;
+            void mixpanel.track("Player Feedback Comment Started");
+        }
+        setComment(next);
     }, []);
 
     const hasGameContext = Number.isFinite(gid) && Number.isFinite(pid);
@@ -106,6 +161,10 @@ export default function PlayerFeedbackScreen() {
 
     const goLeaveWithoutSubmit = useCallback(() => {
         if (submitting) return;
+        void mixpanel.track("Player Feedback Skipped", {
+            from_home: isStandaloneFromHome,
+            has_game_context: hasGameContext,
+        });
         if (isStandaloneFromHome) {
             router.replace('/');
             return;
@@ -117,6 +176,15 @@ export default function PlayerFeedbackScreen() {
         router.replace({ pathname: '/(player)/thank-you' });
     }, [submitting, isStandaloneFromHome, hasGameContext, router]);
 
+    const totalChipsSelected = useMemo(
+        () =>
+            Object.values(selectedBySection).reduce(
+                (acc, arr) => acc + (arr?.length ?? 0),
+                0,
+            ),
+        [selectedBySection],
+    );
+
     const handlePrimaryPress = async () => {
         if (submitting) return;
         if (!hasUserInput) {
@@ -124,14 +192,35 @@ export default function PlayerFeedbackScreen() {
             return;
         }
         if (!hasGameContext && !isStandaloneFromHome) {
+            void mixpanel.track("Player Feedback Submit Blocked", {
+                reason: "missing_game_context",
+            });
             Alert.alert(t('common.error'), t('feedback.errorGeneric'));
             return;
         }
         if (rating < 1) {
+            void mixpanel.track("Player Feedback Submit Blocked", {
+                reason: "rating_required",
+            });
             Alert.alert(t('common.error'), t('feedback.ratingRequired'));
             return;
         }
 
+        const sectionsWithSelection = Object.values(selectedBySection).filter(
+            (arr) => (arr?.length ?? 0) > 0,
+        ).length;
+        const commentLength = comment.trim().length;
+
+        void mixpanel.track("Player Feedback Submit Clicked", {
+            rating,
+            sections_with_selection: sectionsWithSelection,
+            total_chips_selected: totalChipsSelected,
+            comment_length: commentLength,
+            from_home: isStandaloneFromHome,
+            has_game_context: hasGameContext,
+        });
+
+        const t0 = Date.now();
         setSubmitting(true);
         try {
             await submitPlayerFeedback({
@@ -143,10 +232,25 @@ export default function PlayerFeedbackScreen() {
                     locale: i18n.language,
                 },
             });
+            void mixpanel.track("Player Feedback Submitted", {
+                rating,
+                sections_with_selection: sectionsWithSelection,
+                total_chips_selected: totalChipsSelected,
+                comment_length: commentLength,
+                from_home: isStandaloneFromHome,
+                has_game_context: hasGameContext,
+                response_time_ms: Date.now() - t0,
+            });
             router.replace({
                 pathname: '/(player)/thank-you',
             });
-        } catch {
+        } catch (e: any) {
+            void mixpanel.track("Player Feedback Submit Failed", {
+                error_message: e?.message ?? String(e),
+                from_home: isStandaloneFromHome,
+                has_game_context: hasGameContext,
+                response_time_ms: Date.now() - t0,
+            });
             Alert.alert(t('common.error'), t('feedback.errorGeneric'));
         } finally {
             setSubmitting(false);
@@ -199,7 +303,7 @@ export default function PlayerFeedbackScreen() {
                                 {[1, 2, 3, 4, 5].map((star) => (
                                     <Pressable
                                         key={star}
-                                        onPress={() => setRating(star)}
+                                        onPress={() => handleStarPress(star)}
                                         hitSlop={8}
                                         accessibilityRole="button"
                                         accessibilityLabel={`${star}`}
@@ -228,7 +332,7 @@ export default function PlayerFeedbackScreen() {
                                 placeholder={t('feedback.commentPlaceholder')}
                                 placeholderTextColor={colors.neutralDark.light}
                                 value={comment}
-                                onChangeText={setComment}
+                                onChangeText={handleCommentChange}
                                 multiline
                                 textAlignVertical="top"
                             />

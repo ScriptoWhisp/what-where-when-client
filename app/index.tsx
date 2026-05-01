@@ -5,7 +5,7 @@ import { Box } from '@/src/ui/Box';
 import { Button } from '@/src/ui/Button';
 import { Text } from '@/src/ui/Text';
 import { colors } from '@/src/theme/colors';
-import Feather from "@expo/vector-icons/Feather";
+import { mixpanel } from "@/src/analytics/mixpanel";
 
 export default function Index() {
     const router = useRouter();
@@ -42,7 +42,10 @@ export default function Index() {
                     <Button
                         title={t('home.joinGame')}
                         variant="primary"
-                        onPress={() => router.push('/(player)/join')}
+                        onPress={() => {
+                            void mixpanel.track("Home CTA Clicked", { cta: "join_game" });
+                            router.push('/(player)/join');
+                        }}
                     />
                     <Text variant="bodyM" style={{ textAlign: 'center', color: colors.neutralDark.light }}>
                         {t('common.or')}
@@ -50,12 +53,13 @@ export default function Index() {
                     <Button
                         title={t('home.feedback')}
                         variant="secondary"
-                        onPress={() =>
+                        onPress={() => {
+                            void mixpanel.track("Home CTA Clicked", { cta: "feedback" });
                             router.push({
-                                pathname: '/(player)/feedback',
+                                pathname: '/(player)/feedback' as any,
                                 params: { fromHome: '1' },
-                            })
-                        }
+                            });
+                        }}
                     />
                 </Box>
 

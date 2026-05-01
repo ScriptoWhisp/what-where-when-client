@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "expo-router";
 import type {
     HostGameDetails,
@@ -10,6 +10,7 @@ import {hostApi} from "@/src/api/host";
 import {toSaveGameDraft} from "@/src/game/mappers";
 import {tmpId} from "@/src/utils/tmpId";
 import {UICategory, UIQuestion, UIRound, UITeam} from "@/src/host/game/components/tabs/editor/types";
+import { mixpanel } from "@/src/analytics/mixpanel";
 
 export function useGameEditor(gameIdParam: string) {
     const router = useRouter();
@@ -42,12 +43,15 @@ export function useGameEditor(gameIdParam: string) {
     const [deletedTeamIds, setDeletedTeamIds] = useState<number[]>([]);
     const [deletedCategoryIds, setDeletedCategoryIds] = useState<number[]>([]);
 
+    const [saveError, setSaveError] = useState<string | null>(null);
+
     const [selectedRoundKey, setSelectedRoundKey] = useState<string | null>(null);
     const [selectedQuestionKey, setSelectedQuestionKey] = useState<string | null>(null);
 
-    async function load() {
+    const load = useCallback(async () => {
         if (isNew || numericGameId == null || Number.isNaN(numericGameId)) return;
 
+        const t0 = Date.now();
         setLoading(true);
         try {
             const res = await hostApi.getGame({ gameId: numericGameId });
@@ -61,15 +65,29 @@ export function useGameEditor(gameIdParam: string) {
 
             setSelectedRoundKey(null);
             setSelectedQuestionKey(null);
+
+            void mixpanel.track("Host Editor Loaded", {
+                game_id: numericGameId,
+                version: res.game?.version,
+                rounds_count: res.game?.rounds?.length ?? 0,
+                response_time_ms: Date.now() - t0,
+            });
+        } catch (e: any) {
+            void mixpanel.track("Host Editor Load Failed", {
+                game_id: numericGameId,
+                error_message: e?.message ?? String(e),
+                status: e?.status,
+                response_time_ms: Date.now() - t0,
+            });
+            throw e;
         } finally {
             setLoading(false);
         }
-    }
+    }, [isNew, numericGameId]);
 
     useEffect(() => {
-        load();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [gameIdParam]);
+        void load();
+    }, [load]);
 
     const rounds = (draft.rounds as UIRound[]) ?? [];
 
@@ -101,19 +119,35 @@ export function useGameEditor(gameIdParam: string) {
 
     function setDate(v: string) {
         setDraft((d) => ({ ...d, date_of_event: v }));
+        void mixpanel.track("Host Editor Date Changed", {
+            game_id: numericGameId ?? null,
+            is_new: isNew,
+            has_value: Boolean(v),
+        });
     }
 
     async function primaryAction() {
+        setSaveError(null);
         if (isNew) {
             if (!draft.title.trim()) return;
             if (!draft.date_of_event.trim()) return;
 
-            const res = await hostApi.createGame({
-                title: draft.title.trim(),
-                date_of_event: draft.date_of_event.trim(),
-            });
-
-            router.replace(`/game/${res.game.id}`);
+            void mixpanel.track("Host Game Create Submitted");
+            try {
+                const res = await hostApi.createGame({
+                    title: draft.title.trim(),
+                    date_of_event: draft.date_of_event.trim(),
+                });
+                void mixpanel.track("Host Game Create Succeeded", { game_id: res.game?.id });
+                router.replace(`/game/${res.game.id}`);
+            } catch (e: any) {
+                const message = e?.message ?? "Failed to create game. Please try again.";
+                setSaveError(message);
+                void mixpanel.track("Host Game Create Failed", {
+                    error_message: message,
+                    status: e?.status,
+                });
+            }
             return;
         }
 
@@ -158,14 +192,49 @@ export function useGameEditor(gameIdParam: string) {
             deleted_category_ids: deletedCategoryIds.length ? deletedCategoryIds : undefined,
         };
 
-        const res = await hostApi.saveGame(body);
-        setLoaded(res.game);
-        setDraft(toSaveGameDraft(res.game));
+        const totalQuestions = (draft.rounds as any[])?.reduce(
+            (acc: number, r: any) => acc + (r?.questions?.length ?? 0),
+            0,
+        ) ?? 0;
 
-        setDeletedRoundIds([]);
-        setDeletedQuestionIds([]);
-        setDeletedTeamIds([]);
-        setDeletedCategoryIds([]);
+        void mixpanel.track("Host Game Saved Submitted", {
+            game_id: loaded.id,
+            rounds_count: (draft.rounds as any[])?.length ?? 0,
+            teams_count: (draft.teams as any[])?.length ?? 0,
+            categories_count: (draft.categories as any[])?.length ?? 0,
+            questions_count: totalQuestions,
+            deleted_rounds_count: deletedRoundIds.length,
+            deleted_questions_count: deletedQuestionIds.length,
+            deleted_teams_count: deletedTeamIds.length,
+            deleted_categories_count: deletedCategoryIds.length,
+        });
+        setSaveError(null);
+        const t0 = Date.now();
+        try {
+            const res = await hostApi.saveGame(body);
+            void mixpanel.track("Host Game Saved Succeeded", {
+                game_id: res.game?.id,
+                version: res.game?.version,
+                response_time_ms: Date.now() - t0,
+            });
+
+            setLoaded(res.game);
+            setDraft(toSaveGameDraft(res.game));
+
+            setDeletedRoundIds([]);
+            setDeletedQuestionIds([]);
+            setDeletedTeamIds([]);
+            setDeletedCategoryIds([]);
+        } catch (e: any) {
+            const message = e?.message ?? "Failed to save. Please try again.";
+            setSaveError(message);
+            void mixpanel.track("Host Game Saved Failed", {
+                game_id: loaded.id,
+                error_message: message,
+                status: e?.status,
+                response_time_ms: Date.now() - t0,
+            });
+        }
     }
 
     // ---- Categories ----
@@ -180,6 +249,12 @@ export function useGameEditor(gameIdParam: string) {
         };
 
         setDraft((d) => ({ ...d, categories: [...(d.categories as UICategory[]), next] }));
+        void mixpanel.track("Host Editor Category Added", {
+            game_id: numericGameId ?? null,
+            is_new: isNew,
+            name_length: n.length,
+            has_description: Boolean(description?.trim()),
+        });
     }
 
     function updateCategory(cat: UICategory, name: string, description?: string) {
@@ -193,6 +268,13 @@ export function useGameEditor(gameIdParam: string) {
                     : c
             ),
         }));
+        void mixpanel.track("Host Editor Category Updated", {
+            game_id: numericGameId ?? null,
+            is_new: isNew,
+            category_id: cat.id ?? null,
+            name_changed: cat.name !== n,
+            description_changed: (cat.description ?? "") !== (description?.trim() ?? ""),
+        });
     }
 
     function removeCategory(cat: UICategory) {
@@ -204,6 +286,12 @@ export function useGameEditor(gameIdParam: string) {
                 cat.id ? c.id !== cat.id : c._tmpId !== cat._tmpId
             ),
         }));
+        void mixpanel.track("Host Editor Category Removed", {
+            game_id: numericGameId ?? null,
+            is_new: isNew,
+            category_id: cat.id ?? null,
+            was_persisted: Boolean(cat.id),
+        });
     }
 
     // ---- Teams ----
@@ -219,6 +307,13 @@ export function useGameEditor(gameIdParam: string) {
             category_id: categoryId
         };
         setDraft((d) => ({ ...d, teams: [...(d.teams as UITeam[]), next] }));
+        void mixpanel.track("Host Editor Team Added", {
+            game_id: numericGameId ?? null,
+            is_new: isNew,
+            category_id: categoryId,
+            name_length: n.length,
+            code_length: c.length,
+        });
     }
 
     function updateTeam(team: UITeam, name: string, code: string, categoryId: number) {
@@ -233,6 +328,16 @@ export function useGameEditor(gameIdParam: string) {
                     : t
             ),
         }));
+        const prevCategoryId = (team as any).category_id ?? (team as any).categoryId ?? null;
+        void mixpanel.track("Host Editor Team Updated", {
+            game_id: numericGameId ?? null,
+            is_new: isNew,
+            team_id: team.id ?? null,
+            name_changed: team.name !== n,
+            code_changed: ((team as any).team_code ?? "") !== c,
+            category_changed: prevCategoryId !== categoryId,
+            category_id: categoryId,
+        });
     }
 
     function removeTeam(team: UITeam) {
@@ -242,6 +347,12 @@ export function useGameEditor(gameIdParam: string) {
             ...d,
             teams: (d.teams as UITeam[]).filter((t) => (team.id ? t.id !== team.id : t._tmpId !== team._tmpId)),
         }));
+        void mixpanel.track("Host Editor Team Removed", {
+            game_id: numericGameId ?? null,
+            is_new: isNew,
+            team_id: team.id ?? null,
+            was_persisted: Boolean(team.id),
+        });
     }
 
     // ---- Rounds / Questions ----
@@ -258,6 +369,12 @@ export function useGameEditor(gameIdParam: string) {
         setDraft((d) => ({ ...d, rounds: [...(d.rounds as UIRound[]), r] }));
         setSelectedRoundKey(roundKey(r));
         setSelectedQuestionKey(null);
+        void mixpanel.track("Host Editor Round Added", {
+            game_id: numericGameId ?? null,
+            is_new: isNew,
+            round_number: nextRoundNumber,
+            total_rounds: rounds.length + 1,
+        });
     }
 
     function removeRound(r: UIRound) {
@@ -272,6 +389,14 @@ export function useGameEditor(gameIdParam: string) {
             setSelectedRoundKey(null);
             setSelectedQuestionKey(null);
         }
+        void mixpanel.track("Host Editor Round Removed", {
+            game_id: numericGameId ?? null,
+            is_new: isNew,
+            round_id: r.id ?? null,
+            round_number: r.round_number,
+            questions_in_round: (r.questions as any[])?.length ?? 0,
+            was_persisted: Boolean(r.id),
+        });
     }
 
     function addQuestion() {
@@ -303,6 +428,14 @@ export function useGameEditor(gameIdParam: string) {
         const updatedRound = next.find((r) => roundKey(r) === rk);
         const created = updatedRound?.questions?.[(updatedRound.questions as any[]).length - 1] as any;
         setSelectedQuestionKey(created ? questionKey(created) : null);
+        void mixpanel.track("Host Editor Question Added", {
+            game_id: numericGameId ?? null,
+            is_new: isNew,
+            round_id: selectedRound.id ?? null,
+            round_number: selectedRound.round_number,
+            question_number: created?.question_number,
+            total_questions_in_round: updatedRound?.questions?.length ?? 0,
+        });
     }
 
     function removeQuestion(q: UIQuestion) {
@@ -321,6 +454,15 @@ export function useGameEditor(gameIdParam: string) {
         setDraft((d) => ({ ...d, rounds: next }));
 
         if (selectedQuestionKey === qk) setSelectedQuestionKey(null);
+        void mixpanel.track("Host Editor Question Removed", {
+            game_id: numericGameId ?? null,
+            is_new: isNew,
+            round_id: selectedRound.id ?? null,
+            round_number: selectedRound.round_number,
+            question_id: q.id ?? null,
+            question_number: q.question_number,
+            was_persisted: Boolean(q.id),
+        });
     }
 
     function updateSelectedQuestion(patch: Partial<GameQuestion>) {
@@ -345,10 +487,13 @@ export function useGameEditor(gameIdParam: string) {
     function selectRound(k: string) {
         setSelectedRoundKey(k);
         setSelectedQuestionKey(null);
-    }
-
-    function selectQuestion(k: string) {
-        setSelectedQuestionKey(k);
+        const target = rounds.find((r) => roundKey(r) === k);
+        void mixpanel.track("Host Editor Round Selected", {
+            game_id: numericGameId ?? null,
+            is_new: isNew,
+            round_id: target?.id ?? null,
+            round_number: target?.round_number,
+        });
     }
 
     function updateSelectedRoundName(name: string) {
@@ -356,8 +501,25 @@ export function useGameEditor(gameIdParam: string) {
         const rk = roundKey(selectedRound);
         setDraft((d) => ({
             ...d,
-            rounds: (d.rounds as UIRound[]).map((r) => (roundKey(r) === rk ? { ...r, name } : r)),
+            rounds: (d.rounds as UIRound[]).map((r) =>
+                roundKey(r) === rk ? { ...r, name } : r
+            ),
         }));
+    }
+
+    function selectQuestion(k: string) {
+        setSelectedQuestionKey(k);
+        const target = (selectedRound?.questions as UIQuestion[] | undefined)?.find(
+            (q) => questionKey(q) === k,
+        );
+        void mixpanel.track("Host Editor Question Selected", {
+            game_id: numericGameId ?? null,
+            is_new: isNew,
+            round_id: selectedRound?.id ?? null,
+            round_number: selectedRound?.round_number,
+            question_id: target?.id ?? null,
+            question_number: target?.question_number,
+        });
     }
 
     return {
@@ -365,6 +527,7 @@ export function useGameEditor(gameIdParam: string) {
         loading,
         loaded,
         draft,
+        saveError,
 
         selectedRoundKey,
         selectedQuestionKey,

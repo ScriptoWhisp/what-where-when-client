@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Image, Platform } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter, Stack } from 'expo-router';
@@ -7,6 +7,7 @@ import { Box } from '@/src/ui/Box';
 import { Text } from '@/src/ui/Text';
 import { Button } from '@/src/ui/Button';
 import { colors } from '@/src/theme/colors';
+import { mixpanel } from '@/src/analytics/mixpanel';
 
 /** Source: https://postimg.cc/7CwHzpgg (teamwork high five rafiki) */
 const THANK_YOU_ILLUSTRATION_URI =
@@ -15,6 +16,10 @@ const THANK_YOU_ILLUSTRATION_URI =
 export default function PlayerThankYouScreen() {
     const { t } = useTranslation();
     const router = useRouter();
+
+    useEffect(() => {
+        void mixpanel.track("Player Thank You Mounted");
+    }, []);
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: colors.neutralLight.lightest }} edges={['top']}>
@@ -42,7 +47,10 @@ export default function PlayerThankYouScreen() {
                     <Button
                         title={t('feedback.returnHome')}
                         variant="primary"
-                        onPress={() => router.replace('/')}
+                        onPress={() => {
+                            void mixpanel.track("Player Thank You Return Home Clicked");
+                            router.replace('/');
+                        }}
                     />
                 </Box>
             </Box>

@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -12,6 +12,7 @@ import {
     GameResultsFilledView,
     GameResultsLoadingView,
 } from '@/src/player/game-results/GameResultsViews';
+import { mixpanel } from '@/src/analytics/mixpanel';
 
 function parseParticipantId(raw: string | undefined): number | null {
     if (!raw || raw.length === 0) return null;
@@ -41,8 +42,39 @@ export function GameResultsScreen() {
         [leaderboard, currentParticipantId],
     );
 
+    useEffect(() => {
+        void mixpanel.track("Player Game Results Mounted", {
+            game_id: gid ? Number(gid) : null,
+            participant_id: currentParticipantId,
+            has_participant_id: currentParticipantId != null,
+        });
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+    useEffect(() => {
+        if (!loading && !error && myTeam) {
+            void mixpanel.track("Player Game Results My Team", {
+                game_id: gid ? Number(gid) : null,
+                participant_id: currentParticipantId,
+                my_score: myTeam.score,
+                my_rating: myTeam.rating,
+                category_id: (myTeam as any).categoryId ?? null,
+                teams_in_category: rankedData.length,
+                my_rank:
+                    rankedData.find((r) => r.participantId === currentParticipantId)
+                        ?.displayRank ?? null,
+            });
+        }
+    }, [loading, error, myTeam, rankedData, gid, currentParticipantId]);
+
     const openFeedback = useCallback(() => {
         if (currentParticipantId == null || !gid) return;
+        void mixpanel.track("Player Feedback Clicked", {
+            source: "game_results",
+            game_id: Number(gid),
+            participant_id: currentParticipantId,
+            teams_count: rankedData.length,
+            my_score: myTeam?.score ?? null,
+        });
         router.push({
             pathname: '/(player)/feedback',
             params: {
@@ -50,7 +82,7 @@ export function GameResultsScreen() {
                 participantId: String(currentParticipantId),
             },
         });
-    }, [router, gid, currentParticipantId]);
+    }, [router, gid, currentParticipantId, rankedData.length, myTeam?.score]);
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: colors.neutralLight.lightest }}>

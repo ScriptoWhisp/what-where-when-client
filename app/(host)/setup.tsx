@@ -7,6 +7,7 @@ import type { HostGameCard } from "@/src/dto/game.dto";
 import { clearStoredSession } from "@/src/auth/session";
 import {hostApi} from "@/src/api/host";
 import {Card} from "@/src/ui/Card";
+import { mixpanel } from "@/src/analytics/mixpanel";
 
 export default function SetupScreen() {
     const router = useRouter();
@@ -18,16 +19,36 @@ export default function SetupScreen() {
     async function load() {
         setLoading(true);
         setError(null);
+        const t0 = Date.now();
         try {
             const res = await hostApi.listGames({ limit: 50, offset: 0 });
             setItems(res.items);
+            void mixpanel.track("Host Games List Viewed", {
+                result: "success",
+                items_count: res.items?.length ?? 0,
+                response_time_ms: Date.now() - t0,
+            });
         } catch (e: any) {
             if (e?.status === 401) {
+                void mixpanel.track("Host Session Expired", {
+                    response_time_ms: Date.now() - t0,
+                });
                 await clearStoredSession();
+                mixpanel.setSuperProps({
+                    role: undefined,
+                    host_id: undefined,
+                    session_present: false,
+                });
                 router.replace("/login");
                 return;
             }
             setError(e?.message ?? "Failed to load games");
+            void mixpanel.track("Host Games List Viewed", {
+                result: "fail",
+                error_message: e?.message ?? String(e),
+                status: e?.status,
+                response_time_ms: Date.now() - t0,
+            });
         } finally {
             setLoading(false);
         }
@@ -44,10 +65,18 @@ export default function SetupScreen() {
                 leftText="Выйти"
                 rightText="Создать игру"
                 onLeftPress={async () => {
+                    void mixpanel.track("Host Logout Clicked");
                     await clearStoredSession();
+                    mixpanel.setSuperProps({
+                        role: undefined,
+                        host_id: undefined,
+                        session_present: false,
+                    });
+                    void mixpanel.track("Session Cleared");
                     router.replace("/login");
                 }}
                 onRightPress={() => {
+                    void mixpanel.track("Host Game Create Started");
                     router.push("/game/new" as any);
                 }}
             />
@@ -81,7 +110,10 @@ export default function SetupScreen() {
                                     title={g.title}
                                     subtitle={g.subtitle}
                                     buttonTitle="Open"
-                                    onButtonPress={() => router.push(`/game/${g.id}`)}
+                                    onButtonPress={() => {
+                                        void mixpanel.track("Host Game Opened", { game_id: g.id });
+                                        router.push(`/game/${g.id}`);
+                                    }}
                                 />
                             </View>
                         ))}

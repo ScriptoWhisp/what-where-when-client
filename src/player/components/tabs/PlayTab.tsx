@@ -15,7 +15,8 @@ import { Button } from '@/src/ui/Button';
 import { colors } from '@/src/theme/colors';
 import { TimerBar } from '@/src/ui/TimerBar';
 import {GamePhase, GameStatus, GameStatuses} from '@/src/dto/common.dto';
-import { AnswerDomain } from '@/src/dto/game.dto';
+import {AnswerDomain} from "@/src/dto/game.dto";
+import { mixpanel } from "@/src/analytics/mixpanel";
 
 interface PlayTabProps {
     phase: GamePhase;
@@ -50,6 +51,8 @@ export const PlayTab = ({
 
     const [answer, setAnswer] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const focusedQuestionRef = React.useRef<number | null | undefined>(null);
+    const finishedTrackedRef = React.useRef(false);
 
     useEffect(() => {
         if (savedAnswer) {
@@ -70,11 +73,43 @@ export const PlayTab = ({
         }
     }, [lastAnswerStatus, savedAnswer]);
 
+    useEffect(() => {
+        if (gameStatus === GameStatuses.FINISHED && !finishedTrackedRef.current) {
+            finishedTrackedRef.current = true;
+            void mixpanel.track("Player Game Finished Viewed", {
+                participant_id: participantId ?? undefined,
+                history_count: history.length,
+            });
+        }
+    }, [gameStatus, history.length]);
+
     const handleSend = () => {
         if (!answer.trim()) return;
         setIsSubmitting(true);
+        void mixpanel.track("Player Answer Submit Clicked", {
+            participant_id: participantId ?? undefined,
+            question_number: questionNumber ?? null,
+            phase: String(phase),
+            time_left_s: timer,
+            answer_length: answer.trim().length,
+            is_resubmit: Boolean(savedAnswer),
+        });
         submitAnswer(answer.trim());
         Keyboard.dismiss();
+    };
+
+    const handleAnswerFocus = () => {
+        const qn = questionNumber ?? null;
+        if (focusedQuestionRef.current !== qn) {
+            focusedQuestionRef.current = qn;
+            void mixpanel.track("Player Answer Input Focused", {
+                participant_id: participantId ?? undefined,
+                question_number: qn,
+                phase: String(phase),
+                time_left_s: timer,
+                has_existing_answer: Boolean(savedAnswer),
+            });
+        }
     };
 
     const isWaiting =
@@ -148,6 +183,7 @@ export const PlayTab = ({
                         placeholderTextColor={colors.neutralDark.light}
                         value={answer}
                         onChangeText={setAnswer}
+                        onFocus={handleAnswerFocus}
                         editable={!isSubmitting}
                         multiline
                         blurOnSubmit

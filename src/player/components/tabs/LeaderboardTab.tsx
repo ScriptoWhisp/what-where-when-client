@@ -17,7 +17,10 @@ export const LeaderboardTab = ({ leaderboard, currentParticipantId }: Leaderboar
     const { t } = useTranslation();
     const myTeam = leaderboard.find((team) => team.participantId === currentParticipantId);
 
-    const displayData = leaderboard.filter((team) => team.categoryId === myTeam?.categoryId);
+    const displayData =
+        myTeam !== undefined
+            ? leaderboard.filter((team) => team.categoryId === myTeam.categoryId)
+            : leaderboard;
 
     const rankedData = rankLeaderboardEntries(displayData);
 
