@@ -23,6 +23,7 @@ type InitOptions = {
 };
 
 const DISTINCT_ID_KEY = "mixpanel_distinct_id_v1";
+const WEB_TAB_ID_KEY = "mixpanel_web_tab_id_v1";
 
 let _token: string | null = null;
 let _apiHost = "https://api-eu.mixpanel.com";
@@ -78,10 +79,23 @@ function randomId(): string {
     return `${nowMs().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
 }
 
+function getWebTabId(): string {
+    try {
+        const existing = sessionStorage.getItem(WEB_TAB_ID_KEY);
+        if (existing) return existing;
+        const next = randomId();
+        sessionStorage.setItem(WEB_TAB_ID_KEY, next);
+        return next;
+    } catch {
+        // If sessionStorage is unavailable, fall back to a process-global id.
+        // This won't be stable across reloads, but avoids crashing init.
+        return randomId();
+    }
+}
+
 async function storageGet(key: string): Promise<string | null> {
     if (Platform.OS === "web") {
         try {
-            // Use sessionStorage on web so multiple tabs/dev sessions don't share identity.
             return sessionStorage.getItem(key);
         } catch {
             return null;
@@ -208,11 +222,15 @@ export const mixpanel = {
         if (Platform.OS === "web" && typeof window !== "undefined" && _token && !_browserInited) {
             const mod = await import("mixpanel-browser");
             _browser = mod.default ?? mod;
+            const tabId = getWebTabId();
             _browser.init(_token, {
                 api_host: _apiHost,
                 debug: __DEV__,
                 track_pageview: true,
-                persistence: "sessionStorage",
+                // mixpanel-browser supports: "cookie" | "localStorage".
+                // We keep persistence supported, but scope it per-tab via persistence_name.
+                persistence: "localStorage",
+                persistence_name: `mp_${_token}_${tabId}`,
                 autocapture: false,
                 record_sessions_percent: 0,
             });
