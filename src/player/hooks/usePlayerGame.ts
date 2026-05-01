@@ -183,6 +183,7 @@ export function usePlayerGame(gameId: string, teamId: string, teamName: string) 
 
                 if (!identifiedRef.current) {
                     identifiedRef.current = true;
+                    void mixpanel.identify(String(data.participantId));
                     mixpanel.setSuperProps({
                         participant_id: data.participantId,
                         participant_id_str: String(data.participantId),
