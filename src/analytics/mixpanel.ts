@@ -38,6 +38,7 @@ let _browserInited = false;
 
 const TRACK_BATCH_MAX = 20;
 const TRACK_FLUSH_AFTER_MS = 1500;
+const TRACK_QUEUE_MAX = 200;
 let _trackQueue: any[] = [];
 let _trackFlushTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -123,8 +124,8 @@ function withoutUndefined(obj: Record<string, any>): Record<string, any> {
     return out;
 }
 
-async function postForm(path: string, payload: any): Promise<void> {
-    if (!_token) return;
+async function postForm(path: string, payload: any): Promise<boolean> {
+    if (!_token) return false;
 
     const body = new URLSearchParams();
     body.set("data", base64Encode(JSON.stringify(payload)));
@@ -149,13 +150,16 @@ async function postForm(path: string, payload: any): Promise<void> {
         const text = await res.text().catch(() => "");
         if (!res.ok || (text && text.trim() !== "1")) {
             log("request_failed", { path, status: res.status, text });
+            return false;
         }
+        return true;
     } catch (e: any) {
         log("request_error", {
             path,
             message: e?.message ?? String(e),
             name: e?.name,
         });
+        return false;
     }
 }
 
@@ -296,14 +300,23 @@ export const mixpanel = {
         ];
 
         _trackQueue.push(...payload);
+        if (_trackQueue.length > TRACK_QUEUE_MAX) {
+            _trackQueue.splice(0, _trackQueue.length - TRACK_QUEUE_MAX);
+        }
         if (_trackQueue.length >= TRACK_BATCH_MAX) {
             if (_trackFlushTimer) {
                 clearTimeout(_trackFlushTimer);
                 _trackFlushTimer = null;
             }
             const batch = _trackQueue.splice(0, _trackQueue.length);
-            await postForm("/track", batch);
-            log("track(batch_flush_max)", event, { queued: 0, sent: batch.length });
+            const ok = await postForm("/track", batch);
+            if (!ok) {
+                _trackQueue.unshift(...batch);
+                if (_trackQueue.length > TRACK_QUEUE_MAX) {
+                    _trackQueue.splice(0, _trackQueue.length - TRACK_QUEUE_MAX);
+                }
+            }
+            log("track(batch_flush_max)", event, { queued: _trackQueue.length, sent: batch.length, ok });
             return;
         }
 
@@ -311,8 +324,15 @@ export const mixpanel = {
             _trackFlushTimer = setTimeout(() => {
                 const batch = _trackQueue.splice(0, _trackQueue.length);
                 _trackFlushTimer = null;
-                void postForm("/track", batch);
-                log("track(batch_flush_timer)", { sent: batch.length });
+                void postForm("/track", batch).then((ok) => {
+                    if (!ok) {
+                        _trackQueue.unshift(...batch);
+                        if (_trackQueue.length > TRACK_QUEUE_MAX) {
+                            _trackQueue.splice(0, _trackQueue.length - TRACK_QUEUE_MAX);
+                        }
+                    }
+                    log("track(batch_flush_timer)", { sent: batch.length, ok, queued: _trackQueue.length });
+                });
             }, TRACK_FLUSH_AFTER_MS);
         }
         log("track(queued)", event, { queued: _trackQueue.length });
