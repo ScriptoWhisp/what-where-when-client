@@ -81,7 +81,8 @@ function randomId(): string {
 async function storageGet(key: string): Promise<string | null> {
     if (Platform.OS === "web") {
         try {
-            return localStorage.getItem(key);
+            // Use sessionStorage on web so multiple tabs/dev sessions don't share identity.
+            return sessionStorage.getItem(key);
         } catch {
             return null;
         }
@@ -92,13 +93,25 @@ async function storageGet(key: string): Promise<string | null> {
 async function storageSet(key: string, value: string): Promise<void> {
     if (Platform.OS === "web") {
         try {
-            localStorage.setItem(key, value);
+            sessionStorage.setItem(key, value);
         } catch {
             // ignore
         }
         return;
     }
     await SecureStore.setItemAsync(key, value);
+}
+
+async function storageRemove(key: string): Promise<void> {
+    if (Platform.OS === "web") {
+        try {
+            sessionStorage.removeItem(key);
+        } catch {
+            // ignore
+        }
+        return;
+    }
+    await SecureStore.deleteItemAsync(key);
 }
 
 async function ensureDistinctId(): Promise<string> {
@@ -199,7 +212,7 @@ export const mixpanel = {
                 api_host: _apiHost,
                 debug: __DEV__,
                 track_pageview: true,
-                persistence: "localStorage",
+                persistence: "sessionStorage",
                 autocapture: false,
                 record_sessions_percent: 0,
             });
@@ -228,6 +241,22 @@ export const mixpanel = {
             await mixpanel.setPeople(props);
         }
         log("identify", { distinctId: _distinctId });
+    },
+
+    async reset() {
+        _lastAlias = null;
+        _superProps = {};
+        _distinctId = null;
+        await storageRemove(DISTINCT_ID_KEY);
+        if (Platform.OS === "web" && _browserInited && _browser) {
+            try {
+                _browser.reset();
+            } catch {
+                // ignore
+            }
+        }
+        await ensureDistinctId();
+        log("reset", { distinctId: _distinctId });
     },
 
     async alias(newDistinctId: string) {
