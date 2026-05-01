@@ -145,17 +145,20 @@ export function usePlayerGame(gameId: string, teamId: string, teamName: string) 
 
     useEffect(() => {
         const url = `${getSocketUrl()}/game`;
-        let socket: Socket;
+        let socket: Socket | null = null;
+        let cancelled = false;
 
         const connect = async () => {
             const token = await getAccessToken();
-            socket = io(url, {
+            if (cancelled) return;
+            const s = io(url, {
                 transports: ['websocket'],
                 ...(token ? { auth: { token } } : {}),
             });
-            socketRef.current = socket;
+            socket = s;
+            socketRef.current = s;
 
-        socket.on('connect', () => {
+        s.on('connect', () => {
             setStatus(`Команда: ${teamName}`);
             mixpanel.setSuperProps({
                 role: "player",
@@ -167,13 +170,13 @@ export function usePlayerGame(gameId: string, teamId: string, teamName: string) 
                 game_id: Number(gameId),
                 team_id: Number(teamId),
             });
-            socket.emit(PlayerRequestEvent.JoinGame, {
+            s.emit(PlayerRequestEvent.JoinGame, {
                 gameId: Number(gameId),
                 teamId: Number(teamId)
             });
         });
 
-        socket.on(GameBroadcastEvent.SyncState, (data: { state: GameState, participantId: number }) => {
+        s.on(GameBroadcastEvent.SyncState, (data: { state: GameState, participantId: number }) => {
             if (data.participantId) {
                 participantIdRef.current = data.participantId;
                 setParticipantId(data.participantId);
@@ -197,9 +200,9 @@ export function usePlayerGame(gameId: string, teamId: string, teamName: string) 
             if (data.state) updateGameState(data.state);
         });
 
-        socket.on(GameBroadcastEvent.TimerUpdate, (state: GameState) => updateGameState(state));
+        s.on(GameBroadcastEvent.TimerUpdate, (state: GameState) => updateGameState(state));
 
-        socket.on(GameBroadcastEvent.StatusChanged, (data: { status: GameStatus }) => {
+        s.on(GameBroadcastEvent.StatusChanged, (data: { status: GameStatus }) => {
             const prev = prevStatusRef.current;
             if (prev !== data.status) {
                 void mixpanel.track("Player Game Status Observed", {
@@ -218,7 +221,7 @@ export function usePlayerGame(gameId: string, teamId: string, teamName: string) 
             }));
         });
 
-        socket.on(PlayerResponseEvent.HistoryUpdate, (h: AnswerDomain[]) => {
+        s.on(PlayerResponseEvent.HistoryUpdate, (h: AnswerDomain[]) => {
             setHistory(h);
             void mixpanel.track("Player History Updated", {
                 game_id: Number(gameId),
@@ -226,7 +229,7 @@ export function usePlayerGame(gameId: string, teamId: string, teamName: string) 
                 count: Array.isArray(h) ? h.length : 0,
             });
         });
-        socket.on(GameBroadcastEvent.LeaderboardUpdate, (l: LeaderboardEntry[]) => {
+        s.on(GameBroadcastEvent.LeaderboardUpdate, (l: LeaderboardEntry[]) => {
             setLeaderboard(l);
             void mixpanel.track("Player Leaderboard Updated", {
                 game_id: Number(gameId),
@@ -235,7 +238,7 @@ export function usePlayerGame(gameId: string, teamId: string, teamName: string) 
             });
         });
 
-        socket.on(PlayerResponseEvent.AnswerReceived, () => {
+        s.on(PlayerResponseEvent.AnswerReceived, () => {
             setLastAnswerStatus('success');
             setStatus(`Команда: ${teamName}`);
             const last = lastSubmitRef.current;
@@ -252,7 +255,7 @@ export function usePlayerGame(gameId: string, teamId: string, teamName: string) 
             syncHistory();
         });
 
-        socket.on('error', (err: { message?: string }) => {
+        s.on('error', (err: { message?: string }) => {
             const msg = typeof err?.message === 'string' ? err.message : '';
             if (msg.includes('already finished')) {
                 setFinishedJoinBlocked(true);
@@ -266,7 +269,7 @@ export function usePlayerGame(gameId: string, teamId: string, teamName: string) 
             });
         });
 
-        socket.on('disconnect', () => {
+        s.on('disconnect', () => {
             setStatus('Связь потеряна...');
             void mixpanel.track("Socket Disconnected", { namespace: "game", role: "player" });
         });
@@ -275,10 +278,13 @@ export function usePlayerGame(gameId: string, teamId: string, teamName: string) 
         void connect();
 
         return () => {
-            if (socketRef.current) {
-                socketRef.current.disconnect();
-                socketRef.current = null;
+            cancelled = true;
+            const s = socketRef.current ?? socket;
+            if (s) {
+                s.disconnect();
             }
+            socket = null;
+            socketRef.current = null;
         };
     }, [gameId, teamId, teamName, syncHistory, updateGameState]);
 

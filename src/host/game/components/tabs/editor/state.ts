@@ -127,6 +127,7 @@ export function useGameEditor(gameIdParam: string) {
     }
 
     async function primaryAction() {
+        setSaveError(null);
         if (isNew) {
             if (!draft.title.trim()) return;
             if (!draft.date_of_event.trim()) return;
@@ -140,8 +141,10 @@ export function useGameEditor(gameIdParam: string) {
                 void mixpanel.track("Host Game Create Succeeded", { game_id: res.game?.id });
                 router.replace(`/game/${res.game.id}`);
             } catch (e: any) {
+                const message = e?.message ?? "Failed to create game. Please try again.";
+                setSaveError(message);
                 void mixpanel.track("Host Game Create Failed", {
-                    error_message: e?.message ?? String(e),
+                    error_message: message,
                     status: e?.status,
                 });
             }
