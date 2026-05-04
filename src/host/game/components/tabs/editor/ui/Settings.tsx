@@ -1,5 +1,6 @@
 import React from "react";
 import { View } from "react-native";
+import { useTranslation } from "react-i18next";
 import { Text } from "@/src/ui/Text";
 import { NumberInput } from "@/src/ui/NumberInput";
 import { SwitchListItem } from "@/src/ui/SwitchListItem";
@@ -13,6 +14,7 @@ export function SettingsSections({
     settings: GameSettings;
     onChange: (next: GameSettings) => void;
 }) {
+    const { t } = useTranslation();
     const trackChange = (key: string, prev: any, next: any) => {
         void mixpanel.track("Host Editor Setting Changed", {
             setting_key: key,
@@ -26,12 +28,12 @@ export function SettingsSections({
         <View style={{ gap: 48 }}>
 
             <View style={{ gap: 10 }}>
-                <Text variant="h3">Настройки времени</Text>
+                <Text variant="h3">{t("hostEditorSettings.timeSettingsTitle")}</Text>
 
                 <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 24 }}>
                     <View style={{ flex: 1, minWidth: 200 }}>
                         <NumberInput
-                            title="Время на обсуждение (сек)"
+                            title={t("hostEditorSettings.thinkTimeSec")}
                             value={settings.time_to_think_sec}
                             min={0}
                             max={999}
@@ -44,7 +46,7 @@ export function SettingsSections({
 
                     <View style={{ flex: 1, minWidth: 200 }}>
                         <NumberInput
-                            title="Время на ввод ответа (сек)"
+                            title={t("hostEditorSettings.answerTimeSec")}
                             value={settings.time_to_answer_sec}
                             min={0}
                             max={999}
@@ -57,7 +59,7 @@ export function SettingsSections({
 
                     <View style={{ flex: 1, minWidth: 200 }}>
                         <NumberInput
-                            title="Время на апелляции (мин)"
+                            title={t("hostEditorSettings.appealTimeMin")}
                             value={settings.time_to_dispute_end_min}
                             min={0}
                             max={999}
@@ -71,13 +73,13 @@ export function SettingsSections({
             </View>
 
             <View style={{ gap: 16 }}>
-                <Text variant="h3">Дополнительные настройки</Text>
+                <Text variant="h3">{t("hostEditorSettings.extraSettingsTitle")}</Text>
 
                 <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 24 }}>
                     <View style={{ flex: 1, minWidth: 250 }}>
                         <SwitchListItem
-                            title="Показывать таблицу лидеров"
-                            description="Команды смогут видеть таблицу результатов во время игры"
+                            title={t("hostEditorSettings.showLeaderboard.title")}
+                            description={t("hostEditorSettings.showLeaderboard.description")}
                             value={settings.show_leaderboard}
                             onValueChange={(v) => {
                                 trackChange("show_leaderboard", settings.show_leaderboard, v);
@@ -88,8 +90,8 @@ export function SettingsSections({
 
                     <View style={{ flex: 1, minWidth: 250 }}>
                         <SwitchListItem
-                            title="Показывать вопросы"
-                            description="Текст вопроса будет отображаться на экранах участников"
+                            title={t("hostEditorSettings.showQuestions.title")}
+                            description={t("hostEditorSettings.showQuestions.description")}
                             value={settings.show_questions}
                             onValueChange={(v) => {
                                 trackChange("show_questions", settings.show_questions, v);
@@ -100,8 +102,8 @@ export function SettingsSections({
 
                     <View style={{ flex: 1, minWidth: 250 }}>
                         <SwitchListItem
-                            title="Показывать ответы"
-                            description="Правильные ответы будут показаны участникам после завершения раунда"
+                            title={t("hostEditorSettings.showAnswers.title")}
+                            description={t("hostEditorSettings.showAnswers.description")}
                             value={settings.show_answers}
                             onValueChange={(v) => {
                                 trackChange("show_answers", settings.show_answers, v);
@@ -112,8 +114,8 @@ export function SettingsSections({
 
                     <View style={{ flex: 1, minWidth: 250 }}>
                         <SwitchListItem
-                            title="Разрешить апелляции"
-                            description="Команды смогут оспаривать результаты и подавать апелляции на свои ответы"
+                            title={t("hostEditorSettings.allowAppeals.title")}
+                            description={t("hostEditorSettings.allowAppeals.description")}
                             value={settings.can_appeal}
                             onValueChange={(v) => {
                                 trackChange("can_appeal", settings.can_appeal, v);

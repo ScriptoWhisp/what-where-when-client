@@ -5,7 +5,9 @@ import {
     StyleSheet,
     ViewStyle,
     TextStyle,
-    Platform, TextInputProps,
+    Platform,
+    TextInputProps,
+    Pressable,
 } from "react-native";
 import { colors } from "../theme/colors";
 import { metrics } from "../theme/metrics";
@@ -26,9 +28,10 @@ interface Props extends TextInputProps {
 
     leftUnit?: string;
     rightIcon?: React.ReactNode;
+    rightIconAccessibilityLabel?: string;
 
-    secureTextEntry?: boolean
-    onRightIconPress?: () => void
+    secureTextEntry?: boolean;
+    onRightIconPress?: () => void;
 };
 
 export function TextField({
@@ -41,6 +44,7 @@ export function TextField({
                               disabled,
                               leftUnit,
                               rightIcon,
+                              rightIconAccessibilityLabel,
                               secureTextEntry,
                               onRightIconPress,
                               ...rest
@@ -92,9 +96,15 @@ export function TextField({
 
                 {rightIcon ? (
                     onRightIconPress ? (
-                        <View style={styles.icon} onTouchEnd={onRightIconPress as any}>
+                        <Pressable
+                            accessibilityRole="button"
+                            accessibilityLabel={rightIconAccessibilityLabel}
+                            hitSlop={12}
+                            onPress={onRightIconPress}
+                            style={({ pressed }) => [styles.icon, pressed && styles.iconPressed]}
+                        >
                             {rightIcon}
-                        </View>
+                        </Pressable>
                     ) : (
                         <View style={styles.icon}>{rightIcon}</View>
                     )
@@ -159,6 +169,11 @@ const styles = StyleSheet.create({
 
     icon: {
         marginLeft: 8,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    iconPressed: {
+        opacity: 0.65,
     },
 });
 

@@ -15,7 +15,14 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
     return btoa(binary);
 }
 
-export async function saveGameXlsx(gameId: number, data: ArrayBuffer): Promise<void> {
+export async function saveGameXlsx(
+    gameId: number,
+    data: ArrayBuffer,
+    options?: {
+        cacheUnavailableMessage?: string;
+        dialogTitle?: string;
+    },
+): Promise<void> {
     const filename = `Game_${gameId}.xlsx`;
 
     if (Platform.OS === "web") {
@@ -36,7 +43,7 @@ export async function saveGameXlsx(gameId: number, data: ArrayBuffer): Promise<v
 
     const baseDir = cacheDirectory;
     if (!baseDir) {
-        throw new Error("Кэш файловой системы недоступен");
+        throw new Error(options?.cacheUnavailableMessage ?? "File system cache is unavailable");
     }
 
     const uri = `${baseDir}${filename}`;
@@ -49,7 +56,7 @@ export async function saveGameXlsx(gameId: number, data: ArrayBuffer): Promise<v
         await Sharing.shareAsync(uri, {
             mimeType:
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            dialogTitle: "Экспорт Результатов",
+            dialogTitle: options?.dialogTitle ?? "Export",
         });
     }
 }

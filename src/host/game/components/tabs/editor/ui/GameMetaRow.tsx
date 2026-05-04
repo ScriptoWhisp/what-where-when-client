@@ -1,18 +1,22 @@
 import React from "react";
 import { Pressable, View, Platform } from "react-native";
+import { useTranslation } from "react-i18next";
 import { TextField } from "@/src/ui/TextField";
 import { ListItem } from "@/src/ui/ListItem";
 import { Icon } from "@/src/ui/Icon";
 import { colors } from "@/src/theme/colors";
 import { Text } from "@/src/ui/Text";
 
-export function GameMetaRow({ title, date_of_event, passcode, onChangeTitle, onChangeDate }: {
+export function GameMetaRow({ title, date_of_event, passcode, onChangeTitle, onChangeDate, required }: {
     title: string;
     date_of_event: string;
     passcode?: string | null;
     onChangeTitle: (v: string) => void;
     onChangeDate: (v: string) => void;
+    required?: boolean;
 }) {
+    const { t } = useTranslation();
+    const req = required ? " *" : "";
 
     const getNativeDateValue = () => {
         if (!date_of_event || !date_of_event.includes('-')) return '';
@@ -30,16 +34,16 @@ export function GameMetaRow({ title, date_of_event, passcode, onChangeTitle, onC
         <View style={{ flexDirection: "row", gap: 24, alignItems: "flex-start" }}>
             <View style={{ flex: 1.5 }}>
                 <TextField
-                    label="Название игры"
+                    label={`${t("hostEditorMeta.gameNameLabel")}${req}`}
                     value={title}
-                    placeholder="Введите название..."
+                    placeholder={t("hostEditorMeta.gameNamePlaceholder")}
                     onChangeText={onChangeTitle}
                 />
             </View>
 
             <View style={{ flex: 1 }}>
                 <Text variant="captionM" style={{ marginBottom: 10, color: colors.neutralDark.medium, fontWeight: '500' }}>
-                    Дата проведения
+                    {`${t("hostEditorMeta.eventDateLabel")}${req}`}
                 </Text>
 
                 {Platform.OS === 'web' ? (
@@ -82,7 +86,7 @@ export function GameMetaRow({ title, date_of_event, passcode, onChangeTitle, onC
                     <ListItem
                         variant="highlight"
                         title={passcode}
-                        description="Код для входа команд"
+                        description={t("hostEditorMeta.passcodeDescription")}
                         right={
                             <Pressable onPress={() => {}}>
                                 <Icon name="copy" color={colors.highlight.darkest} />

@@ -1,4 +1,4 @@
-import '@/src/i18n';
+import { hydrateStoredLanguage } from '@/src/i18n';
 
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Feather from '@expo/vector-icons/Feather';
@@ -75,9 +75,14 @@ export default function RootLayout() {
   }, [error]);
 
   useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
+    if (!loaded) return;
+    void (async () => {
+      try {
+        await hydrateStoredLanguage();
+      } finally {
+        await SplashScreen.hideAsync();
+      }
+    })();
   }, [loaded]);
 
   useEffect(() => {
@@ -171,6 +176,7 @@ function screenNameFromPathname(pathname: string) {
   if (pathname === "/feedback") return "PlayerFeedback";
   if (pathname === "/thank-you") return "PlayerThankYou";
   if (pathname === "/login") return "HostLogin";
+  if (pathname === "/forgot-password") return "HostForgotPassword";
   if (pathname === "/signup") return "HostSignup";
   if (pathname === "/setup") return "HostSetup";
   if (pathname.startsWith("/game/")) {

@@ -1,12 +1,16 @@
 import React, { useState } from "react";
 import { View } from "react-native";
 import { Link, useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
+import { Feather } from "@expo/vector-icons";
 import { AuthShell } from "@/src/ui/AuthShell";
 import { TextField } from "@/src/ui/TextField";
 import { Button } from "@/src/ui/Button";
 import { Text } from "@/src/ui/Text";
+import { Box } from "@/src/ui/Box";
 import { hostApi } from "@/src/api/host";
 import { mixpanel } from "@/src/analytics/mixpanel";
+import { colors } from "@/src/theme/colors";
 
 function emailDomain(email: string) {
     const at = email.indexOf("@");
@@ -15,6 +19,7 @@ function emailDomain(email: string) {
 }
 
 export default function LoginScreen() {
+    const { t } = useTranslation();
     const router = useRouter();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -50,7 +55,7 @@ export default function LoginScreen() {
             });
             router.push("/setup");
         } catch (e: any) {
-            const message = e?.message ?? "Login failed. Please try again.";
+            const message = e?.message ?? t("hostLogin.errorGeneric");
             setError(message);
             void mixpanel.track("Host Login Failed", {
                 email_domain: emailDomain(email),
@@ -63,21 +68,67 @@ export default function LoginScreen() {
         }
     };
 
+    const pwVisibleLabel = showPw ? t("hostLogin.hidePassword") : t("hostLogin.showPassword");
+
     return (
         <AuthShell>
             <View style={{ width: 360, gap: 24 }}>
                 <View style={{ gap: 16 }}>
+                    <Link
+                        href="/"
+                        onPress={() => {
+                            void mixpanel.track("Host Login Back Home Clicked");
+                        }}
+                    >
+                        <Text variant="bodyS" style={{ color: colors.highlight.darkest }}>
+                            ← {t("hostLogin.backHome")}
+                        </Text>
+                    </Link>
+
+                    <Box gap={2}>
+                        <Text variant="h3">{t("hostLogin.screenTitle")}</Text>
+                        <Text variant="bodyS" style={{ color: colors.neutralDark.light }}>
+                            {t("hostLogin.screenSubtitle")}
+                        </Text>
+                    </Box>
+                </View>
+
+                <View style={{ gap: 16 }}>
                     <TextField
+                        label={t("hostLogin.emailLabel")}
                         value={email}
-                        onChangeText={(v) => { setError(null); setEmail(v); }}
-                        placeholder="Email Address"
+                        onChangeText={(v) => {
+                            setError(null);
+                            setEmail(v);
+                        }}
+                        placeholder={t("hostLogin.emailPlaceholder")}
+                        keyboardType="email-address"
+                        autoCapitalize="none"
+                        autoCorrect={false}
+                        autoComplete="email"
+                        textContentType="emailAddress"
                     />
 
                     <TextField
+                        label={t("hostLogin.passwordLabel")}
                         value={password}
-                        onChangeText={(v) => { setError(null); setPassword(v); }}
-                        placeholder="Password"
+                        onChangeText={(v) => {
+                            setError(null);
+                            setPassword(v);
+                        }}
+                        placeholder={t("hostLogin.passwordPlaceholder")}
                         secureTextEntry={!showPw}
+                        autoCapitalize="none"
+                        autoComplete="password"
+                        textContentType="password"
+                        rightIcon={
+                            <Feather
+                                name={showPw ? "eye-off" : "eye"}
+                                size={22}
+                                color={colors.neutralDark.medium}
+                            />
+                        }
+                        rightIconAccessibilityLabel={pwVisibleLabel}
                         onRightIconPress={() => {
                             setShowPw((s) => {
                                 void mixpanel.track("Host Login Show Password Toggled", {
@@ -88,36 +139,43 @@ export default function LoginScreen() {
                         }}
                     />
 
-                    {error && (
-                        <Text variant="bodyS" style={{ color: "#EF4444" }}>
+                    {error ? (
+                        <Text variant="bodyS" style={{ color: colors.error.dark }}>
                             {error}
                         </Text>
-                    )}
+                    ) : null}
 
-                    <Text variant="bodyS" style={{ color: "#71727A" }}>
-                        Forgot password?
-                    </Text>
+                    <Link
+                        href="/forgot-password"
+                        onPress={() => {
+                            void mixpanel.track("Host Login Forgot Password Link Clicked");
+                        }}
+                    >
+                        <Text variant="bodyS" style={{ color: colors.highlight.darkest }}>
+                            {t("hostLogin.forgotPassword")}
+                        </Text>
+                    </Link>
                 </View>
 
                 <View style={{ gap: 16 }}>
                     <Button
-                        title={loading ? "Logging in..." : "Login"}
+                        title={loading ? t("hostLogin.loggingIn") : t("hostLogin.login")}
                         variant="primary"
                         disabled={loading}
                         onPress={handleLogin}
                     />
 
                     <View style={{ alignItems: "center" }}>
-                        <Text variant="bodyS" style={{ color: "#71727A" }}>
-                            Not a member?{" "}
+                        <Text variant="bodyS" style={{ color: colors.neutralDark.light }}>
+                            {t("hostLogin.notMember")}{" "}
                             <Link
                                 href="/signup"
                                 onPress={() => {
                                     void mixpanel.track("Host Login Register Link Clicked");
                                 }}
                             >
-                                <Text variant="bodyS" style={{ color: "#006FFD" }}>
-                                    Register now
+                                <Text variant="bodyS" style={{ color: colors.highlight.darkest }}>
+                                    {t("hostLogin.registerNow")}
                                 </Text>
                             </Link>
                         </Text>

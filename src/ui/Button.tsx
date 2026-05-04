@@ -1,5 +1,5 @@
 import React from "react";
-import { Pressable, StyleSheet, View, ViewStyle } from "react-native";
+import { Platform, Pressable, StyleSheet, View, ViewStyle } from "react-native";
 import { colors } from "../theme/colors";
 import { metrics } from "../theme/metrics";
 import { Text } from "./Text";
@@ -34,6 +34,7 @@ export function Button({
             disabled={isDisabled}
             style={({ pressed }) => [
                 styles.base,
+                Platform.OS === "web" && styles.noSelectWeb,
                 sizeStyles[size],
                 variantStyles[variant],
                 isDisabled && styles.disabled,
@@ -44,7 +45,7 @@ export function Button({
                 {leftIcon ? <View style={styles.iconLeft}>{leftIcon}</View> : null}
 
                 <Text variant="actionM" style={textStyles[variant]}>
-                    {loading ? "Loading..." : title}
+                    {title}
                 </Text>
 
                 {rightIcon ? <View style={styles.iconRight}>{rightIcon}</View> : null}
@@ -60,6 +61,11 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         minHeight: 48
     } satisfies ViewStyle,
+    noSelectWeb: Platform.OS === "web"
+        ? ({
+            userSelect: "none",
+        } as any)
+        : ({} as any),
 
     content: {
         flexDirection: "row",

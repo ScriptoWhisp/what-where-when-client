@@ -17,6 +17,10 @@ export function pickLocalizedString(labels: unknown, lang: string): string {
     }
     const en = pick('en');
     if (en) return en;
+    const ru = pick('ru');
+    if (ru) return ru;
+    const et = pick('et');
+    if (et) return et;
     for (const v of Object.values(map)) {
         if (typeof v === 'string' && v.length > 0) return v;
     }

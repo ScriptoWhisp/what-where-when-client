@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
+import { useTranslation } from "react-i18next";
 import { io, Socket } from 'socket.io-client';
 import { getSocketUrl } from '@/src/api/player';
 import { getAccessToken } from '@/src/auth/session';
@@ -43,6 +44,7 @@ import { AnswerDomain, GameState, LeaderboardEntry } from "@/src/dto/game.dto";
 import { mixpanel } from "@/src/analytics/mixpanel";
 
 export function usePlayerGame(gameId: string, teamId: string, teamName: string) {
+    const { t } = useTranslation();
     const socketRef = useRef<Socket | null>(null);
 
     const participantIdRef = useRef<number | null>(null);
@@ -52,7 +54,7 @@ export function usePlayerGame(gameId: string, teamId: string, teamName: string) 
     const prevStatusRef = useRef<GameStatus | null>(null);
     const prevActiveQuestionIdRef = useRef<number | null>(null);
 
-    const [status, setStatus] = useState('Подключение...');
+    const [status, setStatus] = useState(() => t("player.status.connecting"));
     const [participantId, setParticipantId] = useState<number | null>(null);
     const [lastAnswerStatus, setLastAnswerStatus] = useState<'success' | 'error' | null>(null);
 
@@ -159,7 +161,7 @@ export function usePlayerGame(gameId: string, teamId: string, teamName: string) 
             socketRef.current = s;
 
         s.on('connect', () => {
-            setStatus(`Команда: ${teamName}`);
+            setStatus(t("player.status.team", { teamName }));
             mixpanel.setSuperProps({
                 role: "player",
                 game_id: Number(gameId),
@@ -241,7 +243,7 @@ export function usePlayerGame(gameId: string, teamId: string, teamName: string) 
 
         s.on(PlayerResponseEvent.AnswerReceived, () => {
             setLastAnswerStatus('success');
-            setStatus(`Команда: ${teamName}`);
+            setStatus(t("player.status.team", { teamName }));
             const last = lastSubmitRef.current;
             if (last) {
                 const latencyMs = Date.now() - Date.parse(last.submittedAtIso);
@@ -261,7 +263,7 @@ export function usePlayerGame(gameId: string, teamId: string, teamName: string) 
             if (msg.includes('already finished')) {
                 setFinishedJoinBlocked(true);
             }
-            setStatus(`Ошибка: ${msg || 'unknown'}`);
+            setStatus(t("player.status.error", { message: msg || 'unknown' }));
             setLastAnswerStatus('error');
             void mixpanel.track("Player Socket Error", {
                 game_id: Number(gameId),
@@ -271,7 +273,7 @@ export function usePlayerGame(gameId: string, teamId: string, teamName: string) 
         });
 
         s.on('disconnect', () => {
-            setStatus('Связь потеряна...');
+            setStatus(t("player.status.disconnected"));
             void mixpanel.track("Socket Disconnected", { namespace: "game", role: "player" });
         });
         }; // end connect()
@@ -342,9 +344,9 @@ export function usePlayerGame(gameId: string, teamId: string, teamName: string) 
                 answer: answerText,
                 submittedAt
             });
-            setStatus('Отправка...');
+            setStatus(t("player.status.sending"));
         }
-    }, [gameId, teamId, gameState.phase, gameState.activeQuestionId, gameState.activeQuestionNumber, gameState.timer]);
+    }, [gameId, teamId, gameState.phase, gameState.activeQuestionId, gameState.activeQuestionNumber, gameState.timer, t]);
 
     return {
         status,

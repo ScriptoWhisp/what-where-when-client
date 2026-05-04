@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { StyleSheet, ScrollView } from 'react-native';
+import { useTranslation } from "react-i18next";
 import { Box } from '@/src/ui/Box';
 import { Text } from '@/src/ui/Text';
 import { colors } from '@/src/theme/colors';
@@ -10,6 +11,7 @@ interface HostTeamsProps {
 }
 
 export const Teams = ({ participants }: HostTeamsProps) => {
+    const { t } = useTranslation();
     const totalCount = participants.length;
     const onlineCount = participants.filter(p => p.isConnected).length;
     const offlineCount = totalCount - onlineCount;
@@ -19,11 +21,11 @@ export const Teams = ({ participants }: HostTeamsProps) => {
             if (a.isConnected !== b.isConnected) {
                 return a.isConnected ? -1 : 1;
             }
-            const nameA = (a as any).teamName || `Команда #${a.teamId}`;
-            const nameB = (b as any).teamName || `Команда #${b.teamId}`;
+            const nameA = (a as any).teamName || t("hostTeamsTab.teamFallback", { id: a.teamId });
+            const nameB = (b as any).teamName || t("hostTeamsTab.teamFallback", { id: b.teamId });
             return nameA.localeCompare(nameB);
         });
-    }, [participants]);
+    }, [participants, t]);
 
     return (
         <Box style={styles.container}>
@@ -33,17 +35,17 @@ export const Teams = ({ participants }: HostTeamsProps) => {
                     <Box row align="center" style={{ gap: 16, flexWrap: 'wrap' }}>
                         <Box row align="center" style={[styles.badge, styles.badgeBlue]}>
                             <Text style={[styles.badgeText, styles.badgeTextBlue]}>
-                                Всего: {totalCount}
+                                {t("hostTeamsTab.total", { count: totalCount })}
                             </Text>
                         </Box>
                         <Box row align="center" style={[styles.badge, styles.badgeGreen]}>
                             <Text style={[styles.badgeText, styles.badgeTextGreen]}>
-                                В игре: {onlineCount}
+                                {t("hostTeamsTab.online", { count: onlineCount })}
                             </Text>
                         </Box>
                         <Box row align="center" style={[styles.badge, styles.badgeGray]}>
                             <Text style={[styles.badgeText, styles.badgeTextGray]}>
-                                Оффлайн: {offlineCount}
+                                {t("hostTeamsTab.offline", { count: offlineCount })}
                             </Text>
                         </Box>
                     </Box>
@@ -52,13 +54,13 @@ export const Teams = ({ participants }: HostTeamsProps) => {
                 {sortedParticipants.length === 0 ? (
                     <Box align="center" justify="center" style={styles.emptyBox}>
                         <Text variant="bodyM" style={{ color: colors.neutralDark.light, textAlign: 'center' }}>
-                            В игре пока нет участников
+                            {t("hostTeamsTab.empty")}
                         </Text>
                     </Box>
                 ) : (
                     <Box style={{ gap: 12 }}>
                         {sortedParticipants.map((participant, index) => {
-                            const teamName = (participant as any).teamName || `Команда #${participant.teamId}`;
+                            const teamName = (participant as any).teamName || t("hostTeamsTab.teamFallback", { id: participant.teamId });
                             const categoryName = (participant as any).categoryName;
 
                             return (

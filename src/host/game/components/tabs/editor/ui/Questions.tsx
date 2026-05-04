@@ -1,5 +1,6 @@
 import React from "react";
 import { Pressable, View } from "react-native";
+import { useTranslation } from "react-i18next";
 import { Text } from "@/src/ui/Text";
 import { ListItem } from "@/src/ui/ListItem";
 import { TextField } from "@/src/ui/TextField";
@@ -43,16 +44,17 @@ export function QuestionsSection({
     onUpdateSelectedQuestion: (patch: Partial<UIQuestion>) => void;
     onUpdateRoundName: (name: string) => void;
 }) {
+    const { t } = useTranslation();
     const questions = ((selectedRound?.questions as UIQuestion[]) ?? []);
 
     return (
         <View>
-            <Text variant="h3" style={{ marginBottom: 10 }}>Questions</Text>
+            <Text variant="h3" style={{ marginBottom: 10 }}>{t("hostEditorQuestions.title")}</Text>
 
             <View style={{ flexDirection: "row", gap: 12 }}>
                 {/* Rounds */}
                 <View style={{ flex: 1, gap: 10, maxWidth: 300 }}>
-                    <Button title="Add round" variant="secondary" onPress={onAddRound} />
+                    <Button title={t("hostEditorQuestions.addRound")} variant="secondary" onPress={onAddRound} />
 
                     <View style={{ gap: 10 }}>
                         {rounds.map((r) => {
@@ -63,7 +65,7 @@ export function QuestionsSection({
                                 <ListItem
                                     key={rk}
                                     title={`${r.round_number}. ${r.name ? r.name : ""}`}
-                                    description={`${(r.questions?.length ?? 0)} questions`}
+                                    description={t("hostEditorQuestions.roundDescription", { count: (r.questions?.length ?? 0) })}
                                     style={{
                                         borderWidth: 2,
                                         borderColor: active ? colors.highlight.darkest : "transparent",
@@ -83,7 +85,7 @@ export function QuestionsSection({
 
                 {/* Questions */}
                 <View style={{ flex: 1, gap: 10, maxWidth: 300 }}>
-                    <Button title="Add question" variant="secondary" disabled={!selectedRound} onPress={onAddQuestion} />
+                    <Button title={t("hostEditorQuestions.addQuestion")} variant="secondary" disabled={!selectedRound} onPress={onAddQuestion} />
 
                     <View style={{ gap: 10 }}>
                         {questions.map((q) => {
@@ -93,8 +95,8 @@ export function QuestionsSection({
                             return (
                                 <ListItem
                                     key={qk}
-                                    title={`Question ${q.question_number}`}
-                                    description={q.text ? q.text.slice(0, 40) : "No text yet"}
+                                    title={t("hostEditorQuestions.questionTitle", { n: q.question_number })}
+                                    description={q.text ? q.text.slice(0, 40) : t("hostEditorQuestions.questionNoText")}
                                     style={{
                                         borderWidth: 2,
                                         borderColor: active ? colors.highlight.darkest : "transparent",
@@ -117,23 +119,23 @@ export function QuestionsSection({
                     {selectedQuestion ? (
                         <View style={{gap: 12}}>
                             <TextField
-                                label="Question"
+                                label={t("hostEditorQuestions.fieldQuestionLabel")}
                                 value={selectedQuestion.text}
-                                placeholder="Type question text"
+                                placeholder={t("hostEditorQuestions.fieldQuestionPlaceholder")}
                                 onChangeText={(v) => onUpdateSelectedQuestion({text: v})}
                             />
 
                             <TextField
-                                label="Answer"
+                                label={t("hostEditorQuestions.fieldAnswerLabel")}
                                 value={selectedQuestion.answer}
-                                placeholder="Type answer"
+                                placeholder={t("hostEditorQuestions.fieldAnswerPlaceholder")}
                                 onChangeText={(v) => onUpdateSelectedQuestion({answer: v})}
                             />
 
                             <View style={{flexDirection: "row", gap: 18}}>
                                 <View style={{flex: 1}}>
                                     <NumberInput
-                                        title="Time to think (sec)"
+                                        title={t("hostEditorQuestions.timeToThinkSec")}
                                         value={selectedQuestion.time_to_think_sec}
                                         min={0}
                                         max={999}
@@ -143,7 +145,7 @@ export function QuestionsSection({
 
                                 <View style={{flex: 1}}>
                                     <NumberInput
-                                        title="Time to answer (sec)"
+                                        title={t("hostEditorQuestions.timeToAnswerSec")}
                                         value={selectedQuestion.time_to_answer_sec}
                                         min={0}
                                         max={999}
@@ -153,9 +155,9 @@ export function QuestionsSection({
                             </View>
 
                             <TextField
-                                label="Round name"
+                                label={t("hostEditorQuestions.roundNameLabel")}
                                 value={selectedRound?.name ?? ""}
-                                placeholder="Round name"
+                                placeholder={t("hostEditorQuestions.roundNamePlaceholder")}
                                 onChangeText={onUpdateRoundName}
                             />
                         </View>
@@ -166,7 +168,7 @@ export function QuestionsSection({
                             backgroundColor: colors.neutralLight.light
                         }}>
                             <Text variant="bodyS" style={{color: colors.neutralDark.light}}>
-                                Select a round and add a question to edit.
+                                {t("hostEditorQuestions.emptyHint")}
                             </Text>
                         </View>
                     )}

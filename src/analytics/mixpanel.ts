@@ -87,8 +87,6 @@ function getWebTabId(): string {
         sessionStorage.setItem(WEB_TAB_ID_KEY, next);
         return next;
     } catch {
-        // If sessionStorage is unavailable, fall back to a process-global id.
-        // This won't be stable across reloads, but avoids crashing init.
         return randomId();
     }
 }
@@ -227,8 +225,6 @@ export const mixpanel = {
                 api_host: _apiHost,
                 debug: __DEV__,
                 track_pageview: true,
-                // mixpanel-browser supports: "cookie" | "localStorage".
-                // We keep persistence supported, but scope it per-tab via persistence_name.
                 persistence: "localStorage",
                 persistence_name: `mp_${_token}_${tabId}`,
                 autocapture: false,

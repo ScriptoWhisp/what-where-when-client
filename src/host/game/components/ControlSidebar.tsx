@@ -1,6 +1,8 @@
 import React, { useMemo } from 'react';
-import { StyleSheet, ScrollView, TouchableOpacity, View } from 'react-native';
+import { Alert, Platform, StyleSheet, ScrollView, TouchableOpacity, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import { useTranslation } from "react-i18next";
+import * as Clipboard from "expo-clipboard";
 import { Box } from '@/src/ui/Box';
 import { Text } from '@/src/ui/Text';
 import { Button } from '@/src/ui/Button';
@@ -37,6 +39,7 @@ export const ControlSidebar = ({
                                    onNextQuestion, onPrevQuestion, onStartTimer, onStopTimer,
                                    onStopQuestion, onFinishGame, onAdjustTime
                                }: ControlSidebarProps) => {
+    const { t } = useTranslation();
 
     const isLive = gameState.status === GameStatuses.LIVE;
     const isFinished = gameState.status === GameStatuses.FINISHED;
@@ -67,6 +70,27 @@ export const ControlSidebar = ({
             answers.filter(a => a.questionId === gameState.activeQuestionId).length,
         [answers, gameState.activeQuestionId]);
 
+    const copyPasscode = async () => {
+        const code = String(passcode ?? "").trim();
+        if (!code) return;
+        try {
+            await Clipboard.setStringAsync(code);
+            void mixpanel.track("Host Code Copy Succeeded", {
+                has_passcode: true,
+                game_status: String(gameState.status),
+            });
+            if (Platform.OS !== "web") {
+                Alert.alert(t("hostSidebar.gameCode"), code);
+            }
+        } catch (e: any) {
+            void mixpanel.track("Host Code Copy Failed", {
+                has_passcode: Boolean(code),
+                game_status: String(gameState.status),
+                error_message: e?.message ?? String(e),
+            });
+        }
+    };
+
     const handleStartPress = () => {
         if (!gameState.activeQuestionId) return;
         if (isPreparation) onStartQuestion(gameState.activeQuestionId);
@@ -76,31 +100,31 @@ export const ControlSidebar = ({
 
     const getPhaseText = (phase: GamePhase) => {
         switch (phase) {
-            case GamePhase.PREPARATION: return 'Подготовка';
-            case GamePhase.THINKING: return 'Обсуждение';
-            case GamePhase.ANSWERING: return 'Прием ответов';
-            case GamePhase.IDLE: return 'Ожидание';
+            case GamePhase.PREPARATION: return t("hostSidebar.phase.preparation");
+            case GamePhase.THINKING: return t("hostSidebar.phase.thinking");
+            case GamePhase.ANSWERING: return t("hostSidebar.phase.answering");
+            case GamePhase.IDLE: return t("hostSidebar.phase.idle");
             default: return '';
         }
     };
 
-    let topBtnTitle = "Запустить таймер";
+    let topBtnTitle = t("hostSidebar.timerStart");
     let topBtnAction = () => {};
     let topBtnVariant: "primary" | "secondary" | "tertiary" = "primary";
     let nextBtnVariant: "primary" | "secondary" | "tertiary" = "secondary";
 
     if (isPreparation) {
-        topBtnTitle = "Запустить таймер";
+        topBtnTitle = t("hostSidebar.timerStart");
         topBtnAction = () => onStartQuestion(gameState.activeQuestionId!);
         topBtnVariant = "primary";
         nextBtnVariant = "secondary";
     } else if (isPhaseActive) {
-        topBtnTitle = "Завершить вопрос";
+        topBtnTitle = t("hostSidebar.finishQuestion");
         topBtnAction = onStopQuestion;
         topBtnVariant = "primary";
         nextBtnVariant = "secondary";
     } else {
-        topBtnTitle = "Перезапустить вопрос";
+        topBtnTitle = t("hostSidebar.restartQuestion");
         topBtnAction = () => onPrepareQuestion(gameState.activeQuestionId!);
         topBtnVariant = "secondary";
         nextBtnVariant = "primary";
@@ -112,7 +136,7 @@ export const ControlSidebar = ({
             <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 24 }}>
 
                 <Box style={{ gap: 8 }}>
-                    <Text variant="h1" style={{marginBottom: 5}}>{gameName || 'Без названия'}</Text>
+                    <Text variant="h1" style={{marginBottom: 5}}>{gameName || t("hostSidebar.untitledGame")}</Text>
 
                     <Box
                         row
@@ -130,7 +154,11 @@ export const ControlSidebar = ({
                         ]}
                     >
                         <Text variant="bodyS" style={{ color: colors.neutralDark.darkest }}>
-                            {isLive ? 'Игра идет' : isFinished ? 'Игра завершена' : 'Игра не начата'}
+                            {isLive
+                                ? t("hostSidebar.status.live")
+                                : isFinished
+                                    ? t("hostSidebar.status.finished")
+                                    : t("hostSidebar.status.notStarted")}
                         </Text>
                         <View style={[
                             styles.statusDot,
@@ -147,7 +175,7 @@ export const ControlSidebar = ({
                     <Box style={styles.codeBlock} row align="center" justify="space-between">
                         <Box style={{ gap: 2 }}>
                             <Text variant="h4">{passcode ?? '—'}</Text>
-                            <Text style={{ fontSize: 10, color: colors.neutralDark.light }}>Код игры</Text>
+                            <Text style={{ fontSize: 10, color: colors.neutralDark.light }}>{t("hostSidebar.gameCode")}</Text>
                         </Box>
                         <TouchableOpacity
                             onPress={() => {
@@ -155,7 +183,9 @@ export const ControlSidebar = ({
                                     has_passcode: Boolean(passcode),
                                     game_status: String(gameState.status),
                                 });
+                                void copyPasscode();
                             }}
+                            disabled={!passcode}
                         >
                             <Feather name="copy" style={{fontSize: 20, color: colors.highlight.darkest, marginRight: 2}} />
                         </TouchableOpacity>
@@ -163,7 +193,7 @@ export const ControlSidebar = ({
 
                     <Box row align="center" justify="space-between" style={styles.numericPill}>
                         <Box row align="center" gap={8}>
-                            <Text variant="bodyS" style={{ color: colors.neutralDark.darkest }}>Команды в игре:</Text>
+                            <Text variant="bodyS" style={{ color: colors.neutralDark.darkest }}>{t("hostSidebar.teamsInGame")}</Text>
                         </Box>
                         <View style={styles.badge}>
                             <Text style={styles.badgeText}>{connectedCount}</Text>
@@ -172,7 +202,7 @@ export const ControlSidebar = ({
 
                     <Box row align="center" justify="space-between" style={styles.numericPill}>
                         <Box row align="center" gap={8}>
-                            <Text variant="bodyS" style={{ color: colors.neutralDark.darkest }}>Непроверенные ответы:</Text>
+                            <Text variant="bodyS" style={{ color: colors.neutralDark.darkest }}>{t("hostSidebar.uncheckedAnswers")}</Text>
                         </Box>
                         <View style={styles.badge}>
                             <Text style={styles.badgeText}>{uncheckedAnswersCount}</Text>
@@ -181,14 +211,14 @@ export const ControlSidebar = ({
                 </Box>
 
                 <Box style={{ gap: 4, marginTop: 16 }}>
-                    <Text variant="bodyS" style={{ fontWeight: 'bold' }}>Текущий вопрос:</Text>
+                    <Text variant="bodyS" style={{ fontWeight: 'bold' }}>{t("hostSidebar.currentQuestionLabel")}</Text>
                     <Text style={{ fontSize: 13, color: colors.neutralDark.medium, lineHeight: 18 }}>
-                        {currentQuestion?.text || 'Вопрос не выбран.'}
+                        {currentQuestion?.text || t("hostSidebar.questionNotSelected")}
                     </Text>
                 </Box>
 
                 <Box style={{ gap: 4, marginTop: 16 }}>
-                    <Text variant="bodyS" style={{ fontWeight: 'bold' }}>Правильный ответ:</Text>
+                    <Text variant="bodyS" style={{ fontWeight: 'bold' }}>{t("hostSidebar.correctAnswerLabel")}</Text>
                     <Text style={{ fontSize: 13, color: colors.neutralDark.darkest }}>
                         {currentQuestion?.answer || '—'}
                     </Text>
@@ -199,15 +229,15 @@ export const ControlSidebar = ({
                 {isFinished ? (
                     <Box align="center" style={{ gap: 8, paddingVertical: 20 }}>
                         <Feather name="flag" size={32} color={colors.highlight.darkest} />
-                        <Text variant="h3" style={{ color: colors.neutralDark.darkest }}>Игра окончена</Text>
+                        <Text variant="h3" style={{ color: colors.neutralDark.darkest }}>{t("hostSidebar.gameFinishedTitle")}</Text>
                         <Text variant="bodyM" style={{ color: colors.neutralDark.medium, textAlign: 'center' }}>
-                            Все вопросы отыграны. Вы можете просмотреть ответы и итоговую таблицу.
+                            {t("hostSidebar.gameFinishedBody")}
                         </Text>
                     </Box>
                 ) : (
                     <>
                         <Box row align="center" justify="space-between" style={styles.numericPill}>
-                            <Text variant="bodyS" style={{ color: colors.neutralDark.medium }}>Получено ответов</Text>
+                            <Text variant="bodyS" style={{ color: colors.neutralDark.medium }}>{t("hostSidebar.receivedAnswers")}</Text>
                             <View style={styles.badge}>
                                 <Text style={styles.badgeText}>{currentAnswersCount}</Text>
                             </View>
@@ -215,13 +245,22 @@ export const ControlSidebar = ({
 
                         <Box style={{ gap: 12, marginTop: 16 }}>
                             <Box row justify="space-between" align="center">
-                                <Text variant="h4">Вопрос {gameState.activeQuestionNumber || 0} из {totalQuestions}</Text>
-                                <Text style={{ fontSize: 12, fontWeight: 'bold', color: colors.neutralDark.medium }}>{currentRound?.name || 'Раунд 1'}</Text>
+                                <Text variant="h4">
+                                    {t("hostSidebar.questionProgress", {
+                                        current: gameState.activeQuestionNumber || 0,
+                                        total: totalQuestions,
+                                    })}
+                                </Text>
+                                <Text style={{ fontSize: 12, fontWeight: 'bold', color: colors.neutralDark.medium }}>
+                                    {currentRound?.name || t("hostSidebar.roundFallback")}
+                                </Text>
                             </Box>
 
                             <Box row justify="space-between" align="center">
                                 <Text style={{ fontSize: 12, color: isTimerTicking && gameState.seconds <= 10 ? colors.error.medium : colors.neutralDark.medium }}>
-                                    {isPhaseActive ? `Осталось ${gameState.seconds} сек` : 'Время вышло'}
+                                    {isPhaseActive
+                                        ? t("hostSidebar.timeLeft", { seconds: gameState.seconds })
+                                        : t("hostSidebar.timeUp")}
                                 </Text>
                                 <Text style={{ fontSize: 12, color: colors.neutralDark.dark, fontWeight: '600' }}>
                                     {getPhaseText(gameState.phase)}
@@ -244,7 +283,7 @@ export const ControlSidebar = ({
                                         onAdjustTime?.(-10);
                                     }}
                                 >
-                                    <Text style={styles.timeBtnText}>-10 сек</Text>
+                                    <Text style={styles.timeBtnText}>{t("hostSidebar.adjustMinus10")}</Text>
                                 </TouchableOpacity>
 
                                 <TouchableOpacity
@@ -280,13 +319,13 @@ export const ControlSidebar = ({
                                         onAdjustTime?.(10);
                                     }}
                                 >
-                                    <Text style={styles.timeBtnText}>+10 сек</Text>
+                                    <Text style={styles.timeBtnText}>{t("hostSidebar.adjustPlus10")}</Text>
                                 </TouchableOpacity>
                             </Box>
 
                             <Box style={{ gap: 6, marginTop: 8 }}>
                                 {!isLive && !isNew && (
-                                    <Button title="Начать игру" onPress={onStartGame} variant="primary" />
+                                    <Button title={t("hostSidebar.startGame")} onPress={onStartGame} variant="primary" />
                                 )}
 
                                 {isLive && gameState.activeQuestionId && (
@@ -299,16 +338,16 @@ export const ControlSidebar = ({
 
                                         <Box row justify="space-between" style={{ gap: 8, marginTop: 4 }}>
                                             <View style={{ flex: 1 }}>
-                                                <Button title="< Пред." onPress={onPrevQuestion} variant="tertiary" />
+                                                <Button title={t("hostSidebar.prev")} onPress={onPrevQuestion} variant="tertiary" />
                                             </View>
                                             <View style={{ flex: 1 }}>
-                                                <Button title="След. >" onPress={onNextQuestion} variant={nextBtnVariant} />
+                                                <Button title={t("hostSidebar.next")} onPress={onNextQuestion} variant={nextBtnVariant} />
                                             </View>
                                         </Box>
                                     </>
                                 )}
                                 {isLive && !gameState.activeQuestionId && (
-                                    <Button title="Начать первый вопрос" onPress={onNextQuestion} variant="primary" />
+                                    <Button title={t("hostSidebar.startFirstQuestion")} onPress={onNextQuestion} variant="primary" />
                                 )}
                             </Box>
                         </Box>

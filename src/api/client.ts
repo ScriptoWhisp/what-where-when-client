@@ -1,4 +1,5 @@
 import { getAccessToken } from "../auth/session";
+import i18n from "@/src/i18n";
 
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:3000";
 
@@ -25,7 +26,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     if (!res.ok) {
         throw {
             status: res.status,
-            message: body?.message || res.statusText || "Request failed",
+            message: body?.message || res.statusText || i18n.t("common.requestFailed"),
             body,
         } satisfies ApiError;
     }
@@ -47,7 +48,7 @@ async function requestBinary(
         const body = text ? safeJson(text) : null;
         throw {
             status: res.status,
-            message: body?.message || res.statusText || "Request failed",
+            message: body?.message || res.statusText || i18n.t("common.requestFailed"),
             body,
         } satisfies ApiError;
     }

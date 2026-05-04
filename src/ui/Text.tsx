@@ -1,5 +1,5 @@
 import React from "react";
-import { Text as RNText, TextProps, StyleSheet } from "react-native";
+import { Platform, Text as RNText, TextProps, StyleSheet } from "react-native";
 import { typography } from "../theme/typography";
 import { colors } from "../theme/colors";
 
@@ -11,14 +11,30 @@ export type Variant =
     | "muted";
 
 export function Text(props: TextProps & { variant?: Variant }) {
-    const { style, variant = "bodyM", ...rest } = props;
-    return <RNText {...rest} style={[styles.base, variantStyles[variant], style]} />;
+    const { style, variant = "bodyM", selectable = false, ...rest } = props;
+    return (
+        <RNText
+            selectable={selectable}
+            {...rest}
+            style={[
+                styles.base,
+                !selectable && Platform.OS === "web" ? styles.noSelectWeb : null,
+                variantStyles[variant],
+                style,
+            ]}
+        />
+    );
 }
 
 const styles = StyleSheet.create({
     base: {
         color: colors.neutralDark.darkest,
     },
+    noSelectWeb: Platform.OS === "web"
+        ? ({
+            userSelect: "none",
+        } as any)
+        : ({} as any),
 });
 
 const variantStyles = StyleSheet.create({

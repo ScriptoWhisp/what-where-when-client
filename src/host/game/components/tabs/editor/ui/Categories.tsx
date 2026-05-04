@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Pressable, View } from "react-native";
+import { useTranslation } from "react-i18next";
 import { Text } from "@/src/ui/Text";
 import { TextField } from "@/src/ui/TextField";
 import { Icon } from "@/src/ui/Icon";
@@ -19,6 +20,7 @@ export function CategoriesSection({
     onRemove: (c: UICategory) => void;
     onUpdate: (c: UICategory, name: string, description?: string) => void;
 }) {
+    const { t } = useTranslation();
     const [name, setName] = useState("");
     const [desc, setDesc] = useState("");
     const [editingCat, setEditingCat] = useState<UICategory | null>(null);
@@ -48,21 +50,21 @@ export function CategoriesSection({
 
     return (
         <View style={{ gap: 10 }}>
-            <Text variant="h3">Категории</Text>
+            <Text variant="h3">{t("hostEditorCategories.title")}</Text>
 
             <View style={{ flexDirection: "row", alignItems: "flex-end", gap: 10 }}>
                 <View style={{ flex: 1 }}>
-                    <TextField value={name} placeholder="Название категории" onChangeText={setName} />
+                    <TextField value={name} placeholder={t("hostEditorCategories.namePlaceholder")} onChangeText={setName} />
                 </View>
                 <View style={{ flex: 1 }}>
-                    <TextField value={desc} placeholder="Описание (необязательно)" onChangeText={setDesc} />
+                    <TextField value={desc} placeholder={t("hostEditorCategories.descPlaceholder")} onChangeText={setDesc} />
                 </View>
                 <View style={{ flexDirection: "row", gap: 8, alignSelf: "center" }}>
                     {editingCat && (
-                        <Button title="Отмена" variant="secondary" onPress={handleCancel} />
+                        <Button title={t("hostEditorCategories.cancel")} variant="secondary" onPress={handleCancel} />
                     )}
                     <Button
-                        title={editingCat ? "Сохранить" : "Добавить"}
+                        title={editingCat ? t("hostEditorCategories.save") : t("hostEditorCategories.add")}
                         variant={editingCat ? "primary" : "secondary"}
                         onPress={handleSave}
                     />
@@ -92,10 +94,9 @@ export function CategoriesSection({
                             fontWeight: 'normal',
                             fontSize: 12
                         }}>
-                            {t.name.toUpperCase()}
+                            {t.name}
                         </Text>
 
-                        {/* Крестик удаления */}
                         <Pressable onPress={() => onRemove(t)} hitSlop={10}>
                             <View style={{
                                 backgroundColor: colors.neutralDark.light,

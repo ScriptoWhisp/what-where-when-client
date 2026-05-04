@@ -5,19 +5,31 @@
     "or": "или",
     "searching": "Поиск...",
     "loading": "Загрузка...",
+    "requestFailed": "Запрос не выполнен",
     "error": "Ошибка"
   },
   "home": {
+    "eyebrow": "Интеллектуальные турниры",
     "title": "Что? Где? Когда?",
-    "subtitle": "Платформа для проведения турниров",
-    "joinGame": "Войти в игру",
-    "feedback": "Дать обратную связь"
+    "subtitle": "Цифровая платформа для интеллектуальных турниров",
+    "aboutHeading": "О платформе",
+    "actionsHeading": "Дальше",
+    "aboutP1": "Традиционные турниры во многом держатся на бумаге: сбор бланков, ручной пересчёт и паузы между вопросами тратят время команды организаторов и легко дают ошибки и неравные условия для команд.",
+    "aboutP2": "Здесь игра идёт в реальном времени: команды подключаются по короткому коду, видят общий таймер и этапы раунда, а ведущий запускает вопросы, принимает ответы и ведёт таблицу с одной панели — без «бегунков» с листочками между столами.",
+    "joinGame": "Войти в игру как команда",
+    "enterAsHost": "Войти как ведущий или организатор",
+    "feedback": "Дать обратную связь",
+    "languageLabel": "Язык",
+    "langRu": "Русский",
+    "langEn": "English",
+    "langEt": "Эстонский"
   },
   "player": {
     "join": {
       "title": "Введите код игры",
       "hint": "Спросите четырехзначный код у организатора",
       "errors": {
+        "onlyDigits": "Код должен состоять только из цифр.",
         "notFound": "Игра не найдена. Проверьте код."
       }
     },
@@ -40,6 +52,23 @@
       "play": "Игра",
       "history": "История",
       "results": "Результаты"
+    },
+    "status": {
+      "connecting": "Подключение...",
+      "team": "Команда: {{teamName}}",
+      "error": "Ошибка: {{message}}",
+      "disconnected": "Связь потеряна...",
+      "sending": "Отправка..."
+    },
+    "miniWidget": {
+      "line": "{{seconds}} сек · {{phase}}"
+    },
+    "phases": {
+      "waitingForHost": "Ожидание начала игры ведущим...",
+      "thinking": "Время на обсуждение",
+      "answering": "Время отвечать!",
+      "answerPlaceholder": "Ваш ответ",
+      "submitAnswer": "Отправить ответ"
     }
   },
   "playTab": {
@@ -84,6 +113,213 @@
     "yourTeam": "Ваша команда",
     "giveFeedback": "Оставить отзыв",
     "loadError": "Не удалось загрузить результаты."
+  },
+  "hostLogin": {
+    "screenTitle": "Вход для ведущего",
+    "screenSubtitle": "Войдите, чтобы создавать игры и вести турниры.",
+    "emailLabel": "Электронная почта",
+    "passwordLabel": "Пароль",
+    "emailPlaceholder": "you@example.com",
+    "passwordPlaceholder": "Введите пароль",
+    "showPassword": "Показать пароль",
+    "hidePassword": "Скрыть пароль",
+    "forgotPassword": "Забыли пароль?",
+    "login": "Войти",
+    "loggingIn": "Входим...",
+    "errorGeneric": "Не удалось войти. Попробуйте ещё раз.",
+    "backHome": "На главную",
+    "notMember": "Нет аккаунта?",
+    "registerNow": "Зарегистрироваться"
+  },
+  "hostSignup": {
+    "screenTitle": "Регистрация",
+    "screenSubtitle": "Создайте аккаунт, чтобы начать",
+    "nameLabel": "Имя",
+    "namePlaceholder": "Имя",
+    "emailLabel": "Электронная почта",
+    "emailPlaceholder": "you@example.com",
+    "passwordLabel": "Пароль",
+    "passwordPlaceholder": "Придумайте пароль",
+    "confirmPasswordLabel": "Повторите пароль",
+    "confirmPasswordPlaceholder": "Повторите пароль",
+    "showPassword": "Показать пароль",
+    "hidePassword": "Скрыть пароль",
+    "agreeText": "Я прочитал(а) и согласен(на) с Terms and Conditions и Privacy Policy.",
+    "signUp": "Зарегистрироваться",
+    "signingUp": "Регистрируем...",
+    "errorGeneric": "Не удалось зарегистрироваться. Попробуйте ещё раз.",
+    "backHome": "На главную",
+    "haveAccount": "Уже есть аккаунт?",
+    "signIn": "Войти"
+  },
+  "hostSetup": {
+    "title": "Игры",
+    "logOut": "Выйти",
+    "createGame": "Создать игру",
+    "loadError": "Не удалось загрузить список игр.",
+    "openGame": "Открыть"
+  },
+  "hostGameAdmin": {
+    "createTitle": "Создание игры",
+    "manageTitle": "Управление игрой",
+    "save": "Сохранить",
+    "finishGame": "Завершить игру",
+    "tabs": {
+      "settings": "Настройки",
+      "answers": "Ответы",
+      "leaderboard": "Таблица результатов",
+      "teams": "Команды"
+    }
+  },
+  "hostSidebar": {
+    "untitledGame": "Без названия",
+    "status": {
+      "live": "Игра идет",
+      "finished": "Игра завершена",
+      "notStarted": "Игра не начата"
+    },
+    "gameCode": "Код игры",
+    "teamsInGame": "Команды в игре:",
+    "uncheckedAnswers": "Непроверенные ответы:",
+    "currentQuestionLabel": "Текущий вопрос:",
+    "questionNotSelected": "Вопрос не выбран.",
+    "correctAnswerLabel": "Правильный ответ:",
+    "gameFinishedTitle": "Игра окончена",
+    "gameFinishedBody": "Все вопросы отыграны. Вы можете просмотреть ответы и итоговую таблицу.",
+    "receivedAnswers": "Получено ответов",
+    "questionProgress": "Вопрос {{current}} из {{total}}",
+    "roundFallback": "Раунд 1",
+    "timeLeft": "Осталось {{seconds}} сек",
+    "timeUp": "Время вышло",
+    "phase": {
+      "preparation": "Подготовка",
+      "thinking": "Обсуждение",
+      "answering": "Прием ответов",
+      "idle": "Ожидание"
+    },
+    "adjustMinus10": "-10 сек",
+    "adjustPlus10": "+10 сек",
+    "startGame": "Начать игру",
+    "prev": "< Пред.",
+    "next": "След. >",
+    "startFirstQuestion": "Начать первый вопрос",
+    "timerStart": "Запустить таймер",
+    "finishQuestion": "Завершить вопрос",
+    "restartQuestion": "Перезапустить вопрос"
+  },
+  "hostEditor": {
+    "createGame": "Создать игру",
+    "saveAllChanges": "Сохранить все изменения"
+  },
+  "hostEditorCategories": {
+    "title": "Категории",
+    "namePlaceholder": "Название категории",
+    "descPlaceholder": "Описание (необязательно)",
+    "cancel": "Отмена",
+    "save": "Сохранить",
+    "add": "Добавить"
+  },
+  "hostEditorMeta": {
+    "gameNameLabel": "Название игры",
+    "gameNamePlaceholder": "Введите название...",
+    "eventDateLabel": "Дата проведения",
+    "passcodeDescription": "Код для входа команд"
+  },
+  "hostEditorSettings": {
+    "timeSettingsTitle": "Настройки времени",
+    "thinkTimeSec": "Время на обсуждение (сек)",
+    "answerTimeSec": "Время на ввод ответа (сек)",
+    "appealTimeMin": "Время на апелляции (мин)",
+    "extraSettingsTitle": "Дополнительные настройки",
+    "showLeaderboard": {
+      "title": "Показывать таблицу лидеров",
+      "description": "Команды смогут видеть таблицу результатов во время игры"
+    },
+    "showQuestions": {
+      "title": "Показывать вопросы",
+      "description": "Текст вопроса будет отображаться на экранах участников"
+    },
+    "showAnswers": {
+      "title": "Показывать ответы",
+      "description": "Правильные ответы будут показаны участникам после завершения раунда"
+    },
+    "allowAppeals": {
+      "title": "Разрешить апелляции",
+      "description": "Команды смогут оспаривать результаты и подавать апелляции на свои ответы"
+    }
+  },
+  "hostEditorTeams": {
+    "title": "Команды",
+    "categoryLabel": "Лига / Категория",
+    "needCategories": "Сначала создайте и сохраните хотя бы одну категорию, чтобы добавлять команды.",
+    "saveToUseCategories": "Сохраните изменения, чтобы использовать новые категории",
+    "teamNamePlaceholder": "Название команды",
+    "teamCodePlaceholder": "Код команды",
+    "cancel": "Отмена",
+    "save": "Сохранить",
+    "add": "Добавить"
+  },
+  "hostEditorQuestions": {
+    "title": "Вопросы",
+    "addRound": "Добавить раунд",
+    "addQuestion": "Добавить вопрос",
+    "roundDescription": "Вопросов: {{count}}",
+    "questionTitle": "Вопрос {{n}}",
+    "questionNoText": "Пока нет текста",
+    "fieldQuestionLabel": "Вопрос",
+    "fieldQuestionPlaceholder": "Введите текст вопроса",
+    "fieldAnswerLabel": "Ответ",
+    "fieldAnswerPlaceholder": "Введите ответ",
+    "timeToThinkSec": "Время на обсуждение (сек)",
+    "timeToAnswerSec": "Время на ввод ответа (сек)",
+    "roundNameLabel": "Название раунда",
+    "roundNamePlaceholder": "Название раунда",
+    "emptyHint": "Выберите раунд и добавьте вопрос, чтобы редактировать."
+  },
+  "notFound": {
+    "headerTitle": "Упс!",
+    "title": "Такого экрана не существует.",
+    "goHome": "На главный экран"
+  },
+  "modal": {
+    "title": "Модалка"
+  },
+  "hostTeamsTab": {
+    "teamFallback": "Команда #{{id}}",
+    "total": "Всего: {{count}}",
+    "online": "В игре: {{count}}",
+    "offline": "Оффлайн: {{count}}",
+    "empty": "В игре пока нет участников"
+  },
+  "hostLeaderboard": {
+    "uncategorized": "Без категории",
+    "exportA11y": "Экспорт в Excel в формате листа Игра",
+    "exportButton": "Экспорт (лист Игра)",
+    "exportErrorTitle": "Ошибка экспорта",
+    "exportErrorGeneric": "Не удалось выгрузить файл",
+    "empty": "Список команд пока пуст",
+    "teamsCount": "Команд: {{count}}",
+    "colTeam": "Команда",
+    "colScore": "Очки",
+    "colRating": "Рейтинг",
+    "fsCacheUnavailable": "Кэш файловой системы недоступен",
+    "shareDialogTitle": "Экспорт результатов"
+  },
+  "hostAnswersDashboard": {
+    "roundFallback": "Раунд {{n}}",
+    "selectQuestion": "Выберите вопрос слева",
+    "total": "Всего: {{count}}",
+    "correct": "Правильные: {{count}}",
+    "incorrect": "Неправильные: {{count}}",
+    "colTeamName": "Название команды",
+    "colAnswerText": "Текст ответа",
+    "empty": "Пока нет ответов от команд",
+    "lateBy": "Опоздание: {{seconds}} с"
+  },
+  "hostForgotPassword": {
+    "screenTitle": "Забыли пароль?",
+    "body": "Восстановление пароля из приложения пока недоступно — мы это ещё не подключили. Пока что попробуйте войти снова или зарегистрируйтесь с другой почтой, если вам так удобнее.",
+    "backToLogin": "Вернуться ко входу"
   },
   "feedback": {
     "ctaRateApp": "Оценить приложение",
