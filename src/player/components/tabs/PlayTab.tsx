@@ -24,7 +24,6 @@ interface PlayTabProps {
     totalTime: number;
     history: AnswerDomain[];
     questionNumber?: number | null;
-    gameStarted: boolean;
     submitAnswer: (answer: string) => void;
     lastAnswerStatus?: 'success' | 'error' | null;
     gameStatus?: GameStatus | null;
@@ -37,7 +36,6 @@ export const PlayTab = ({
                             totalTime,
                             history,
                             questionNumber,
-                            gameStarted,
                             submitAnswer,
                             lastAnswerStatus,
                             gameStatus,
@@ -112,8 +110,10 @@ export const PlayTab = ({
         }
     };
 
+    const sessionLive = gameStatus === GameStatuses.LIVE;
+
     const isWaiting =
-        !gameStarted ||
+        !sessionLive ||
         phase === GamePhase.IDLE ||
         phase === GamePhase.PREPARATION;
 
@@ -227,7 +227,7 @@ export const PlayTab = ({
                 keyboardShouldPersistTaps="handled"
                 showsVerticalScrollIndicator={false}
             >
-                {!gameStarted
+                {!sessionLive
                     ? renderWaiting()
                     : phase === GamePhase.IDLE
                         ? renderIdle()

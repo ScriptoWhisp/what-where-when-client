@@ -325,6 +325,7 @@
     "ctaRateApp": "Rate the app",
     "screenTitle": "Feedback",
     "mainTitle": "Game has finished",
+    "mainTitleStandalone": "Tell us what you think about the app",
     "ratingPrompt": "How would you rate the application?",
     "commentHeading": "Anything else?",
     "commentPlaceholder": "Tell us everything.",

@@ -159,22 +159,20 @@ export default function PlayerFeedbackScreen() {
         return Object.values(selectedBySection).some((keys) => keys.length > 0);
     }, [rating, comment, selectedBySection]);
 
-    const goLeaveWithoutSubmit = useCallback(() => {
+    const handleBack = useCallback(() => {
         if (submitting) return;
-        void mixpanel.track("Player Feedback Skipped", {
+        void mixpanel.track("Player Feedback Back Clicked", {
             from_home: isStandaloneFromHome,
             has_game_context: hasGameContext,
+            rating,
+            had_comment: comment.trim().length > 0,
         });
-        if (isStandaloneFromHome) {
+        if (router.canGoBack()) {
+            router.back();
+        } else {
             router.replace('/');
-            return;
         }
-        if (!hasGameContext) {
-            router.replace('/');
-            return;
-        }
-        router.replace({ pathname: '/(player)/thank-you' });
-    }, [submitting, isStandaloneFromHome, hasGameContext, router]);
+    }, [submitting, isStandaloneFromHome, hasGameContext, router, rating, comment]);
 
     const totalChipsSelected = useMemo(
         () =>
@@ -187,10 +185,6 @@ export default function PlayerFeedbackScreen() {
 
     const handlePrimaryPress = async () => {
         if (submitting) return;
-        if (!hasUserInput) {
-            goLeaveWithoutSubmit();
-            return;
-        }
         if (!hasGameContext && !isStandaloneFromHome) {
             void mixpanel.track("Player Feedback Submit Blocked", {
                 reason: "missing_game_context",
@@ -257,10 +251,6 @@ export default function PlayerFeedbackScreen() {
         }
     };
 
-    const primaryLabelNoInput = isStandaloneFromHome
-        ? t('feedback.returnHome')
-        : t('feedback.skip');
-
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: colors.neutralLight.lightest }} edges={['top']}>
             <Stack.Screen options={{ headerShown: false }} />
@@ -269,83 +259,98 @@ export default function PlayerFeedbackScreen() {
                 behavior={Platform.OS === 'ios' ? 'padding' : undefined}
                 keyboardVerticalOffset={Platform.OS === 'ios' ? 8 : 0}
             >
-                <GameHeader
-                    title={t('feedback.screenTitle')}
-                />
+                <GameHeader title={t('feedback.screenTitle')} />
 
                 <ScrollView
                     contentContainerStyle={styles.scrollContent}
                     keyboardShouldPersistTaps="handled"
                     showsVerticalScrollIndicator={false}
                 >
-                    {malformedGameFeedback ? (
-                        <Text variant="bodyM" style={{ color: colors.error.dark, textAlign: 'center' }}>
-                            {t('feedback.errorGeneric')}
-                        </Text>
-                    ) : formLoading ? (
-                        <Text variant="bodyM" style={styles.muted}>
-                            {t('common.loading')}
-                        </Text>
-                    ) : formError ? (
-                        <Text variant="bodyM" style={{ color: colors.error.dark, textAlign: 'center' }}>
-                            {formError}
-                        </Text>
-                    ) : (
-                        <>
-                            <Text variant="h2" style={styles.mainTitle}>
-                                {t('feedback.mainTitle')}
+                    <Box style={styles.formContainer}>
+                        {malformedGameFeedback ? (
+                            <Text variant="bodyM" style={{ color: colors.error.dark, textAlign: 'center' }}>
+                                {t('feedback.errorGeneric')}
                             </Text>
+                        ) : formLoading ? (
                             <Text variant="bodyM" style={styles.muted}>
-                                {t('feedback.ratingPrompt')}
+                                {t('common.loading')}
                             </Text>
+                        ) : formError ? (
+                            <Text variant="bodyM" style={{ color: colors.error.dark, textAlign: 'center' }}>
+                                {formError}
+                            </Text>
+                        ) : (
+                            <Box bg="neutralLight.lightest" radius="md" p={6} style={styles.card}>
+                                <Text variant="h2" style={styles.mainTitle}>
+                                    {isStandaloneFromHome
+                                        ? t('feedback.mainTitleStandalone')
+                                        : t('feedback.mainTitle')}
+                                </Text>
+                                <Text variant="bodyM" style={styles.muted}>
+                                    {t('feedback.ratingPrompt')}
+                                </Text>
 
-                            <Box row justify="flex-start" gap={1} style={{ marginBottom: 56 }}>
-                                {[1, 2, 3, 4, 5].map((star) => (
-                                    <Pressable
-                                        key={star}
-                                        onPress={() => handleStarPress(star)}
-                                        hitSlop={8}
-                                        accessibilityRole="button"
-                                        accessibilityLabel={`${star}`}
-                                    >
-                                        <Ionicons
-                                            name={rating >= star ? 'star' : 'star-outline'}
-                                            size={24}
-                                            color={colors.highlight.darkest}
-                                        />
-                                    </Pressable>
-                                ))}
+                                <Box row justify="flex-start" gap={1} style={{ marginBottom: 56 }}>
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                        <Pressable
+                                            key={star}
+                                            onPress={() => handleStarPress(star)}
+                                            hitSlop={8}
+                                            accessibilityRole="button"
+                                            accessibilityLabel={`${star}`}
+                                        >
+                                            <Ionicons
+                                                name={rating >= star ? 'star' : 'star-outline'}
+                                                size={24}
+                                                color={colors.highlight.darkest}
+                                            />
+                                        </Pressable>
+                                    ))}
+                                </Box>
+
+                                <FeedbackDynamicSections
+                                    sections={sections}
+                                    lang={lang}
+                                    selectionsBySection={selectedBySection}
+                                    onToggleChip={onToggleChip}
+                                />
+
+                                <Text variant="h5" style={[styles.sectionTitle, { marginBottom: 16 }]}>
+                                    {t('feedback.commentHeading')}
+                                </Text>
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder={t('feedback.commentPlaceholder')}
+                                    placeholderTextColor={colors.neutralDark.light}
+                                    value={comment}
+                                    onChangeText={handleCommentChange}
+                                    multiline
+                                    textAlignVertical="top"
+                                />
                             </Box>
-
-                            <FeedbackDynamicSections
-                                sections={sections}
-                                lang={lang}
-                                selectionsBySection={selectedBySection}
-                                onToggleChip={onToggleChip}
-                            />
-
-                            <Text variant="h5" style={[styles.sectionTitle, { marginBottom: 16 }]}>
-                                {t('feedback.commentHeading')}
-                            </Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder={t('feedback.commentPlaceholder')}
-                                placeholderTextColor={colors.neutralDark.light}
-                                value={comment}
-                                onChangeText={handleCommentChange}
-                                multiline
-                                textAlignVertical="top"
-                            />
-                        </>
-                    )}
+                        )}
+                    </Box>
                 </ScrollView>
 
-                <Box pb={Platform.OS === 'ios' ? 8 : 6} p={6}>
+                <Box
+                    pb={Platform.OS === 'ios' ? 8 : 6}
+                    p={6}
+                    gap={3}
+                    width="100%"
+                    maxWidth={450}
+                    style={{ alignSelf: 'center' }}
+                >
                     <Button
-                        title={hasUserInput ? t('feedback.submit') : primaryLabelNoInput}
+                        title={t('common.back')}
+                        variant="tertiary"
+                        onPress={handleBack}
+                        disabled={submitting}
+                    />
+                    <Button
+                        title={t('feedback.submit')}
                         variant="primary"
                         onPress={handlePrimaryPress}
-                        disabled={submitting || (formLoading && (!isStandaloneFromHome || hasUserInput))}
+                        disabled={submitting || (!isStandaloneFromHome && malformedGameFeedback)}
                         loading={submitting}
                     />
                 </Box>
@@ -357,7 +362,22 @@ export default function PlayerFeedbackScreen() {
 const styles = StyleSheet.create({
     scrollContent: {
         paddingHorizontal: 24,
-        paddingTop: 24
+        paddingTop: 24,
+        alignItems: 'center',
+    },
+    formContainer: {
+        width: '100%',
+        maxWidth: 640,
+        alignSelf: 'center',
+    },
+    card: {
+        borderWidth: 1,
+        borderColor: colors.neutralLight.medium,
+        shadowColor: '#000',
+        shadowOpacity: 0.06,
+        shadowRadius: 18,
+        shadowOffset: { width: 0, height: 10 },
+        elevation: 2,
     },
     mainTitle: {
         color: colors.neutralDark.darkest,
@@ -379,7 +399,7 @@ const styles = StyleSheet.create({
         padding: 16,
         fontSize: 16,
         color: colors.neutralDark.darkest,
-        backgroundColor: colors.neutralLight.lightest,
+        backgroundColor: colors.neutralLight.light,
         ...(Platform.OS === 'web' ? { outlineStyle: 'none' as any } : {}),
     },
 });

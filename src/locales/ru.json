@@ -325,6 +325,7 @@
     "ctaRateApp": "Оценить приложение",
     "screenTitle": "Обратная связь",
     "mainTitle": "Игра завершена",
+    "mainTitleStandalone": "Расскажите, как вам приложение",
     "ratingPrompt": "Как вы оцениваете приложение?",
     "commentHeading": "Ещё что-нибудь?",
     "commentPlaceholder": "Расскажите всё, что считаете нужным.",

@@ -325,6 +325,7 @@
     "ctaRateApp": "Hinda rakendust",
     "screenTitle": "Tagasiside",
     "mainTitle": "Mäng on läbi",
+    "mainTitleStandalone": "Ütle, mida sa rakendusest arvad",
     "ratingPrompt": "Kuidas hindad rakendust?",
     "commentHeading": "Kas on veel midagi?",
     "commentPlaceholder": "Kirjelda kõike, mida tahad öelda.",
