@@ -6,6 +6,7 @@ import { ListItem } from "@/src/ui/ListItem";
 import { Icon } from "@/src/ui/Icon";
 import { colors } from "@/src/theme/colors";
 import { Text } from "@/src/ui/Text";
+import { ddmmyyyyToIsoDate, isoDateToDdmmyyyy } from "@/src/util/dateFormat";
 
 export function GameMetaRow({ title, date_of_event, passcode, onChangeTitle, onChangeDate, required }: {
     title: string;
@@ -18,16 +19,10 @@ export function GameMetaRow({ title, date_of_event, passcode, onChangeTitle, onC
     const { t } = useTranslation();
     const req = required ? " *" : "";
 
-    const getNativeDateValue = () => {
-        if (!date_of_event || !date_of_event.includes('-')) return '';
-        const [d, m, y] = date_of_event.split('-');
-        return `${y}-${m}-${d}`;
-    };
-
+    const getNativeDateValue = () => ddmmyyyyToIsoDate(date_of_event);
     const handleNativeDateChange = (val: string) => {
         if (!val) return;
-        const [y, m, d] = val.split('-');
-        onChangeDate(`${d}-${m}-${y}`);
+        onChangeDate(isoDateToDdmmyyyy(val));
     };
 
     return (

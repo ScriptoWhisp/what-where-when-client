@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, Platform, StyleSheet, ScrollView, TouchableOpacity, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useTranslation } from "react-i18next";
@@ -40,6 +40,13 @@ export const ControlSidebar = ({
                                    onStopQuestion, onFinishGame, onAdjustTime
                                }: ControlSidebarProps) => {
     const { t } = useTranslation();
+    const [copiedOnWeb, setCopiedOnWeb] = useState(false);
+
+    useEffect(() => {
+        if (!copiedOnWeb) return;
+        const id = setTimeout(() => setCopiedOnWeb(false), 1500);
+        return () => clearTimeout(id);
+    }, [copiedOnWeb]);
 
     const isLive = gameState.status === GameStatuses.LIVE;
     const isFinished = gameState.status === GameStatuses.FINISHED;
@@ -81,6 +88,8 @@ export const ControlSidebar = ({
             });
             if (Platform.OS !== "web") {
                 Alert.alert(t("hostSidebar.gameCode"), code);
+            } else {
+                setCopiedOnWeb(true);
             }
         } catch (e: any) {
             void mixpanel.track("Host Code Copy Failed", {
@@ -187,7 +196,14 @@ export const ControlSidebar = ({
                             }}
                             disabled={!passcode}
                         >
-                            <Feather name="copy" style={{fontSize: 20, color: colors.highlight.darkest, marginRight: 2}} />
+                            <Feather
+                                name={copiedOnWeb ? "check" : "copy"}
+                                style={{
+                                    fontSize: 20,
+                                    color: copiedOnWeb ? colors.success.dark : colors.highlight.darkest,
+                                    marginRight: 2,
+                                }}
+                            />
                         </TouchableOpacity>
                     </Box>
 

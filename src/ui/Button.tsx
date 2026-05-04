@@ -1,5 +1,5 @@
 import React from "react";
-import { Platform, Pressable, StyleSheet, View, ViewStyle } from "react-native";
+import { ActivityIndicator, Platform, Pressable, StyleSheet, View, ViewStyle } from "react-native";
 import { colors } from "../theme/colors";
 import { metrics } from "../theme/metrics";
 import { Text } from "./Text";
@@ -27,11 +27,14 @@ export function Button({
     rightIcon?: React.ReactNode;
 }>) {
     const isDisabled = disabled || loading;
+    const spinnerColor = variant === "primary" ? colors.neutralLight.lightest : colors.highlight.darkest;
 
     return (
         <Pressable
             onPress={onPress}
             disabled={isDisabled}
+            accessibilityRole="button"
+            accessibilityState={{ disabled: isDisabled, busy: Boolean(loading) }}
             style={({ pressed }) => [
                 styles.base,
                 Platform.OS === "web" && styles.noSelectWeb,
@@ -44,7 +47,9 @@ export function Button({
             <View style={styles.content}>
                 {leftIcon ? <View style={styles.iconLeft}>{leftIcon}</View> : null}
 
-                <Text variant="actionM" style={textStyles[variant]}>
+                {loading ? <ActivityIndicator size="small" color={spinnerColor} style={styles.spinner} /> : null}
+
+                <Text variant="actionM" style={textStyles[variant]} numberOfLines={1}>
                     {title}
                 </Text>
 
@@ -75,6 +80,7 @@ const styles = StyleSheet.create({
 
     iconLeft: { marginRight: 8 },
     iconRight: { marginLeft: 8 },
+    spinner: { marginRight: 10 },
 
     disabled: { opacity: 0.5 },
     pressed: { opacity: 0.85 },

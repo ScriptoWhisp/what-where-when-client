@@ -128,6 +128,7 @@ export function TeamsSection({
                         <Button
                             title={editingTeam ? t("hostEditorTeams.save") : t("hostEditorTeams.add")}
                             variant={editingTeam ? "primary" : "secondary"}
+                            disabled={!isReadyToAdd}
                             onPress={handleSave}
                         />
                     </View>

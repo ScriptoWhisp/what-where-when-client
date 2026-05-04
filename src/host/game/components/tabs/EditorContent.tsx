@@ -12,6 +12,7 @@ import { Text } from "@/src/ui/Text";
 import { useGameEditor } from "@/src/host/game/components/tabs/editor/state";
 import { colors } from "@/src/theme/colors";
 import { TextField } from "@/src/ui/TextField";
+import { ddmmyyyyToIsoDate, isoDateToDdmmyyyy } from "@/src/util/dateFormat";
 
 type EditorContentProps = {
     editor: ReturnType<typeof useGameEditor>;
@@ -26,22 +27,21 @@ export const EditorContent = ({ editor }: EditorContentProps) => {
 
     if (isCreate) {
         const req = " *";
-        const getNativeDateValue = () => {
-            const raw = editor.draft.date_of_event;
-            if (!raw || !raw.includes('-')) return '';
-            const [d, m, y] = raw.split('-');
-            return `${y}-${m}-${d}`;
-        };
+        const getNativeDateValue = () => ddmmyyyyToIsoDate(editor.draft.date_of_event);
 
         const handleNativeDateChange = (val: string) => {
             if (!val) return;
-            const [y, m, d] = val.split('-');
-            editor.setDate(`${d}-${m}-${y}`);
+            editor.setDate(isoDateToDdmmyyyy(val));
         };
 
         return (
             <Box flex={1} style={styles.createRoot}>
-                <Box style={styles.createForm}>
+                <ScrollView
+                    keyboardShouldPersistTaps="handled"
+                    showsVerticalScrollIndicator={false}
+                    contentContainerStyle={styles.createScrollContent}
+                >
+                    <Box style={styles.createForm}>
                     <TextField
                         label={`${t("hostEditorMeta.gameNameLabel")}${req}`}
                         value={editor.draft.title}
@@ -104,7 +104,8 @@ export const EditorContent = ({ editor }: EditorContentProps) => {
                             onPress={editor.primaryAction}
                         />
                     </View>
-                </Box>
+                    </Box>
+                </ScrollView>
             </Box>
         );
     }
@@ -115,7 +116,7 @@ export const EditorContent = ({ editor }: EditorContentProps) => {
             <ScrollView
                 contentContainerStyle={{
                     margin: 10,
-                    gap: isCreate ? 16 : 48,
+                    gap: 48,
                     paddingBottom: 100,
                     paddingTop: 80
                 }}
@@ -131,45 +132,41 @@ export const EditorContent = ({ editor }: EditorContentProps) => {
                     required
                 />
 
-                {!isCreate && (
-                    <>
-                        <SettingsSections
-                            settings={editor.draft.settings}
-                            onChange={(next) => editor.setDraft((d) => ({ ...d, settings: next }))}
-                        />
+                <SettingsSections
+                    settings={editor.draft.settings}
+                    onChange={(next) => editor.setDraft((d) => ({ ...d, settings: next }))}
+                />
 
-                        <CategoriesSection
-                            categories={editor.draft.categories}
-                            onAdd={editor.addCategory}
-                            onRemove={editor.removeCategory}
-                            onUpdate={editor.updateCategory}
-                        />
+                <CategoriesSection
+                    categories={editor.draft.categories}
+                    onAdd={editor.addCategory}
+                    onRemove={editor.removeCategory}
+                    onUpdate={editor.updateCategory}
+                />
 
-                        <TeamsSection
-                            teams={editor.draft.teams}
-                            categories={editor.draft.categories}
-                            onAdd={editor.addTeam}
-                            onRemove={editor.removeTeam}
-                            onUpdate={editor.updateTeam}
-                        />
+                <TeamsSection
+                    teams={editor.draft.teams}
+                    categories={editor.draft.categories}
+                    onAdd={editor.addTeam}
+                    onRemove={editor.removeTeam}
+                    onUpdate={editor.updateTeam}
+                />
 
-                        <QuestionsSection
-                            rounds={editor.rounds}
-                            selectedRound={editor.selectedRound}
-                            selectedQuestion={editor.selectedQuestion}
-                            selectedRoundKey={editor.selectedRoundKey}
-                            selectedQuestionKey={editor.selectedQuestionKey}
-                            onAddRound={editor.addRound}
-                            onRemoveRound={editor.removeRound}
-                            onSelectRound={editor.selectRound}
-                            onAddQuestion={editor.addQuestion}
-                            onRemoveQuestion={editor.removeQuestion}
-                            onSelectQuestion={editor.selectQuestion}
-                            onUpdateSelectedQuestion={editor.updateSelectedQuestion}
-                            onUpdateRoundName={editor.updateSelectedRoundName}
-                        />
-                    </>
-                )}
+                <QuestionsSection
+                    rounds={editor.rounds}
+                    selectedRound={editor.selectedRound}
+                    selectedQuestion={editor.selectedQuestion}
+                    selectedRoundKey={editor.selectedRoundKey}
+                    selectedQuestionKey={editor.selectedQuestionKey}
+                    onAddRound={editor.addRound}
+                    onRemoveRound={editor.removeRound}
+                    onSelectRound={editor.selectRound}
+                    onAddQuestion={editor.addQuestion}
+                    onRemoveQuestion={editor.removeQuestion}
+                    onSelectQuestion={editor.selectQuestion}
+                    onUpdateSelectedQuestion={editor.updateSelectedQuestion}
+                    onUpdateRoundName={editor.updateSelectedRoundName}
+                />
 
             </ScrollView>
 
@@ -183,9 +180,8 @@ export const EditorContent = ({ editor }: EditorContentProps) => {
                 )}
                 <View style={{ width: 300 }}>
                     <Button
-                        title={editor.isNew ? t("hostEditor.createGame") : t("hostEditor.saveAllChanges")}
+                        title={t("hostEditor.saveAllChanges")}
                         variant="primary"
-                        disabled={isCreate ? !canCreate : false}
                         onPress={editor.primaryAction}
                     />
                 </View>
@@ -207,7 +203,10 @@ const styles = StyleSheet.create({
         justifyContent: "flex-start",
         alignItems: "stretch",
         padding: 24,
-        paddingTop: 16,
+        paddingTop: 80,
+    },
+    createScrollContent: {
+        paddingBottom: 24,
     },
     createForm: {
         width: "100%",
