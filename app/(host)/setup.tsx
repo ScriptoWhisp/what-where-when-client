@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, ScrollView, View } from "react-native";
 import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { NavBar } from "@/src/ui/NavBar";
 import { colors } from "@/src/theme/colors";
 import type { HostGameCard } from "@/src/dto/game.dto";
@@ -10,6 +11,7 @@ import {Card} from "@/src/ui/Card";
 import { mixpanel } from "@/src/analytics/mixpanel";
 
 export default function SetupScreen() {
+    const { t } = useTranslation();
     const router = useRouter();
 
     const [items, setItems] = useState<HostGameCard[]>([]);
@@ -42,7 +44,7 @@ export default function SetupScreen() {
                 router.replace("/login");
                 return;
             }
-            setError(e?.message ?? "Failed to load games");
+            setError(e?.message ?? t("hostSetup.loadError"));
             void mixpanel.track("Host Games List Viewed", {
                 result: "fail",
                 error_message: e?.message ?? String(e),
@@ -61,9 +63,9 @@ export default function SetupScreen() {
     return (
         <View style={{ flex: 1, backgroundColor: colors.neutralLight.lightest }}>
             <NavBar
-                title="Игры"
-                leftText="Выйти"
-                rightText="Создать игру"
+                title={t("hostSetup.title")}
+                leftText={t("hostSetup.logOut")}
+                rightText={t("hostSetup.createGame")}
                 onLeftPress={async () => {
                     void mixpanel.track("Host Logout Clicked");
                     await clearStoredSession();
@@ -109,7 +111,7 @@ export default function SetupScreen() {
                                 <Card
                                     title={g.title}
                                     subtitle={g.subtitle}
-                                    buttonTitle="Open"
+                                    buttonTitle={t("hostSetup.openGame")}
                                     onButtonPress={() => {
                                         void mixpanel.track("Host Game Opened", { game_id: g.id });
                                         router.push(`/game/${g.id}`);

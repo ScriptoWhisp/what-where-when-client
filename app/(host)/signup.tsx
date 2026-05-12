@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { View } from "react-native";
-import { useRouter } from "expo-router";
+import { Link, useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
+import { Feather } from "@expo/vector-icons";
 import { AuthShell } from "@/src/ui/AuthShell";
 import { TextField } from "@/src/ui/TextField";
 import { Button } from "@/src/ui/Button";
@@ -8,6 +10,7 @@ import { Text } from "@/src/ui/Text";
 import { Checkbox } from "@/src/ui/Checkbox";
 import { hostApi } from "@/src/api/host";
 import { mixpanel } from "@/src/analytics/mixpanel";
+import { colors } from "@/src/theme/colors";
 
 function emailDomain(email: string) {
     const at = email.indexOf("@");
@@ -16,6 +19,7 @@ function emailDomain(email: string) {
 }
 
 export default function SignupScreen() {
+    const { t } = useTranslation();
     const router = useRouter();
 
     const [name, setName] = useState("");
@@ -61,7 +65,7 @@ export default function SignupScreen() {
             });
             router.push("/setup");
         } catch (e: any) {
-            const message = e?.message ?? "Registration failed. Please try again.";
+            const message = e?.message ?? t("hostSignup.errorGeneric");
             setError(message);
             void mixpanel.track("Host Signup Failed", {
                 email_domain: emailDomain(email),
@@ -77,29 +81,63 @@ export default function SignupScreen() {
     return (
         <AuthShell>
             <View style={{ width: 360, gap: 24 }}>
-                <View style={{ gap: 8 }}>
-                    <Text variant="h3">Sign up</Text>
-                    <Text variant="bodyS" style={{ color: "#71727A" }}>
-                        Create an account to get started
-                    </Text>
+                <View style={{ gap: 16 }}>
+                    <Link
+                        href="/"
+                        onPress={() => {
+                            void mixpanel.track("Host Signup Back Home Clicked");
+                        }}
+                    >
+                        <Text variant="bodyS" style={{ color: colors.highlight.darkest }}>
+                            ← {t("hostSignup.backHome")}
+                        </Text>
+                    </Link>
+
+                    <View style={{ gap: 8 }}>
+                        <Text variant="h3">{t("hostSignup.screenTitle")}</Text>
+                        <Text variant="bodyS" style={{ color: colors.neutralDark.light }}>
+                            {t("hostSignup.screenSubtitle")}
+                        </Text>
+                    </View>
                 </View>
 
                 <View style={{ gap: 16 }}>
-                    <TextField label={"Name"} value={name} onChangeText={setName} placeholder="Name" />
-
                     <TextField
-                        label={"Email Address"}
-                        value={email}
-                        onChangeText={(v) => { setError(null); setEmail(v); }}
-                        placeholder="name@email.com"
+                        label={t("hostSignup.nameLabel")}
+                        value={name}
+                        onChangeText={setName}
+                        placeholder={t("hostSignup.namePlaceholder")}
                     />
 
                     <TextField
-                        label={"Password"}
+                        label={t("hostSignup.emailLabel")}
+                        value={email}
+                        onChangeText={(v) => { setError(null); setEmail(v); }}
+                        placeholder={t("hostSignup.emailPlaceholder")}
+                        keyboardType="email-address"
+                        autoCapitalize="none"
+                        autoCorrect={false}
+                        autoComplete="email"
+                        textContentType="emailAddress"
+                    />
+
+                    <TextField
+                        label={t("hostSignup.passwordLabel")}
                         value={pw}
                         onChangeText={(v) => { setError(null); setPw(v); }}
-                        placeholder="Create a password"
+                        placeholder={t("hostSignup.passwordPlaceholder")}
                         secureTextEntry={!showPw}
+                        autoCapitalize="none"
+                        autoComplete="password"
+                        textContentType="password"
+                        rightIcon={
+                            <Feather
+                                name={showPw ? "eye-off" : "eye"}
+                                size={22}
+                                color={colors.neutralDark.medium}
+                            />
+                        }
+                        rightIconAccessibilityLabel={showPw ? t("hostSignup.hidePassword") : t("hostSignup.showPassword")}
                         onRightIconPress={() => {
                             setShowPw((s) => {
                                 void mixpanel.track("Host Signup Show Password Toggled", {
@@ -112,10 +150,22 @@ export default function SignupScreen() {
                     />
 
                     <TextField
+                        label={t("hostSignup.confirmPasswordLabel")}
                         value={pw2}
                         onChangeText={(v) => { setError(null); setPw2(v); }}
-                        placeholder="Confirm password"
+                        placeholder={t("hostSignup.confirmPasswordPlaceholder")}
                         secureTextEntry={!showPw2}
+                        autoCapitalize="none"
+                        autoComplete="password"
+                        textContentType="password"
+                        rightIcon={
+                            <Feather
+                                name={showPw2 ? "eye-off" : "eye"}
+                                size={22}
+                                color={colors.neutralDark.medium}
+                            />
+                        }
+                        rightIconAccessibilityLabel={showPw2 ? t("hostSignup.hidePassword") : t("hostSignup.showPassword")}
                         onRightIconPress={() => {
                             setShowPw2((s) => {
                                 void mixpanel.track("Host Signup Show Password Toggled", {
@@ -128,7 +178,7 @@ export default function SignupScreen() {
                     />
 
                     {error && (
-                        <Text variant="bodyS" style={{ color: "#EF4444" }}>
+                        <Text variant="bodyS" style={{ color: colors.error.dark }}>
                             {error}
                         </Text>
                     )}
@@ -144,25 +194,35 @@ export default function SignupScreen() {
                             setAgree(v);
                         }}
                     />
-                    <Text variant="bodyS" style={{ color: "#71727A", flex: 1 }}>
-                        I&apos;ve read and agree with the{" "}
-                        <Text variant="bodyS" style={{ color: "#71727A" }}>
-                            Terms and Conditions
-                        </Text>{" "}
-                        and the{" "}
-                        <Text variant="bodyS" style={{ color: "#71727A" }}>
-                            Privacy Policy
-                        </Text>
-                        .
+                    <Text variant="bodyS" style={{ color: colors.neutralDark.light, flex: 1 }}>
+                        {t("hostSignup.agreeText")}
                     </Text>
                 </View>
 
-                <Button
-                    title={loading ? "Signing up..." : "Sign up"}
-                    variant="primary"
-                    disabled={loading || !agree || !email || !pw || pw !== pw2}
-                    onPress={handleSignup}
-                />
+                <View style={{ gap: 12 }}>
+                    <Button
+                        title={loading ? t("hostSignup.signingUp") : t("hostSignup.signUp")}
+                        variant="primary"
+                        disabled={loading || !agree || !email || !pw || pw !== pw2}
+                        onPress={handleSignup}
+                    />
+
+                    <View style={{ alignItems: "center" }}>
+                        <Text variant="bodyS" style={{ color: colors.neutralDark.light }}>
+                            {t("hostSignup.haveAccount")}{" "}
+                            <Link
+                                href="/login"
+                                onPress={() => {
+                                    void mixpanel.track("Host Signup Back To Login Clicked");
+                                }}
+                            >
+                                <Text variant="bodyS" style={{ color: colors.highlight.darkest }}>
+                                    {t("hostSignup.signIn")}
+                                </Text>
+                            </Link>
+                        </Text>
+                    </View>
+                </View>
             </View>
         </AuthShell>
     );

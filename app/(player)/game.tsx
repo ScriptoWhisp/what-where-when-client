@@ -181,7 +181,6 @@ export default function GameScreen() {
                         totalTime={phaseTotalTime}
                         history={history}
                         questionNumber={activeQuestionNumber}
-                        gameStarted={gameStarted}
                         submitAnswer={submitAnswer}
                         lastAnswerStatus={lastAnswerStatus}
                         gameStatus={gameStatus}

@@ -2,6 +2,7 @@ import React, { useState, useMemo } from "react";
 import { ActivityIndicator, StyleSheet, TouchableOpacity, useWindowDimensions } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 
 import { Box } from "@/src/ui/Box";
 import { Text } from "@/src/ui/Text";
@@ -19,6 +20,7 @@ import { Teams } from "@/src/host/game/components/tabs/Teams";
 import { mixpanel } from "@/src/analytics/mixpanel";
 
 export default function GameAdminScreen() {
+    const { t } = useTranslation();
     const router = useRouter();
     const { width } = useWindowDimensions();
     const { gameId } = useLocalSearchParams<{ gameId: string }>();
@@ -46,15 +48,15 @@ export default function GameAdminScreen() {
 
     const tabs = useMemo(() => {
         if (editor.isNew) {
-            return [{ key: 'Settings', label: 'Настройки' }];
+            return [{ key: 'Settings', label: t("hostGameAdmin.tabs.settings") }];
         }
         return [
-            { key: 'Settings', label: 'Настройки' },
-            { key: 'Answers', label: 'Ответы' },
-            { key: 'Leaderboard', label: 'Таблица результатов' },
-            { key: 'Teams', label: 'Команды' }
+            { key: 'Settings', label: t("hostGameAdmin.tabs.settings") },
+            { key: 'Answers', label: t("hostGameAdmin.tabs.answers") },
+            { key: 'Leaderboard', label: t("hostGameAdmin.tabs.leaderboard") },
+            { key: 'Teams', label: t("hostGameAdmin.tabs.teams") }
         ];
-    }, [editor.isNew]);
+    }, [editor.isNew, t]);
 
     const [activeTab, setActiveTab] = useState('Settings');
     const lastTabRef = React.useRef<string | null>(null);
@@ -184,26 +186,22 @@ export default function GameAdminScreen() {
                 {(!isMobile || editor.isNew) && (
                     <Box style={styles.mainContent}>
                         <NavBar
-                            title={editor.isNew ? "Создание игры" : "Управление игрой"}
+                            title={editor.isNew ? t("hostGameAdmin.createTitle") : t("hostGameAdmin.manageTitle")}
                             leftIcon={<Feather name="grid" size={24} color={colors.highlight.darkest} />}
                             onLeftPress={handleBack}
-                            onRightPress={
-                                editor.isNew
-                                    ? editor.primaryAction
-                                    : (canFinishGame ? finishGame : undefined)
-                            }
+                            onRightPress={editor.isNew ? undefined : (canFinishGame ? finishGame : undefined)}
                             rightIcon={
-                                <Text
-                                    variant="bodyM"
-                                    style={{
-                                        color: editor.isNew
-                                            ? colors.highlight.darkest
-                                            : (canFinishGame ? colors.error.dark : colors.neutralDark.light),
-                                        fontWeight: 'bold'
-                                    }}
-                                >
-                                    {editor.isNew ? "Сохранить" : "Завершить игру"}
-                                </Text>
+                                editor.isNew ? undefined : (
+                                    <Text
+                                        variant="bodyM"
+                                        style={{
+                                            color: canFinishGame ? colors.error.dark : colors.neutralDark.light,
+                                            fontWeight: 'bold'
+                                        }}
+                                    >
+                                        {t("hostGameAdmin.finishGame")}
+                                    </Text>
+                                )
                             }
                         />
 

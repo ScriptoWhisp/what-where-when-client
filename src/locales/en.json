@@ -5,19 +5,31 @@
     "or": "or",
     "searching": "Searching...",
     "loading": "Loading...",
+    "requestFailed": "Request failed",
     "error": "Error"
   },
   "home": {
+    "eyebrow": "Intellectual quiz tournaments",
     "title": "What? Where? When?",
-    "subtitle": "A platform for running tournaments",
-    "joinGame": "Join game",
-    "feedback": "Send feedback"
+    "subtitle": "A digital platform for intellectual quiz tournaments",
+    "aboutHeading": "About",
+    "actionsHeading": "Get started",
+    "aboutP1": "Many tournaments still rely on paper slips, manual scoring, and long pauses between questions. That costs organizer time, invites mistakes, and makes it hard to keep timing fair for every table.",
+    "aboutP2": "This app runs the game in real time: teams join with a short code, follow a shared timer and round phases, and the host advances questions, collects answers, and updates the scoreboard from one dashboard—without runners collecting sheets from the floor.",
+    "joinGame": "Join as a team (player)",
+    "enterAsHost": "Sign in as host or organizer",
+    "feedback": "Send feedback",
+    "languageLabel": "Language",
+    "langRu": "Русский",
+    "langEn": "English",
+    "langEt": "Estonian"
   },
   "player": {
     "join": {
       "title": "Enter game code",
       "hint": "Ask the host for the four-digit code",
       "errors": {
+        "onlyDigits": "The code must contain digits only.",
         "notFound": "Game not found. Check the code."
       }
     },
@@ -40,6 +52,23 @@
       "play": "Game",
       "history": "History",
       "results": "Results"
+    },
+    "status": {
+      "connecting": "Connecting...",
+      "team": "Team: {{teamName}}",
+      "error": "Error: {{message}}",
+      "disconnected": "Connection lost...",
+      "sending": "Sending..."
+    },
+    "miniWidget": {
+      "line": "{{seconds}} sec · {{phase}}"
+    },
+    "phases": {
+      "waitingForHost": "Waiting for the host to start the game...",
+      "thinking": "Discussion time",
+      "answering": "Time to answer!",
+      "answerPlaceholder": "Your answer",
+      "submitAnswer": "Submit answer"
     }
   },
   "playTab": {
@@ -85,10 +114,218 @@
     "giveFeedback": "Give feedback",
     "loadError": "Could not load results."
   },
+  "hostLogin": {
+    "screenTitle": "Host sign in",
+    "screenSubtitle": "Log in to create and run games.",
+    "emailLabel": "Email",
+    "passwordLabel": "Password",
+    "emailPlaceholder": "you@example.com",
+    "passwordPlaceholder": "Enter your password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "forgotPassword": "Forgot password?",
+    "login": "Log in",
+    "loggingIn": "Logging in...",
+    "errorGeneric": "Login failed. Please try again.",
+    "backHome": "Back to Home",
+    "notMember": "Not a member?",
+    "registerNow": "Register now"
+  },
+  "hostSignup": {
+    "screenTitle": "Sign up",
+    "screenSubtitle": "Create an account to get started",
+    "nameLabel": "Name",
+    "namePlaceholder": "Name",
+    "emailLabel": "Email",
+    "emailPlaceholder": "you@example.com",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "Create a password",
+    "confirmPasswordLabel": "Confirm password",
+    "confirmPasswordPlaceholder": "Confirm password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "agreeText": "I've read and agree with the Terms and Conditions and the Privacy Policy.",
+    "signUp": "Sign up",
+    "signingUp": "Signing up...",
+    "errorGeneric": "Registration failed. Please try again.",
+    "backHome": "Back to Home",
+    "haveAccount": "Already have an account?",
+    "signIn": "Sign in"
+  },
+  "hostSetup": {
+    "title": "Games",
+    "logOut": "Log out",
+    "createGame": "Create game",
+    "loadError": "Could not load games.",
+    "openGame": "Open"
+  },
+  "hostGameAdmin": {
+    "createTitle": "Create game",
+    "manageTitle": "Manage game",
+    "save": "Save",
+    "finishGame": "Finish game",
+    "tabs": {
+      "settings": "Settings",
+      "answers": "Answers",
+      "leaderboard": "Leaderboard",
+      "teams": "Teams"
+    }
+  },
+  "hostSidebar": {
+    "untitledGame": "Untitled",
+    "status": {
+      "live": "Live",
+      "finished": "Finished",
+      "notStarted": "Not started"
+    },
+    "gameCode": "Game code",
+    "teamsInGame": "Teams in game",
+    "uncheckedAnswers": "Unchecked answers",
+    "currentQuestionLabel": "Current question",
+    "questionNotSelected": "No question selected.",
+    "correctAnswerLabel": "Correct answer",
+    "gameFinishedTitle": "Game finished",
+    "gameFinishedBody": "All questions are played. You can review answers and the final leaderboard.",
+    "receivedAnswers": "Answers received",
+    "questionProgress": "Question {{current}} of {{total}}",
+    "roundFallback": "Round 1",
+    "timeLeft": "{{seconds}} sec left",
+    "timeUp": "Time is up",
+    "phase": {
+      "preparation": "Preparation",
+      "thinking": "Discussion",
+      "answering": "Answering",
+      "idle": "Idle"
+    },
+    "adjustMinus10": "-10 sec",
+    "adjustPlus10": "+10 sec",
+    "startGame": "Start game",
+    "prev": "< Prev",
+    "next": "Next >",
+    "startFirstQuestion": "Start first question",
+    "timerStart": "Start timer",
+    "finishQuestion": "Finish question",
+    "restartQuestion": "Restart question"
+  },
+  "hostEditor": {
+    "createGame": "Create game",
+    "saveAllChanges": "Save all changes"
+  },
+  "hostEditorCategories": {
+    "title": "Categories",
+    "namePlaceholder": "Category name",
+    "descPlaceholder": "Description (optional)",
+    "cancel": "Cancel",
+    "save": "Save",
+    "add": "Add"
+  },
+  "hostEditorMeta": {
+    "gameNameLabel": "Game name",
+    "gameNamePlaceholder": "Enter a name...",
+    "eventDateLabel": "Event date",
+    "passcodeDescription": "Code for teams to join"
+  },
+  "hostEditorSettings": {
+    "timeSettingsTitle": "Time settings",
+    "thinkTimeSec": "Discussion time (sec)",
+    "answerTimeSec": "Answer input time (sec)",
+    "appealTimeMin": "Appeals time (min)",
+    "extraSettingsTitle": "Additional settings",
+    "showLeaderboard": {
+      "title": "Show leaderboard",
+      "description": "Teams can see the scoreboard during the game"
+    },
+    "showQuestions": {
+      "title": "Show questions",
+      "description": "Question text will be shown to participants"
+    },
+    "showAnswers": {
+      "title": "Show answers",
+      "description": "Correct answers will be shown after the round ends"
+    },
+    "allowAppeals": {
+      "title": "Allow appeals",
+      "description": "Teams can dispute results and submit appeals for their answers"
+    }
+  },
+  "hostEditorTeams": {
+    "title": "Teams",
+    "categoryLabel": "League / Category",
+    "needCategories": "Create and save at least one category before adding teams.",
+    "saveToUseCategories": "Save changes to use new categories",
+    "teamNamePlaceholder": "Team name",
+    "teamCodePlaceholder": "Team code",
+    "cancel": "Cancel",
+    "save": "Save",
+    "add": "Add"
+  },
+  "hostEditorQuestions": {
+    "title": "Questions",
+    "addRound": "Add round",
+    "addQuestion": "Add question",
+    "roundDescription": "{{count}} questions",
+    "questionTitle": "Question {{n}}",
+    "questionNoText": "No text yet",
+    "fieldQuestionLabel": "Question",
+    "fieldQuestionPlaceholder": "Type question text",
+    "fieldAnswerLabel": "Answer",
+    "fieldAnswerPlaceholder": "Type answer",
+    "timeToThinkSec": "Time to think (sec)",
+    "timeToAnswerSec": "Time to answer (sec)",
+    "roundNameLabel": "Round name",
+    "roundNamePlaceholder": "Round name",
+    "emptyHint": "Select a round and add a question to edit."
+  },
+  "notFound": {
+    "headerTitle": "Oops!",
+    "title": "This screen doesn't exist.",
+    "goHome": "Go to home screen!"
+  },
+  "modal": {
+    "title": "Modal"
+  },
+  "hostTeamsTab": {
+    "teamFallback": "Team #{{id}}",
+    "total": "Total: {{count}}",
+    "online": "Online: {{count}}",
+    "offline": "Offline: {{count}}",
+    "empty": "No teams have joined yet"
+  },
+  "hostLeaderboard": {
+    "uncategorized": "Uncategorized",
+    "exportA11y": "Export to Excel (Game sheet)",
+    "exportButton": "Export (Game sheet)",
+    "exportErrorTitle": "Export error",
+    "exportErrorGeneric": "Could not export the file",
+    "empty": "The teams list is empty",
+    "teamsCount": "Teams: {{count}}",
+    "colTeam": "Team",
+    "colScore": "Score",
+    "colRating": "Rating",
+    "fsCacheUnavailable": "File system cache is unavailable",
+    "shareDialogTitle": "Export results"
+  },
+  "hostAnswersDashboard": {
+    "roundFallback": "Round {{n}}",
+    "selectQuestion": "Select a question on the left",
+    "total": "Total: {{count}}",
+    "correct": "Correct: {{count}}",
+    "incorrect": "Incorrect: {{count}}",
+    "colTeamName": "Team",
+    "colAnswerText": "Answer",
+    "empty": "No answers yet",
+    "lateBy": "Late: {{seconds}} s"
+  },
+  "hostForgotPassword": {
+    "screenTitle": "Forgot password?",
+    "body": "Password reset from the app is not available yet — we are working on it. For now, try signing in again or register with another email if that works for you.",
+    "backToLogin": "Back to sign in"
+  },
   "feedback": {
     "ctaRateApp": "Rate the app",
     "screenTitle": "Feedback",
     "mainTitle": "Game has finished",
+    "mainTitleStandalone": "Tell us what you think about the app",
     "ratingPrompt": "How would you rate the application?",
     "commentHeading": "Anything else?",
     "commentPlaceholder": "Tell us everything.",

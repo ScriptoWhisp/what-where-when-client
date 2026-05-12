@@ -5,6 +5,7 @@ import type {
     SubmitPlayerFeedbackDto,
     SubmitPlayerFeedbackResponse,
 } from '@/src/dto/player-feedback.dto';
+import i18n from "@/src/i18n";
 
 const DEV_URL = Platform.OS === 'android' ? 'http://10.0.2.2:3000' : 'http://localhost:3000';
 const API_URL = process.env.EXPO_PUBLIC_API_URL || DEV_URL;
@@ -12,7 +13,7 @@ const API_URL = process.env.EXPO_PUBLIC_API_URL || DEV_URL;
 export const checkGameByCode = async (code: string) => {
     // Превращаем строку в число, так как сервер ждет Int
     const codeInt = parseInt(code, 10);
-    if (isNaN(codeInt)) throw new Error('Код должен состоять только из цифр');
+    if (isNaN(codeInt)) throw new Error(i18n.t("player.join.errors.onlyDigits"));
 
     const response = await fetch(`${API_URL}/player/check-game`, {
         method: 'POST',
@@ -22,7 +23,7 @@ export const checkGameByCode = async (code: string) => {
 
     if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || 'Игра не найдена');
+        throw new Error(error.message || i18n.t("player.join.errors.notFound"));
     }
 
     return response.json(); // Возвращает { gameId, gameName, teams: [...] }
@@ -35,7 +36,7 @@ export const fetchGameLeaderboard = async (gameId: string): Promise<LeaderboardE
         `${API_URL}/player/game/${encodeURIComponent(gameId)}/leaderboard`,
     );
     if (!res.ok) {
-        let message = 'Request failed';
+        let message = i18n.t("common.requestFailed");
         try {
             const err = await res.json();
             message = err.message || message;
@@ -51,7 +52,7 @@ export const fetchGameLeaderboard = async (gameId: string): Promise<LeaderboardE
 export const fetchPlayerFeedbackForm = async (): Promise<GetPlayerFeedbackFormResponse> => {
     const res = await fetch(`${API_URL}/player/feedback-form`);
     if (!res.ok) {
-        let message = 'Request failed';
+        let message = i18n.t("common.requestFailed");
         try {
             const err = await res.json();
             message = err.message || message;
@@ -74,7 +75,7 @@ export const submitPlayerFeedback = async (
     });
 
     if (!response.ok) {
-        let message = 'Request failed';
+        let message = i18n.t("common.requestFailed");
         try {
             const err = await response.json();
             message = err.message || message;

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Pressable, View, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
+import { useTranslation } from "react-i18next";
 import { Text } from "@/src/ui/Text";
 import { TextField } from "@/src/ui/TextField";
 import { Icon } from "@/src/ui/Icon";
@@ -18,10 +19,11 @@ export function TeamsSection({
                              }: {
     teams: UITeam[];
     categories: UICategory[];
-    onAdd: (name: string, code: string, categoryId: number | null) => void;
+    onAdd: (name: string, code: string, categoryId: number) => void;
     onRemove: (t: UITeam) => void;
     onUpdate: (t: UITeam, name: string, code: string, categoryId: number) => void;
 }) {
+    const { t } = useTranslation();
     const [name, setName] = useState("");
     const [code, setCode] = useState("");
     const [selectedCatId, setSelectedCatId] = useState<number | null>(null);
@@ -64,14 +66,14 @@ export function TeamsSection({
 
     return (
         <View style={{ gap: 10 }}>
-            <Text variant="h3">Команды</Text>
+            <Text variant="h3">{t("hostEditorTeams.title")}</Text>
 
             <View style={{ gap: 10 }}>
-                <Text variant="captionM" style={{ color: colors.neutralDark.medium }}>Лига / Категория</Text>
+                <Text variant="captionM" style={{ color: colors.neutralDark.medium }}>{t("hostEditorTeams.categoryLabel")}</Text>
 
                 {validCategories.length === 0 ? (
                     <Text variant="bodyM" style={{ color: colors.warning.dark }}>
-                        Сначала создайте и сохраните хотя бы одну категорию, чтобы добавлять команды.
+                        {t("hostEditorTeams.needCategories")}
                     </Text>
                 ) : (
                     <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -103,7 +105,7 @@ export function TeamsSection({
                         {categories.some(c => c.id == null) && (
                             <View style={[styles.catChip, { backgroundColor: 'transparent', borderColor: colors.neutralLight.medium, borderStyle: 'dashed' }]}>
                                 <Text style={{ color: colors.neutralDark.light, fontSize: 12 }}>
-                                    Сохраните изменения, чтобы использовать новые категории
+                                    {t("hostEditorTeams.saveToUseCategories")}
                                 </Text>
                             </View>
                         )}
@@ -112,20 +114,21 @@ export function TeamsSection({
 
                 <View style={{ flexDirection: "row", alignItems: "flex-end", gap: 10 }}>
                     <View style={{ flex: 1 }}>
-                        <TextField value={name} placeholder="Название команды" onChangeText={setName} />
+                        <TextField value={name} placeholder={t("hostEditorTeams.teamNamePlaceholder")} onChangeText={setName} />
                     </View>
 
                     <View style={{ flex: 1 }}>
-                        <TextField value={code} placeholder="Код команды" onChangeText={setCode} />
+                        <TextField value={code} placeholder={t("hostEditorTeams.teamCodePlaceholder")} onChangeText={setCode} />
                     </View>
 
                     <View style={{ flexDirection: "row", gap: 8, alignSelf: "center" }}>
                         {editingTeam && (
-                            <Button title="Отмена" variant="secondary" onPress={handleCancel} />
+                            <Button title={t("hostEditorTeams.cancel")} variant="secondary" onPress={handleCancel} />
                         )}
                         <Button
-                            title={editingTeam ? "Сохранить" : "Добавить"}
+                            title={editingTeam ? t("hostEditorTeams.save") : t("hostEditorTeams.add")}
                             variant={editingTeam ? "primary" : "secondary"}
+                            disabled={!isReadyToAdd}
                             onPress={handleSave}
                         />
                     </View>
@@ -159,7 +162,7 @@ export function TeamsSection({
                                     fontWeight: 'normal',
                                     fontSize: 12
                                 }}>
-                                    {displayText.toUpperCase()}
+                                    {displayText}
                                 </Text>
 
                                 <Pressable onPress={() => onRemove(t)} hitSlop={10}>

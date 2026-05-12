@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import { useTranslation } from "react-i18next";
 import { Box } from '@/src/ui/Box';
 import { Text } from '@/src/ui/Text';
 import { colors } from '@/src/theme/colors';
@@ -16,6 +17,7 @@ interface HostLeaderboardProps {
 }
 
 export const HostLeaderboard = ({ leaderboard, gameId }: HostLeaderboardProps) => {
+    const { t } = useTranslation();
     const [exporting, setExporting] = useState(false);
 
     const groupedData = useMemo(() => {
@@ -23,7 +25,7 @@ export const HostLeaderboard = ({ leaderboard, gameId }: HostLeaderboardProps) =
         const groupIndexMap = new Map<string, number>();
 
         leaderboard.forEach(team => {
-            const categoryName = team.categoryName || 'Без категории';
+            const categoryName = team.categoryName || t("hostLeaderboard.uncategorized");
 
             if (!groupIndexMap.has(categoryName)) {
                 groupIndexMap.set(categoryName, groups.length);
@@ -58,7 +60,10 @@ export const HostLeaderboard = ({ leaderboard, gameId }: HostLeaderboardProps) =
         });
         try {
             const buffer = await hostApi.exportGameXlsx(gameId);
-            await saveGameXlsx(gameId, buffer);
+            await saveGameXlsx(gameId, buffer, {
+                cacheUnavailableMessage: t("hostLeaderboard.fsCacheUnavailable"),
+                dialogTitle: t("hostLeaderboard.shareDialogTitle"),
+            });
             void mixpanel.track("Host Game Export Succeeded", {
                 game_id: gameId,
                 format: "xlsx",
@@ -70,7 +75,7 @@ export const HostLeaderboard = ({ leaderboard, gameId }: HostLeaderboardProps) =
             const msg =
                 typeof err?.message === "string"
                     ? err.message
-                    : "Не удалось выгрузить файл";
+                    : t("hostLeaderboard.exportErrorGeneric");
             void mixpanel.track("Host Game Export Failed", {
                 game_id: gameId,
                 format: "xlsx",
@@ -78,7 +83,7 @@ export const HostLeaderboard = ({ leaderboard, gameId }: HostLeaderboardProps) =
                 status: (err as any)?.status,
                 response_time_ms: Date.now() - t0,
             });
-            Alert.alert("Ошибка экспорта", msg);
+            Alert.alert(t("hostLeaderboard.exportErrorTitle"), msg);
         } finally {
             setExporting(false);
         }
@@ -93,7 +98,7 @@ export const HostLeaderboard = ({ leaderboard, gameId }: HostLeaderboardProps) =
                         disabled={exporting}
                         style={[styles.exportButton, exporting && styles.exportButtonDisabled]}
                         accessibilityRole="button"
-                        accessibilityLabel="Экспорт в Excel в формате листа Игра"
+                        accessibilityLabel={t("hostLeaderboard.exportA11y")}
                     >
                         {exporting ? (
                             <ActivityIndicator size="small" color={colors.neutralLight.lightest} />
@@ -101,7 +106,7 @@ export const HostLeaderboard = ({ leaderboard, gameId }: HostLeaderboardProps) =
                             <Feather name="download" size={18} color={colors.neutralLight.lightest} style={{ marginRight: 8 }} />
                         )}
                         <Text variant="bodyM" style={{ color: colors.neutralLight.lightest, fontWeight: '600' }}>
-                            Экспорт (лист Игра)
+                            {t("hostLeaderboard.exportButton")}
                         </Text>
                     </TouchableOpacity>
                 </Box>
@@ -109,7 +114,7 @@ export const HostLeaderboard = ({ leaderboard, gameId }: HostLeaderboardProps) =
                 {groupedData.length === 0 ? (
                     <Box align="center" justify="center" style={styles.emptyBox}>
                         <Text variant="bodyM" style={{ color: colors.neutralDark.light, textAlign: 'center' }}>
-                            Список команд пока пуст
+                            {t("hostLeaderboard.empty")}
                         </Text>
                     </Box>
                 ) : (
@@ -123,16 +128,16 @@ export const HostLeaderboard = ({ leaderboard, gameId }: HostLeaderboardProps) =
                                     </Text>
                                     <Box row align="center" style={[styles.badge, styles.badgeGray]}>
                                         <Text style={[styles.badgeText, styles.badgeTextGray]}>
-                                            Команд: {group.teams.length}
+                                            {t("hostLeaderboard.teamsCount", { count: group.teams.length })}
                                         </Text>
                                     </Box>
                                 </Box>
 
                                 <Box row justify="space-between" align="center" style={styles.tableHeader}>
                                     <Text variant="captionM" style={{ width: 40, color: colors.neutralDark.medium }}>#</Text>
-                                    <Text variant="captionM" style={{ flex: 1, color: colors.neutralDark.medium }}>Команда</Text>
-                                    <Text variant="captionM" style={{ width: 60, textAlign: 'center', color: colors.neutralDark.medium }}>Очки</Text>
-                                    <Text variant="captionM" style={{ width: 70, textAlign: 'right', color: colors.neutralDark.medium }}>Рейтинг</Text>
+                                    <Text variant="captionM" style={{ flex: 1, color: colors.neutralDark.medium }}>{t("hostLeaderboard.colTeam")}</Text>
+                                    <Text variant="captionM" style={{ width: 60, textAlign: 'center', color: colors.neutralDark.medium }}>{t("hostLeaderboard.colScore")}</Text>
+                                    <Text variant="captionM" style={{ width: 70, textAlign: 'right', color: colors.neutralDark.medium }}>{t("hostLeaderboard.colRating")}</Text>
                                 </Box>
 
                                 <Box style={{ gap: 4 }}>

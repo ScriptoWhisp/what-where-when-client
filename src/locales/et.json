@@ -1,0 +1,341 @@
+{
+  "common": {
+    "back": "Tagasi",
+    "continue": "Jätka",
+    "or": "või",
+    "searching": "Otsin...",
+    "loading": "Laadimine...",
+    "requestFailed": "Päring ebaõnnestus",
+    "error": "Viga"
+  },
+  "home": {
+    "eyebrow": "Intellektuaalsed viktoriinid",
+    "title": "Mis? Kus? Millal?",
+    "subtitle": "Digitaalne platvorm intellektuaalsetele turniiridele",
+    "aboutHeading": "Platvormist",
+    "actionsHeading": "Järgmine samm",
+    "aboutP1": "Paljud turniirid toetuvad endiselt paberile, käsitsi punktiarvestusele ja pikkadele pausidele küsimuste vahel. See kulutab korraldajate aega, soodustab vigu ja teeb kõikide laudade jaoks ühtlase aja tagamise raskeks.",
+    "aboutP2": "See rakendus viib mängu reaalajas ellu: võistkonnad liituvad lühikese koodiga, jälgivad ühist taimerit ja voorufaase, juht edastab küsimusi, kogub vastuseid ja uuendab edetabelit ühest juhtpaneelist — ilma vastuste paberilipikuid põrandalt korjajate jooksuta.",
+    "joinGame": "Liitu mänguga võistkonnana",
+    "enterAsHost": "Logi sisse juhi või korraldajana",
+    "feedback": "Anna tagasisidet",
+    "languageLabel": "Keel",
+    "langRu": "Vene",
+    "langEn": "Inglise",
+    "langEt": "Eesti"
+  },
+  "player": {
+    "join": {
+      "title": "Sisesta mängu kood",
+      "hint": "Küsi neljakohalist koodi juhilt",
+      "errors": {
+        "onlyDigits": "Kood peab sisaldama ainult numbreid.",
+        "notFound": "Mängu ei leitud. Kontrolli koodi."
+      }
+    },
+    "selectTeam": {
+      "navTitle": "Võistkonna valik",
+      "screenTitle": "Mänguga liitumine",
+      "noTeams": "Selles mängus pole veel võistkondi",
+      "taken": "Hõivatud",
+      "pollError": "Võistkondade nimekirja ei saanud värskendada"
+    },
+    "game": {
+      "phase": {
+        "thinking": "Aruteluaeg",
+        "answering": "Vastamise aeg",
+        "preparation": "Tähelepanu, küsimus...",
+        "idle": "Ootan..."
+      }
+    },
+    "tabs": {
+      "play": "Mäng",
+      "history": "Ajalugu",
+      "results": "Tulemused"
+    },
+    "status": {
+      "connecting": "Ühendan...",
+      "team": "Võistkond: {{teamName}}",
+      "error": "Viga: {{message}}",
+      "disconnected": "Ühendus katkes...",
+      "sending": "Saadan..."
+    },
+    "miniWidget": {
+      "line": "{{seconds}} s · {{phase}}"
+    },
+    "phases": {
+      "waitingForHost": "Ootan, kuni juht käivitab mängu...",
+      "thinking": "Aruteluaeg",
+      "answering": "Aeg vastata!",
+      "answerPlaceholder": "Sinu vastus",
+      "submitAnswer": "Saada vastus"
+    }
+  },
+  "playTab": {
+    "finishedTitle": "Mäng läbi! 🎉",
+    "finishedBody": "Edetabelit ja oma vastuseid näed teistes vahekaartides.",
+    "feedback": "Anna tagasisidet",
+    "waitingTitle": "Juht käivitab mängu peagi",
+    "waitingSubtitle": "Ole valmis!",
+    "idleTitle": "Ootan juhti",
+    "preparationSubtitle": "Tähelepanu, küsimust loetakse...",
+    "questionTitle": "Küsimus {{n}}",
+    "timerRunning": "{{seconds}} s · {{hint}}",
+    "hintThinking": "arutelu võistkonnaga",
+    "hintAnswering": "kirjuta oma vastus!",
+    "timeUp": "Aeg sai otsa! Lõpeta vastus",
+    "answerPlaceholder": "Kirjuta vastus",
+    "answerAccepted": "Vastus salvestatud!",
+    "answerChangeHint": "Vastust saad muuta",
+    "submit": "Saada",
+    "resubmit": "Saada uuesti"
+  },
+  "historyTab": {
+    "emptyTitle": "Siin pole veel midagi",
+    "emptySubtitle": "Siia ilmuvad sinu vastused küsimustele",
+    "answeredCount": "Vastatud: {{count}}",
+    "status": {
+      "CORRECT": "Õige",
+      "INCORRECT": "Vale",
+      "DISPUTABLE": "Ülevaatusel",
+      "UNSET": "Ootel",
+      "PENDING": "Ootel"
+    }
+  },
+  "leaderboardTab": {
+    "emptyTitle": "Siin pole veel midagi",
+    "emptySubtitle": "Siia ilmub sinu koht võistkondade seas",
+    "rating": "Reiting: {{rating}}"
+  },
+  "resultsScreen": {
+    "title": "Mängu tulemused",
+    "praise": "Väga hea töö!",
+    "yourTeam": "Sinu võistkond",
+    "giveFeedback": "Jäta tagasiside",
+    "loadError": "Tulemusi ei saanud laadida."
+  },
+  "hostLogin": {
+    "screenTitle": "Juhi sisselogimine",
+    "screenSubtitle": "Logi sisse, et luua ja juhtida mänge.",
+    "emailLabel": "E-post",
+    "passwordLabel": "Parool",
+    "emailPlaceholder": "sinu@näide.ee",
+    "passwordPlaceholder": "Sisesta parool",
+    "showPassword": "Näita parooli",
+    "hidePassword": "Peida parool",
+    "forgotPassword": "Unustasid parooli?",
+    "login": "Logi sisse",
+    "loggingIn": "Logitakse sisse...",
+    "errorGeneric": "Sisselogimine ebaõnnestus. Proovi uuesti.",
+    "backHome": "Tagasi avalehele",
+    "notMember": "Pole veel liige?",
+    "registerNow": "Registreeru"
+  },
+  "hostSignup": {
+    "screenTitle": "Registreeru",
+    "screenSubtitle": "Loo konto, et alustada",
+    "nameLabel": "Nimi",
+    "namePlaceholder": "Nimi",
+    "emailLabel": "E-post",
+    "emailPlaceholder": "sinu@näide.ee",
+    "passwordLabel": "Parool",
+    "passwordPlaceholder": "Loo parool",
+    "confirmPasswordLabel": "Kinnita parool",
+    "confirmPasswordPlaceholder": "Kinnita parool",
+    "showPassword": "Näita parooli",
+    "hidePassword": "Peida parool",
+    "agreeText": "Olen lugenud ja nõustun Terms and Conditions ning Privacy Policy tingimustega.",
+    "signUp": "Registreeru",
+    "signingUp": "Registreerimine...",
+    "errorGeneric": "Registreerimine ebaõnnestus. Proovi uuesti.",
+    "backHome": "Tagasi avalehele",
+    "haveAccount": "Konto on juba olemas?",
+    "signIn": "Logi sisse"
+  },
+  "hostSetup": {
+    "title": "Mängud",
+    "logOut": "Logi välja",
+    "createGame": "Loo mäng",
+    "loadError": "Mänge ei saanud laadida.",
+    "openGame": "Ava"
+  },
+  "hostGameAdmin": {
+    "createTitle": "Loo mäng",
+    "manageTitle": "Halda mängu",
+    "save": "Salvesta",
+    "finishGame": "Lõpeta mäng",
+    "tabs": {
+      "settings": "Seaded",
+      "answers": "Vastused",
+      "leaderboard": "Edetabel",
+      "teams": "Võistkonnad"
+    }
+  },
+  "hostSidebar": {
+    "untitledGame": "Ilma pealkirjata",
+    "status": {
+      "live": "Mäng käib",
+      "finished": "Mäng on lõppenud",
+      "notStarted": "Pole alanud"
+    },
+    "gameCode": "Mängu kood",
+    "teamsInGame": "Võistkonnad mängus",
+    "uncheckedAnswers": "Kontrollimata vastused",
+    "currentQuestionLabel": "Praegune küsimus",
+    "questionNotSelected": "Küsimust pole valitud.",
+    "correctAnswerLabel": "Õige vastus",
+    "gameFinishedTitle": "Mäng lõppenud",
+    "gameFinishedBody": "Kõik küsimused on mängitud. Saad vaadata vastuseid ja lõplikku edetabelit.",
+    "receivedAnswers": "Saadud vastused",
+    "questionProgress": "Küsimus {{current}} / {{total}}",
+    "roundFallback": "Voor 1",
+    "timeLeft": "Jäänud {{seconds}} s",
+    "timeUp": "Aeg sai otsa",
+    "phase": {
+      "preparation": "Ettevalmistus",
+      "thinking": "Arutelu",
+      "answering": "Vastamine",
+      "idle": "Ootel"
+    },
+    "adjustMinus10": "-10 s",
+    "adjustPlus10": "+10 s",
+    "startGame": "Alusta mängu",
+    "prev": "< Eelmine",
+    "next": "Järgmine >",
+    "startFirstQuestion": "Alusta esimest küsimust",
+    "timerStart": "Käivita taimer",
+    "finishQuestion": "Lõpeta küsimus",
+    "restartQuestion": "Taaskäivita küsimus"
+  },
+  "hostEditor": {
+    "createGame": "Loo mäng",
+    "saveAllChanges": "Salvesta kõik muudatused"
+  },
+  "hostEditorCategories": {
+    "title": "Kategooriad",
+    "namePlaceholder": "Kategooria nimi",
+    "descPlaceholder": "Kirjeldus (valikuline)",
+    "cancel": "Loobu",
+    "save": "Salvesta",
+    "add": "Lisa"
+  },
+  "hostEditorMeta": {
+    "gameNameLabel": "Mängu nimi",
+    "gameNamePlaceholder": "Sisesta nimi...",
+    "eventDateLabel": "Toimumise kuupäev",
+    "passcodeDescription": "Kood võistkondade liitumiseks"
+  },
+  "hostEditorSettings": {
+    "timeSettingsTitle": "Ajaseaded",
+    "thinkTimeSec": "Aruteluaeg (s)",
+    "answerTimeSec": "Vastamise aeg (s)",
+    "appealTimeMin": "Apellatsioonide aeg (min)",
+    "extraSettingsTitle": "Lisaseaded",
+    "showLeaderboard": {
+      "title": "Näita edetabelit",
+      "description": "Võistkonnad näevad tulemustabelit mängu ajal"
+    },
+    "showQuestions": {
+      "title": "Näita küsimusi",
+      "description": "Küsimuse tekst kuvatakse osalejatele"
+    },
+    "showAnswers": {
+      "title": "Näita vastuseid",
+      "description": "Õiged vastused kuvatakse pärast vooru lõppu"
+    },
+    "allowAppeals": {
+      "title": "Luba apellatsioonid",
+      "description": "Võistkonnad saavad vaidlustada tulemusi ja esitada apellatsioone"
+    }
+  },
+  "hostEditorTeams": {
+    "title": "Võistkonnad",
+    "categoryLabel": "Liiga / Kategooria",
+    "needCategories": "Enne võistkondade lisamist loo ja salvesta vähemalt üks kategooria.",
+    "saveToUseCategories": "Uute kategooriate kasutamiseks salvesta muudatused",
+    "teamNamePlaceholder": "Võistkonna nimi",
+    "teamCodePlaceholder": "Võistkonna kood",
+    "cancel": "Loobu",
+    "save": "Salvesta",
+    "add": "Lisa"
+  },
+  "hostEditorQuestions": {
+    "title": "Küsimused",
+    "addRound": "Lisa voor",
+    "addQuestion": "Lisa küsimus",
+    "roundDescription": "{{count}} küsimust",
+    "questionTitle": "Küsimus {{n}}",
+    "questionNoText": "Tekst puudub",
+    "fieldQuestionLabel": "Küsimus",
+    "fieldQuestionPlaceholder": "Sisesta küsimuse tekst",
+    "fieldAnswerLabel": "Vastus",
+    "fieldAnswerPlaceholder": "Sisesta vastus",
+    "timeToThinkSec": "Aruteluaeg (s)",
+    "timeToAnswerSec": "Vastamise aeg (s)",
+    "roundNameLabel": "Vooru nimi",
+    "roundNamePlaceholder": "Vooru nimi",
+    "emptyHint": "Vali voor ja lisa küsimus, et seda muuta."
+  },
+  "notFound": {
+    "headerTitle": "Ups!",
+    "title": "Seda ekraani pole olemas.",
+    "goHome": "Mine avalehele"
+  },
+  "modal": {
+    "title": "Modaal"
+  },
+  "hostTeamsTab": {
+    "teamFallback": "Võistkond #{{id}}",
+    "total": "Kokku: {{count}}",
+    "online": "Mängus: {{count}}",
+    "offline": "Väljas: {{count}}",
+    "empty": "Ühtegi võistkonda pole veel liitunud"
+  },
+  "hostLeaderboard": {
+    "uncategorized": "Kategooriata",
+    "exportA11y": "Ekspordi Excelisse (mängu leht)",
+    "exportButton": "Eksport (mängu leht)",
+    "exportErrorTitle": "Ekspordi viga",
+    "exportErrorGeneric": "Faili ei saanud eksportida",
+    "empty": "Võistkondade nimekiri on tühi",
+    "teamsCount": "Võistkondi: {{count}}",
+    "colTeam": "Võistkond",
+    "colScore": "Punktid",
+    "colRating": "Reiting",
+    "fsCacheUnavailable": "Failisüsteemi vahemälu pole saadaval",
+    "shareDialogTitle": "Tulemuste eksport"
+  },
+  "hostAnswersDashboard": {
+    "roundFallback": "Voor {{n}}",
+    "selectQuestion": "Vali vasakult küsimus",
+    "total": "Kokku: {{count}}",
+    "correct": "Õiged: {{count}}",
+    "incorrect": "Valed: {{count}}",
+    "colTeamName": "Võistkond",
+    "colAnswerText": "Vastus",
+    "empty": "Vastuseid pole veel",
+    "lateBy": "Hilines: {{seconds}} s"
+  },
+  "hostForgotPassword": {
+    "screenTitle": "Unustasid parooli?",
+    "body": "Parooli lähtestamine rakendusest pole veel saadaval — töötame selle kallal. Seniks proovi uuesti sisse logida või registreeru teise e-postiga, kui see sulle sobib.",
+    "backToLogin": "Tagasi sisselogimise juurde"
+  },
+  "feedback": {
+    "ctaRateApp": "Hinda rakendust",
+    "screenTitle": "Tagasiside",
+    "mainTitle": "Mäng on läbi",
+    "mainTitleStandalone": "Ütle, mida sa rakendusest arvad",
+    "ratingPrompt": "Kuidas hindad rakendust?",
+    "commentHeading": "Kas on veel midagi?",
+    "commentPlaceholder": "Kirjelda kõike, mida tahad öelda.",
+    "submit": "Saada",
+    "skip": "Jäta vahele",
+    "ratingRequired": "Enne saatmist vali tärnidega hinnang.",
+    "thankYouTitle": "Aitäh!",
+    "thankYouSubtitle": "Kohtumiseni järgmistel mängudel",
+    "returnHome": "Tagasi avalehele",
+    "errorGeneric": "Tagasisidet ei saanud saata. Proovi uuesti.",
+    "formLoadError": "Tagasiside vormi ei saanud laadida. Proovi hiljem uuesti."
+  }
+}
